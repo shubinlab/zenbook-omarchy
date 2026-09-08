@@ -63,17 +63,17 @@ EOF
 
 pause() {
   local message=$1
-  printf '\n%s\nНажмите Enter, когда закончите (или Ctrl+C для выхода): ' "$message"
+  printf '\n%s\nPress Enter when finished (or Ctrl+C to exit): ' "$message"
   IFS= read -r _ </dev/tty || die 'interactive terminal is required'
 }
 
 open_url() {
   local url=$1
-  printf 'Открываю: %s\n' "$url"
+  printf 'Opening: %s\n' "$url"
   if command -v xdg-open >/dev/null 2>&1; then
     xdg-open "$url" >/dev/null 2>&1 &
   else
-    printf 'Откройте ссылку вручную: %s\n' "$url"
+    printf 'Open this link manually: %s\n' "$url"
   fi
 }
 
@@ -105,73 +105,73 @@ run_onboarding() {
   done
 
   if [[ -e "$ONBOARDING_STATE" ]]; then
-    printf 'Bitwarden onboarding уже завершён; выполняю быструю синхронизацию.\n'
-    rbw sync || die 'синхронизация Bitwarden не завершилась'
+    printf 'Bitwarden onboarding is complete; running a quick sync.\n'
+    rbw sync || die 'Bitwarden sync failed'
     return 0
   fi
 
-  printf '\nBitwarden onboarding — короткий пошаговый режим\n'
-  printf 'Секреты не записываются этим скриптом: пароль вводится только в pinentry Bitwarden.\n'
+  printf '\nBitwarden onboarding — simple guided setup\n'
+  printf 'This assistant never stores secrets; passwords are entered only in Bitwarden pinentry.\n'
 
-  printf '\nШаг 1/5. Аккаунт Bitwarden\n'
+  printf '\nStep 1/5. Bitwarden account\n'
   local email
-  printf 'Введите email Bitwarden: '
-  IFS= read -r email </dev/tty || die 'email was not entered'
-  [[ "$email" == *@*.* ]] || die 'похоже, email введён неверно'
+  printf 'Bitwarden email: '
+  IFS= read -r email </dev/tty || die 'No email was entered'
+  [[ "$email" == *@*.* ]] || die 'The email address looks invalid'
   rbw config set email "$email"
 
-  printf '\nШаг 2/5. Вход на этом компьютере\n'
+  printf '\nStep 2/5. Sign in on this computer\n'
   if rbw login; then
-    printf 'rbw уже зарегистрирован — вход выполнен.\n'
+    printf 'rbw is already registered; sign-in completed.\n'
   else
-    printf '\nВход не выполнен. Это новый компьютер, которому нужна одноразовая регистрация? [д/Н] '
+    printf '\nSign-in did not complete. Is this a new computer that needs one-time registration? [y/N] '
     local register_answer
-    IFS= read -r register_answer </dev/tty || die 'ответ не получен'
+    IFS= read -r register_answer </dev/tty || die 'No answer was received'
     case "$register_answer" in
-      д|Д|да|ДА|y|Y|yes|YES) ;;
-      *) die 'вход не выполнен; проверьте email, сервер Bitwarden и мастер-пароль, затем повторите onboarding' ;;
+      y|Y|yes|YES) ;;
+      *) die 'Sign-in failed; check the email, Bitwarden server and master password, then run onboarding again' ;;
     esac
-    printf '\nНужна одноразовая регистрация устройства.\n'
-    printf 'Если rbw попросит API key, возьмите его в Bitwarden Web Vault → Settings → Security → API Key.\n'
-    pause 'Откройте Web Vault и подготовьте API key'
-    rbw register || die 'регистрация rbw не завершилась; повторите этот onboarding после проверки API key'
-    rbw login || die 'вход rbw не завершился; повторите onboarding'
+    printf '\nOne-time device registration is required.\n'
+    printf 'If rbw asks for an API key, get it from Bitwarden Web Vault → Settings → Security → API Key.\n'
+    pause 'Open the Web Vault and prepare the API key'
+    rbw register || die 'rbw registration failed; check the API key and run onboarding again'
+    rbw login || die 'rbw sign-in failed; run onboarding again'
   fi
-  rbw sync || die 'синхронизация Bitwarden не завершилась'
-  printf 'Vault синхронизирован.\n'
+  rbw sync || die 'Bitwarden sync failed'
+  printf 'Vault synchronized.\n'
 
-  printf '\nШаг 3/5. Расширение браузера\n'
+  printf '\nStep 3/5. Browser extension\n'
   local store_url chromium_extension_path
   chromium_extension_path="$(chromium_bitwarden_path || true)"
   if [[ -n ${chromium_extension_path} ]]; then
-    printf 'Официальное Bitwarden уже найдено в Chromium: %s\n' "$chromium_extension_path"
-    printf 'Проверьте, что расширение включено и закреплено на панели браузера.\n'
+    printf 'The official Bitwarden extension is already installed in Chromium: %s\n' "$chromium_extension_path"
+    printf 'Make sure it is enabled and pinned to the browser toolbar.\n'
   elif chromium_policy_configured; then
-    printf 'Политика автоустановки Chromium уже установлена.\n'
-    pause 'Закройте все окна Chromium и запустите Chromium заново — расширение установится автоматически'
+    printf 'The Chromium automatic-install policy is already configured.\n'
+    pause 'Close all Chromium windows and start Chromium again; the extension will install automatically'
     if chromium_extension_path="$(chromium_bitwarden_path || true)"; then
-      printf 'Bitwarden появилось в Chromium: %s\n' "$chromium_extension_path"
+      printf 'Bitwarden is now available in Chromium: %s\n' "$chromium_extension_path"
     else
-      printf 'Chromium ещё не показал расширение; проверьте chrome://policy после перезапуска.\n'
+      printf 'Chromium has not shown the extension yet; check chrome://policy after restarting.\n'
     fi
   else
     store_url="$(browser_store_url)"
     open_url "$store_url"
-    pause 'В магазине нажмите Add/Установить для официального Bitwarden Password Manager'
+    pause 'In the store, click Add/Install for the official Bitwarden Password Manager'
   fi
 
-  printf '\nШаг 4/5. Первый запуск расширения\n'
+  printf '\nStep 4/5. First extension launch\n'
   open_url "$VAULT_URL"
-  pause 'В браузере войдите в расширение Bitwarden и закрепите его на панели'
+  pause 'Sign in to the Bitwarden extension and pin it to the browser toolbar'
 
-  printf '\nШаг 5/5. Проверка Omarchy\n'
-  printf 'Откройте безопасное текстовое поле, нажмите Super + Shift + /, выберите тестовую запись и нажмите Enter.\n'
-  pause 'После успешного ввода логина/пароля в тестовое поле'
+  printf '\nStep 5/5. Omarchy check\n'
+  printf 'Open a safe text field, press Super + Shift + /, select a test entry and press Enter.\n'
+  pause 'After the username/password is entered successfully in the test field'
 
   mkdir -p -m 0700 "$(dirname -- "$ONBOARDING_STATE")"
   : >"$ONBOARDING_STATE"
   chmod 600 "$ONBOARDING_STATE"
-  printf '\nГотово: Bitwarden синхронизирован, расширение установлено, хоткей проверен.\n'
+  printf '\nDone: Bitwarden is synchronized, the extension is installed and the hotkey works.\n'
 }
 
 case "$ACTION" in

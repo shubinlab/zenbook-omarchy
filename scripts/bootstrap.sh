@@ -595,7 +595,7 @@ ask_bitwarden_install() {
   local answer
   IFS= read -r answer </dev/tty || return 1
   case "$answer" in
-    y|Y|yes|YES|д|Д|да|ДА) return 0 ;;
+    y|Y|yes|YES) return 0 ;;
     *) return 1 ;;
   esac
 }
