@@ -109,6 +109,16 @@ lemonade_npu_loaded() {
   ' >/dev/null
 }
 
+wait_lemonade_npu_loaded() {
+  for _ in {1..30}; do
+    if lemonade_npu_loaded; then
+      return 0
+    fi
+    sleep 1
+  done
+  return 1
+}
+
 ensure_lemonade_server() {
   need lemonade
   need curl
@@ -163,7 +173,8 @@ ensure_lemonade_npu() {
     printf 'voice-omarchy: loading %s on the AMD XDNA2 NPU\n' "${VOICE_REMOTE_MODEL}"
     lemonade load "${VOICE_REMOTE_MODEL}"
   fi
-  lemonade_npu_loaded || die 'Lemonade did not expose the voice model as ready on device=npu'
+  wait_lemonade_npu_loaded ||
+    die 'Lemonade did not expose the voice model as ready on device=npu'
 }
 
 set_type_delay() {
