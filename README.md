@@ -2,6 +2,26 @@
 
 Reproducible notes and local experiments for an ASUS Zenbook running Omarchy/Hyprland with an LG UltraGear display connected through the JSAUX RGB Docking Station.
 
+## One command
+
+Run this from a normal terminal:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+```
+
+It clones or updates this repository, connects the existing AdGuard VPN CLI,
+installs the recorded hardware and diagnostic packages, restores the monitor
+profile with a backup, disables the Omarchy internal-monitor mirror and runs
+the supported `omarchy update`. The command expects AdGuard VPN CLI to be
+installed and logged in once. It never puts VPN credentials in Git.
+
+To choose a VPN location for this run:
+
+```bash
+export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY; curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+```
+
 The current tested profile is 2560×1440 at 240 Hz, 10-bit, scale 1.6, `cm=srgb` and per-output VRR=1. The external scale is kept in the Omarchy-managed `omarchy_monitor_scale` variable so the normal scaling command remains usable.
 
 ## Run the protected experiment
@@ -16,7 +36,7 @@ The wrapper blocks idle, suspend and the closed-lid action with `systemd-inhibit
 
 Results are written locally to `runs/` as JSON and Markdown; these raw artifacts are Git-ignored because they can contain machine-specific metadata. The local telemetry service writes its private JSONL log under `~/.local/state/omarchy/monitor-telemetry/` and is not copied into this repository automatically.
 
-For a clean installation or a later rebuild, use the one-line procedure in [docs/BOOTSTRAP.md](docs/BOOTSTRAP.md). It restores the Omarchy monitor profile, verifies the diagnostic package set through `omarchy-pkg-add`, and can connect the already-authenticated AdGuard VPN CLI before `omarchy update`. The public/private boundary is documented in [docs/PUBLIC-REPOSITORY-SECURITY.md](docs/PUBLIC-REPOSITORY-SECURITY.md).
+For flags, first-time AdGuard setup and the public/private boundary, see [docs/BOOTSTRAP.md](docs/BOOTSTRAP.md) and [docs/PUBLIC-REPOSITORY-SECURITY.md](docs/PUBLIC-REPOSITORY-SECURITY.md).
 
 The latest full audit is [docs/AUDIT-2026-09-08.md](docs/AUDIT-2026-09-08.md), with the protected display results in [docs/RESULTS-2026-09-08.md](docs/RESULTS-2026-09-08.md) and the aggregate system baseline in [docs/DIAGNOSTICS-2026-09-08.md](docs/DIAGNOSTICS-2026-09-08.md).
 

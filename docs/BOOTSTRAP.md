@@ -13,6 +13,8 @@ The public repository contains the reproducible parts of this Zenbook profile:
   applies the monitor rule with a timestamped backup, optionally enables local
   telemetry, connects an existing AdGuard VPN session, and optionally runs
   `omarchy update`.
+- `install.sh` is the short GitHub entry point that clones or updates the
+  repository and invokes the full bootstrap.
 
 The script does not contain or copy AdGuard credentials, VPN databases, tokens,
 private keys, serial numbers or raw machine telemetry. It also does not edit
@@ -45,6 +47,12 @@ Use `--update-vpn-cli` when you explicitly want the installed AdGuard CLI to
 update itself. Use `--enable-telemetry` only when local five-second monitor
 telemetry is wanted; its JSONL data remains under
 `~/.local/state/omarchy/monitor-telemetry/` and is ignored by Git.
+
+The shortest command is:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+```
 
 The full operating-system update is intentionally `omarchy update`, not a raw
 `pacman -Syu`: Omarchy owns snapshots and migrations around that operation.
