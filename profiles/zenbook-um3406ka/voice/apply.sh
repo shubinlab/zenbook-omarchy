@@ -228,6 +228,14 @@ set_type_delay() {
   rm -f -- "${temporary}"
 }
 
+voxtype_config_set() {
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    voxtype config set "$@" >/dev/null
+  else
+    voxtype config set "$@"
+  fi
+}
+
 backup_target() {
   local target="$1" name="$2"
   if [[ -e "${target}" || -L "${target}" ]]; then
@@ -455,26 +463,26 @@ apply_profile() {
 
   # Keep the native output/audio path and apply only this host's useful
   # multilingual policy plus native feedback/OSD.
-  voxtype config set audio.device default
-  voxtype config set whisper.mode remote
-  voxtype config set whisper.language "${VOICE_LANGUAGE}"
-  voxtype config set whisper.translate false
-  voxtype config set whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}"
-  voxtype config set whisper.remote_model "${VOICE_REMOTE_MODEL}"
-  voxtype config set output.mode type
-  voxtype config set output.fallback_to_clipboard false
+  voxtype_config_set audio.device default
+  voxtype_config_set whisper.mode remote
+  voxtype_config_set whisper.language "${VOICE_LANGUAGE}"
+  voxtype_config_set whisper.translate false
+  voxtype_config_set whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}"
+  voxtype_config_set whisper.remote_model "${VOICE_REMOTE_MODEL}"
+  voxtype_config_set output.mode type
+  voxtype_config_set output.fallback_to_clipboard false
   set_type_delay
-  voxtype config set output.pre_type_delay_ms 300
-  voxtype config set audio.feedback.enabled true
-  voxtype config set audio.feedback.theme default
-  voxtype config set audio.feedback.volume 0.7
-  voxtype config set osd.enabled true
-  voxtype config set osd.frontend gtk4
-  voxtype config set text.spoken_punctuation true
-  voxtype config set text.filter_filler_words true
-  voxtype config set vad.enabled "${VOICE_VAD_ENABLED}"
-  voxtype config set vad.backend "${VOICE_VAD_BACKEND}"
-  voxtype config set vad.threshold "${VOICE_VAD_THRESHOLD}"
+  voxtype_config_set output.pre_type_delay_ms 300
+  voxtype_config_set audio.feedback.enabled true
+  voxtype_config_set audio.feedback.theme default
+  voxtype_config_set audio.feedback.volume 0.7
+  voxtype_config_set osd.enabled true
+  voxtype_config_set osd.frontend gtk4
+  voxtype_config_set text.spoken_punctuation true
+  voxtype_config_set text.filter_filler_words true
+  voxtype_config_set vad.enabled "${VOICE_VAD_ENABLED}"
+  voxtype_config_set vad.backend "${VOICE_VAD_BACKEND}"
+  voxtype_config_set vad.threshold "${VOICE_VAD_THRESHOLD}"
 
   install_technical_helper
   install_technical_profile
