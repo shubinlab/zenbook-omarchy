@@ -5,10 +5,12 @@ set -euo pipefail
 repo_url="https://github.com/shubinlab/zenbook-omarchy.git"
 repo_dir="${OMARCHY_DIR:-$HOME/zenbook-omarchy}"
 check_only=0
+manifest_only=0
 
 for arg in "$@"; do
   case "$arg" in
     --check) check_only=1 ;;
+    --manifest) manifest_only=1 ;;
     -h|--help)
       cat <<'HELP'
 Omarchy Zenbook installer
@@ -58,11 +60,19 @@ if [[ -d "$repo_dir/.git" ]]; then
     printf '%s\n' 'omarchy-profiles: commit, stash or remove local changes, then retry' >&2
     exit 1
   fi
-  printf 'omarchy-profiles: updating %s\n' "$repo_dir"
-  git -C "$repo_dir" pull --ff-only
+  if ((manifest_only)); then
+    git -C "$repo_dir" pull --ff-only --quiet
+  else
+    printf 'omarchy-profiles: updating %s\n' "$repo_dir"
+    git -C "$repo_dir" pull --ff-only
+  fi
 else
-  printf 'omarchy-profiles: cloning into %s\n' "$repo_dir"
-  git clone --depth=1 "$repo_url" "$repo_dir"
+  if ((manifest_only)); then
+    git clone --depth=1 --quiet "$repo_url" "$repo_dir"
+  else
+    printf 'omarchy-profiles: cloning into %s\n' "$repo_dir"
+    git clone --depth=1 "$repo_url" "$repo_dir"
+  fi
 fi
 
 exec "$repo_dir/scripts/bootstrap.sh" --profile auto --update-system "$@"
