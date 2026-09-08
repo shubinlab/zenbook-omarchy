@@ -208,6 +208,10 @@ backup_and_install_monitor() {
   fi
   [[ -f "$MONITOR_SOURCE" ]] || die "missing monitor profile: $MONITOR_SOURCE"
   local target="$HOME/.config/hypr/monitors.lua"
+  if [[ -f "$target" ]] && cmp -s "$MONITOR_SOURCE" "$target"; then
+    printf 'bootstrap: display settings already applied\n'
+    return 0
+  fi
   local stamp backup
   stamp="$(date +%Y%m%d-%H%M%S)"
   backup="$BACKUP_ROOT/$PROFILE_ID/backups/$stamp"
@@ -286,7 +290,7 @@ apply_terminal() {
   if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
     "$TERMINAL_SOURCE" --apply
   else
-    printf 'bootstrap: terminal stage skipped\n'
+    printf 'bootstrap: terminal extension not configured; skipped\n'
   fi
 }
 
@@ -302,43 +306,61 @@ ensure_vpn_for_network_stage() {
   fi
 }
 
+stage_note() {
+  printf '\n[%s] %s\n' "$1" "$2"
+}
+
 run_stage() {
   case "$STAGE" in
     all)
       # Keep the least surprising clean-install order: network first, then
       # simple tested user settings, then package/model/service work.
-      if ((DO_VPN)); then connect_vpn; fi
+      stage_note '1/6' 'Network: AdGuard VPN'
+      if ((DO_VPN)); then connect_vpn; else printf 'bootstrap: VPN disabled\n'; fi
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
-      if ((DO_MONITOR)); then backup_and_install_monitor; fi
-      if ((DO_PACKAGES)); then install_packages; fi
-      if ((DO_VOICE)); then install_voice; fi
+      stage_note '2/6' 'Display: tested user settings'
+      if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
+      stage_note '3/6' 'Packages: profile requirements'
+      if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
+      stage_note '4/6' 'Voice: native Omarchy Voxtype'
+      if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
+      stage_note '5/6' 'Terminal: user settings'
       apply_terminal
-      if ((DO_SYSTEM_UPDATE)); then apply_update; fi
+      stage_note '6/6' 'System: supported Omarchy update'
+      if ((DO_SYSTEM_UPDATE)); then apply_update; else printf 'bootstrap: system update skipped\n'; fi
       ;;
     vpn)
+      stage_note '1/1' 'Network: AdGuard VPN'
       ((DO_VPN)) || die 'VPN stage is disabled; use the Zenbook profile or --vpn'
       connect_vpn
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
       ;;
     display)
+      stage_note '1/1' 'Display: tested user settings'
       ((DO_MONITOR)) || die 'display stage is disabled by --no-monitor'
       backup_and_install_monitor
       ;;
     packages)
+      stage_note '1/1' 'Packages: profile requirements'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
       ensure_vpn_for_network_stage
       install_packages
       ;;
     voice)
+      stage_note '1/1' 'Voice: native Omarchy Voxtype'
       ((DO_VOICE)) || die 'voice stage is disabled by --no-voice or this profile'
       ensure_vpn_for_network_stage
       install_voice
       ;;
     terminal)
+      stage_note '1/1' 'Terminal: user settings'
+      [[ -n "$TERMINAL_SOURCE" ]] || die "profile $PROFILE_ID has no terminal stage"
+      ((DO_TERMINAL)) || die 'terminal stage is disabled by --no-terminal'
       ensure_vpn_for_network_stage
       apply_terminal
       ;;
     update)
+      stage_note '1/1' 'System: supported Omarchy update'
       ensure_vpn_for_network_stage
       apply_update
       ;;
@@ -349,4 +371,4 @@ run_stage() {
 }
 
 run_stage
-printf 'bootstrap: complete profile=%s\n' "$PROFILE_ID"
+printf '\nDONE: profile=%s stage=%s\n' "$PROFILE_ID" "$STAGE"

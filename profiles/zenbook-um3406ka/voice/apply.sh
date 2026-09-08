@@ -239,6 +239,11 @@ apply_profile() {
   fi
   [[ -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]] || die "Voxtype model download did not produce ggml-${VOICE_MODEL}.bin"
 
+  if (check_state >/dev/null 2>&1); then
+    printf 'voice-omarchy: native profile already applied\n'
+    return 0
+  fi
+
   local source sink
   source="$(physical_source)"
   sink="$(physical_sink)"
