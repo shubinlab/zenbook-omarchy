@@ -14,13 +14,19 @@ profile then keeps only these Zenbook-specific choices:
 - a 300 ms native pre-type focus delay to avoid first-character loss;
 - native Voxtype OSD and start/stop audio feedback enabled.
 
-Apply from the repository root after the stock installer has completed:
+The normal Zenbook bootstrap invokes the stock installer automatically and
+then applies this extension in the same clean-install run. There is no
+separate native Voxtype step. To apply only the policy on an already native
+Voxtype installation:
 
 ```bash
 ./profiles/zenbook-um3406ka/voice/apply.sh --check
 ./profiles/zenbook-um3406ka/voice/apply.sh --apply
 ./profiles/zenbook-um3406ka/voice/doctor.sh
 ```
+
+Use `--no-voice` on the Zenbook bootstrap only as an explicit opt-out. The
+generic profile leaves voice untouched.
 
 The operation creates a timestamped user-state backup. Restore it with:
 

@@ -38,9 +38,12 @@ under `~/.local/state/omarchy-profiles/` before replacing a monitor file, and
 does not edit `/usr/share/omarchy`. Telemetry is opt-in; its local JSONL data
 stays under `~/.local/state/omarchy/monitor-telemetry/` and is ignored by Git.
 
-On the matching Zenbook profile, the bootstrap also applies the optional
-user-scoped terminal extension. Skip it with `--no-terminal`; apply or
-rollback it directly with the commands in the profile's terminal README.
+On the matching Zenbook profile, the bootstrap also runs Omarchy's native
+Voxtype installer when first-run user setup is absent, then applies the
+user-scoped Zenbook voice policy and terminal extension. This is one
+clean-install flow; no separate native voice command is required. Skip voice
+with `--no-voice` or the terminal extension with `--no-terminal`; apply or
+rollback either policy directly with the commands in its profile README.
 
 The full operating-system update is intentionally `omarchy update`, not a raw
 `pacman -Syu`: Omarchy owns snapshots and migrations around that operation.

@@ -46,17 +46,22 @@ is modified.
 
 ## Apply and verify
 
-On a fresh Omarchy installation, first use the stock menu/notification action
-or run `omarchy-voxtype-install`. Then from this repository run:
+On a fresh Omarchy installation, the Zenbook bootstrap invokes the stock
+native installer automatically after the VPN and package stages. Confirm its
+native prompt; the repository then applies the tested policy in the same run:
 
 ```bash
-./profiles/zenbook-um3406ka/voice/apply.sh --apply
-./profiles/zenbook-um3406ka/voice/doctor.sh
+./install.sh --no-vpn
 ```
 
-The apply script is deliberately not called by the generic bootstrap: the
-stock installer is interactive and owns first-run setup. The profile package
-manifest only declares `voxtype-bin` and `wtype`.
+There is no separate native Voxtype step. The generic profile does not enable
+voice. `--no-voice` is an explicit opt-out for the Zenbook profile; it skips
+both the native installer and the Zenbook voice policy. To verify an already
+configured system directly:
+
+```bash
+./profiles/zenbook-um3406ka/voice/doctor.sh
+```
 
 Restore the latest saved voice state with:
 

@@ -1,3 +1,0 @@
-# Packages required by the native voice profile.
-voxtype-bin
-wtype

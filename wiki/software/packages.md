@@ -61,13 +61,16 @@ The current explicit package database also contains `omarchy`,
 `omarchy-settings`, `omarchy-keyring`, `efibootmgr`, `mkinitcpio`, `sudo`,
 `amd-ucode`, the diagnostic packages above, `voxtype-bin`, `wtype` and
 `chafa`. Some are Omarchy provisioning/runtime packages and some are this
-profile's additions; the package manifests and `pacman -Qi` install reason are
-the authority. Do not remove a package solely because it is absent from the
-two stock catalog files.
+profile's additions; the package manifests, Omarchy's native Voxtype
+installer and `pacman -Qi` install reason are the authority. Do not remove a
+package solely because it is absent from the two stock catalog files.
 
 The source manifests are [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt),
-[diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt),
-[voice.txt](../../profiles/zenbook-um3406ka/packages/voice.txt) and [terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt).
+[diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt) and
+[terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt).
+`voxtype-bin` and `wtype` are intentionally not duplicated in a repository
+manifest: the clean-install flow lets Omarchy's native Voxtype installer own
+their package transaction.
 
 The complete explicit package table is regenerated from the live package
 database in [package-inventory.md](package-inventory.md).

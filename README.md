@@ -29,6 +29,11 @@ With an existing checkout, check or apply explicitly:
 ./scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn --no-terminal
 ```
 
+On the matching Zenbook, the normal bootstrap runs Omarchy's native Voxtype
+installer automatically and then applies the repository's tested voice policy;
+there is no separate voice-install step. Confirm the native prompt on a fresh
+system. Use `--no-voice` only to opt out.
+
 Run a protected display test from the graphical session:
 
 ```bash

@@ -231,8 +231,13 @@ apply_profile() {
   need systemctl
   need wtype
   check_native_bindings
-  [[ -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]] || die "Voxtype model is missing: ggml-${VOICE_MODEL}.bin"
   [[ "${VOICE_LANGUAGE}" == auto ]] || die 'this profile requires language=auto'
+
+  if [[ ! -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]]; then
+    printf 'voice-omarchy: downloading native Voxtype model %s\n' "${VOICE_MODEL}"
+    voxtype setup --download --model "${VOICE_MODEL}" --no-post-install
+  fi
+  [[ -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]] || die "Voxtype model download did not produce ggml-${VOICE_MODEL}.bin"
 
   local source sink
   source="$(physical_source)"

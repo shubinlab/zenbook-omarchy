@@ -16,12 +16,15 @@ PROFILE_MONITOR_CONFIG=""
 PROFILE_TELEMETRY_SERVICE=""
 PROFILE_TELEMETRY_COLLECTOR=""
 PROFILE_TERMINAL_EXTENSION=""
+PROFILE_VOICE_INSTALL=0
+PROFILE_VOICE_EXTENSION=""
 PROFILE_PACKAGE_MANIFESTS=""
 PACKAGE_SOURCES=()
 MONITOR_SOURCE=""
 TELEMETRY_SERVICE_SOURCE=""
 TELEMETRY_COLLECTOR_SOURCE=""
 TERMINAL_SOURCE=""
+VOICE_SOURCE=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
@@ -32,9 +35,11 @@ DO_VPN=0
 DO_SYSTEM_UPDATE=0
 DO_TELEMETRY=0
 DO_TERMINAL=1
+DO_VOICE=0
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
+VOICE_OPTION_SET=0
 
 usage() {
   cat <<'HELP'
@@ -52,6 +57,7 @@ Options:
   --update-system       Run `omarchy update` after applying the profile.
   --enable-telemetry    Install and enable the profile telemetry service.
   --no-terminal         Skip the profile's user-scoped terminal extension.
+  --no-voice            Skip the profile's native Omarchy Voxtype setup.
   --check               Validate profile files without changing the system.
   --no-packages         Skip package installation.
   --no-monitor          Skip the monitor configuration.
@@ -102,8 +108,14 @@ detect_profile() {
   if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
     TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
   fi
+  if [[ -n "$PROFILE_VOICE_EXTENSION" ]]; then
+    VOICE_SOURCE="$PROFILE_DIR/$PROFILE_VOICE_EXTENSION"
+  fi
   if ((VPN_OPTION_SET == 0)); then
     DO_VPN="$PROFILE_ENABLE_VPN"
+  fi
+  if ((VOICE_OPTION_SET == 0)); then
+    DO_VOICE="$PROFILE_VOICE_INSTALL"
   fi
 }
 
@@ -176,6 +188,27 @@ install_packages() {
   omarchy-pkg-add "${packages[@]}"
 }
 
+install_voice() {
+  [[ "$DO_VOICE" -eq 1 ]] || return 0
+  local native_installer="/usr/share/omarchy/bin/omarchy-voxtype-install"
+  [[ -x "$native_installer" ]] || die "native Omarchy Voxtype installer is missing: $native_installer"
+  [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
+
+  # The stock installer remains authoritative for package/model/service setup.
+  # Skip its interactive prompt on reruns once its user-scoped setup exists.
+  if [[ ! -f "$HOME/.config/voxtype/config.toml" || \
+        ! -f "$HOME/.config/systemd/user/voxtype.service" ]] || \
+     ! command -v voxtype >/dev/null 2>&1 || \
+     ! command -v wtype >/dev/null 2>&1; then
+    printf 'bootstrap: running the native Omarchy Voxtype installer\n'
+    "$native_installer"
+  else
+    printf 'bootstrap: native Omarchy Voxtype setup already exists\n'
+  fi
+  [[ -f "$HOME/.config/voxtype/config.toml" ]] || die 'native Voxtype setup did not create ~/.config/voxtype/config.toml; rerun without --no-voice and accept the native prompt'
+  "$VOICE_SOURCE" --apply
+}
+
 backup_and_install_monitor() {
   if [[ -z "$MONITOR_SOURCE" ]]; then
     printf 'bootstrap: profile %s does not define a monitor override\n' "$PROFILE_ID"
@@ -244,6 +277,10 @@ check_profile() {
     [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
     "$TERMINAL_SOURCE" --check
   fi
+  if ((DO_VOICE)); then
+    [[ -x "/usr/share/omarchy/bin/omarchy-voxtype-install" ]] || die 'native Omarchy Voxtype installer is missing'
+    [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
+  fi
   printf 'bootstrap check: PASS profile=%s packages=%d monitor=%s vpn=%s (no system changes made)\n' \
     "$PROFILE_ID" "$count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
@@ -258,6 +295,7 @@ while (($#)); do
     --update-system) DO_SYSTEM_UPDATE=1 ;;
     --enable-telemetry) DO_TELEMETRY=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
+    --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
     --check) DO_CHECK=1 ;;
     --no-packages) DO_PACKAGES=0 ;;
     --no-monitor) DO_MONITOR=0 ;;
@@ -278,6 +316,7 @@ fi
 if ((DO_VPN)); then connect_vpn; fi
 if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
 if ((DO_PACKAGES)); then install_packages; fi
+if ((DO_VOICE)); then install_voice; fi
 if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
   "$TERMINAL_SOURCE" --apply
 fi
