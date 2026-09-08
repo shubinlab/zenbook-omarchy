@@ -80,6 +80,8 @@ def monitor_snapshot() -> dict:
         "vrr": mon.get("vrr"),
         "dpms": mon.get("dpmsStatus"),
         "disabled": mon.get("disabled"),
+        "session": session_snapshot(),
+        "inhibitor_active": inhibitor_active(),
         "fullscreen_test_windows": [
             {k: c.get(k) for k in ("class", "title", "fullscreen", "fullscreenClient")}
             for c in clients if "zenbook-vrr-test" in str(c)
@@ -105,6 +107,33 @@ def connector_status() -> dict[str, str]:
         except Exception as exc:
             result[str(p)] = f"ERROR:{type(exc).__name__}"
     return result
+
+
+def session_snapshot() -> dict[str, str | bool]:
+    session_id = os.environ.get("XDG_SESSION_ID", "1")
+    try:
+        raw = run(["loginctl", "show-session", session_id,
+                   "-p", "IdleHint", "-p", "LockedHint", "-p", "State"])[1]
+        state = {}
+        for line in raw.splitlines():
+            if "=" in line:
+                key, value = line.split("=", 1)
+                state[key] = value
+    except Exception as exc:
+        state = {"error": repr(exc)}
+    try:
+        state["omarchy_locked"] = run(["omarchy-shell", "lock", "isLocked"])[1].strip()
+    except Exception as exc:
+        state["omarchy_lock_error"] = repr(exc)
+    return state
+
+
+def inhibitor_active() -> bool:
+    try:
+        raw = run(["systemd-inhibit", "--list", "--no-legend"], timeout=5)[1]
+        return "zenbook-omarchy-test" in raw
+    except Exception:
+        return False
 
 
 def kernel_lines(since: str) -> list[str]:
@@ -178,6 +207,13 @@ def phase_result(name, mode, bitdepth, seconds, fullscreen, setup, fullscreen_re
             anomalies.append({"time": row["time"], "kind": "unexpected_dpms_off"})
         if mon.get("disabled"):
             anomalies.append({"time": row["time"], "kind": "monitor_disabled"})
+        session = mon.get("session", {})
+        if session.get("IdleHint") != "no":
+            anomalies.append({"time": row["time"], "kind": "session_idle_hint"})
+        if session.get("LockedHint") != "no" or session.get("omarchy_locked") != "false":
+            anomalies.append({"time": row["time"], "kind": "session_locked"})
+        if not mon.get("inhibitor_active"):
+            anomalies.append({"time": row["time"], "kind": "missing_systemd_inhibitor"})
     return {
         "name": name,
         "requested": {"mode": mode, "bitdepth": bitdepth, "vrr": 1,
@@ -225,7 +261,7 @@ def write_markdown(path: Path, result: dict) -> None:
     lines += ["", "## Red-team checks", "", "- Mode matrix covers 1080p/120 Hz, 1440p/120 Hz, 1440p/144 Hz and 1440p/240 Hz.",
               "- Both fullscreen and windowed rendering are tested.",
               "- 8-bit versus 10-bit is tested at 144 Hz.",
-              "- Every sample checks DPMS, connector state, monitor disable state, output format and DRM VRR property.",
+              "- Every sample checks DPMS, connector state, monitor disable state, output format, DRM VRR property, session idle/lock state and the systemd inhibitor.",
               "- A DPMS cycle and rapid mode-cycle stress test are recorded separately below.", ""]
     if result.get("red_team"):
         lines += ["## Stress checks", "", "```json", json.dumps(result["red_team"], ensure_ascii=False, indent=2), "```", ""]
@@ -237,10 +273,12 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--seconds", type=int, default=30)
     ap.add_argument("--output", type=Path, default=DEFAULT_OUT)
+    ap.add_argument("--skip-matrix", action="store_true", help="run stress/DPMS checks without the long mode matrix")
     args = ap.parse_args()
     args.output.parent.mkdir(parents=True, exist_ok=True)
     previous_marker = IDLE_MARKER.exists()
     IDLE_MARKER.parent.mkdir(parents=True, exist_ok=True)
+    run(["omarchy-shell", "idle", "disable"])
     IDLE_MARKER.touch()
     all_samples = []
     phases = []
@@ -254,8 +292,9 @@ def main() -> None:
             ("1440p240-10b-fullscreen", *MODES["1440p240-10b"], True),
             ("1440p144-8b-fullscreen", *MODES["1440p144-8b"], True),
         ]
-        for name, (mode, bitdepth), fullscreen in matrix:
-            phases.append(run_phase(name, mode, bitdepth, args.seconds, fullscreen, all_samples))
+        if not args.skip_matrix:
+            for name, mode, bitdepth, fullscreen in matrix:
+                phases.append(run_phase(name, mode, bitdepth, args.seconds, fullscreen, all_samples))
 
         stress = {"mode_cycles": [], "dpms_cycle": [], "kernel_events": []}
         set_output("2560x1440@143.99", 10, 1)
@@ -266,10 +305,10 @@ def main() -> None:
                 all_samples.append(row)
                 stress["mode_cycles"].append({"cycle": i + 1, "label": label, "setup": setup, "sample": row})
         dpms_start = dt.datetime.now().astimezone()
-        off_result = hypr(["dispatch", "dpms", "off", OUTPUT])
+        off_result = eval_lua('hl.dispatch(hl.dsp.dpms({ action = "disable", monitor = "DP-1" }))')
         time.sleep(5)
         off_sample = sample("intentional-dpms-off")
-        on_result = hypr(["dispatch", "dpms", "on", OUTPUT])
+        on_result = eval_lua('hl.dispatch(hl.dsp.dpms({ action = "enable", monitor = "DP-1" }))')
         time.sleep(5)
         on_sample = sample("dpms-on-recovery")
         stress["dpms_cycle"] = {"off_command": off_result, "off_sample": off_sample,
@@ -291,10 +330,11 @@ def main() -> None:
         print(json.dumps({"json": str(args.output), "markdown": str(args.output.with_suffix('.md')), "phases": phases, "red_team": stress}, ensure_ascii=False), flush=True)
     finally:
         try:
-            set_output("2560x1440@143.99", 10, 0)
+            set_output("2560x1440@143.99", 10, 1)
         except Exception:
             pass
         if not previous_marker:
+            run(["omarchy-shell", "idle", "enable"])
             IDLE_MARKER.unlink(missing_ok=True)
 
 

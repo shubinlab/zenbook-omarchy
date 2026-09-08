@@ -1,0 +1,644 @@
+{
+  "date": "2026-09-08",
+  "started": "2026-09-08T13:52:19.845960+03:00",
+  "ended": "2026-09-08T13:56:32.028914+03:00",
+  "forced_policy": {
+    "global_vrr": 1,
+    "per_output_vrr": 1
+  },
+  "phases": [
+    {
+      "name": "1080p120-10b-windowed",
+      "requested": {
+        "mode": "1920x1080@120.00",
+        "bitdepth": 10,
+        "vrr": 1,
+        "fullscreen": false,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": null,
+      "started": "2026-09-08T13:52:19.845983+03:00",
+      "ended": "2026-09-08T13:52:55.127197+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          120.0
+        ],
+        "sizes": [
+          [
+            1920,
+            1080
+          ]
+        ],
+        "formats": [
+          "XRGB2101010"
+        ],
+        "hypr_vrr": [
+          false
+        ],
+        "drm_vrr_enabled": [
+          0
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    },
+    {
+      "name": "1440p120-10b-fullscreen",
+      "requested": {
+        "mode": "2560x1440@120.00",
+        "bitdepth": 10,
+        "vrr": 1,
+        "fullscreen": true,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": "ok",
+      "started": "2026-09-08T13:52:55.138613+03:00",
+      "ended": "2026-09-08T13:53:32.435374+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          119.998
+        ],
+        "sizes": [
+          [
+            2560,
+            1440
+          ]
+        ],
+        "formats": [
+          "XRGB2101010"
+        ],
+        "hypr_vrr": [
+          true
+        ],
+        "drm_vrr_enabled": [
+          0,
+          1
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    },
+    {
+      "name": "1440p144-10b-windowed",
+      "requested": {
+        "mode": "2560x1440@143.99",
+        "bitdepth": 10,
+        "vrr": 1,
+        "fullscreen": false,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": null,
+      "started": "2026-09-08T13:53:32.448366+03:00",
+      "ended": "2026-09-08T13:54:07.744089+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          143.991
+        ],
+        "sizes": [
+          [
+            2560,
+            1440
+          ]
+        ],
+        "formats": [
+          "XRGB2101010"
+        ],
+        "hypr_vrr": [
+          true
+        ],
+        "drm_vrr_enabled": [
+          0,
+          1
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    },
+    {
+      "name": "1440p144-10b-fullscreen",
+      "requested": {
+        "mode": "2560x1440@143.99",
+        "bitdepth": 10,
+        "vrr": 1,
+        "fullscreen": true,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": "ok",
+      "started": "2026-09-08T13:54:07.763738+03:00",
+      "ended": "2026-09-08T13:54:45.069820+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          143.991
+        ],
+        "sizes": [
+          [
+            2560,
+            1440
+          ]
+        ],
+        "formats": [
+          "XRGB2101010"
+        ],
+        "hypr_vrr": [
+          true
+        ],
+        "drm_vrr_enabled": [
+          0,
+          1
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    },
+    {
+      "name": "1440p240-10b-fullscreen",
+      "requested": {
+        "mode": "2560x1440@239.97",
+        "bitdepth": 10,
+        "vrr": 1,
+        "fullscreen": true,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": "ok",
+      "started": "2026-09-08T13:54:45.091182+03:00",
+      "ended": "2026-09-08T13:55:22.379087+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          239.97
+        ],
+        "sizes": [
+          [
+            2560,
+            1440
+          ]
+        ],
+        "formats": [
+          "XRGB2101010"
+        ],
+        "hypr_vrr": [
+          true
+        ],
+        "drm_vrr_enabled": [
+          0,
+          1
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    },
+    {
+      "name": "1440p144-8b-fullscreen",
+      "requested": {
+        "mode": "2560x1440@143.99",
+        "bitdepth": 8,
+        "vrr": 1,
+        "fullscreen": true,
+        "seconds": 30
+      },
+      "setup_result": {
+        "global": "ok",
+        "monitor": "ok"
+      },
+      "fullscreen_result": "ok",
+      "started": "2026-09-08T13:55:22.400704+03:00",
+      "ended": "2026-09-08T13:55:59.693282+03:00",
+      "sample_count": 15,
+      "anomalies": [],
+      "observed": {
+        "refresh_hz": [
+          143.991
+        ],
+        "sizes": [
+          [
+            2560,
+            1440
+          ]
+        ],
+        "formats": [
+          "XRGB8888"
+        ],
+        "hypr_vrr": [
+          true
+        ],
+        "drm_vrr_enabled": [
+          0,
+          1
+        ],
+        "dpms": [
+          true
+        ],
+        "connector": [
+          "connected"
+        ]
+      }
+    }
+  ],
+  "red_team": {
+    "mode_cycles": [
+      {
+        "cycle": 1,
+        "label": "144",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:03.733595+03:00",
+          "phase": "cycle-1-144",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 143.991,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 1,
+        "label": "120",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:05.763156+03:00",
+          "phase": "cycle-1-120",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 119.998,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 1,
+        "label": "240",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:07.788257+03:00",
+          "phase": "cycle-1-240",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 239.97,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 2,
+        "label": "144",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:09.816022+03:00",
+          "phase": "cycle-2-144",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 143.991,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 2,
+        "label": "120",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:11.843072+03:00",
+          "phase": "cycle-2-120",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 119.998,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 2,
+        "label": "240",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:13.871956+03:00",
+          "phase": "cycle-2-240",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 239.97,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 3,
+        "label": "144",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:15.899823+03:00",
+          "phase": "cycle-3-144",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 143.991,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 3,
+        "label": "120",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:17.926226+03:00",
+          "phase": "cycle-3-120",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 119.998,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "cycle": 3,
+        "label": "240",
+        "setup": {
+          "global": "ok",
+          "monitor": "ok"
+        },
+        "sample": {
+          "time": "2026-09-08T13:56:19.953206+03:00",
+          "phase": "cycle-3-240",
+          "monitor": {
+            "width": 2560,
+            "height": 1440,
+            "refresh_hz": 239.97,
+            "scale": 1.6,
+            "format": "XRGB2101010",
+            "color_preset": "wide",
+            "vrr": true,
+            "dpms": true,
+            "disabled": false,
+            "fullscreen_test_windows": []
+          },
+          "connector": {
+            "/sys/class/drm/card1-DP-1/status": "connected"
+          },
+          "drm_vrr_enabled": [
+            0,
+            1,
+            0,
+            0
+          ]
+        }
+      }
+    ],
+    "dpms_cycle": {
+      "off_command": "error: [string \"return hl.dispatch(dpms off DP-1)\"]:1: ')' expected near 'off'\n\n → Note: dispatch in lua is a shorthand for hl.dispatch(...), your syntax might need to be updated.",
+      "off_sample": {
+        "time": "2026-09-08T13:56:24.975526+03:00",
+        "phase": "intentional-dpms-off",
+        "monitor": {
+          "width": 2560,
+          "height": 1440,
+          "refresh_hz": 239.97,
+          "scale": 1.6,
+          "format": "XRGB2101010",
+          "color_preset": "wide",
+          "vrr": true,
+          "dpms": true,
+          "disabled": false,
+          "fullscreen_test_windows": []
+        },
+        "connector": {
+          "/sys/class/drm/card1-DP-1/status": "connected"
+        },
+        "drm_vrr_enabled": [
+          0,
+          1,
+          0,
+          0
+        ]
+      },
+      "on_command": "error: [string \"return hl.dispatch(dpms on DP-1)\"]:1: ')' expected near 'on'\n\n → Note: dispatch in lua is a shorthand for hl.dispatch(...), your syntax might need to be updated.",
+      "on_sample": {
+        "time": "2026-09-08T13:56:29.998517+03:00",
+        "phase": "dpms-on-recovery",
+        "monitor": {
+          "width": 2560,
+          "height": 1440,
+          "refresh_hz": 239.97,
+          "scale": 1.6,
+          "format": "XRGB2101010",
+          "color_preset": "wide",
+          "vrr": true,
+          "dpms": true,
+          "disabled": false,
+          "fullscreen_test_windows": []
+        },
+        "connector": {
+          "/sys/class/drm/card1-DP-1/status": "connected"
+        },
+        "drm_vrr_enabled": [
+          0,
+          1,
+          0,
+          0
+        ]
+      }
+    },
+    "kernel_events": []
+  },
+  "sample_count": 99,
+  "interpretation": "VRR was forced at the Hyprland policy level. The report must be read together with observed drm_vrr_enabled and monitor vrr values: a requested vrr=1 is not proof that the DRM variable-refresh property became active."
+}
