@@ -16,7 +16,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: zenbook-omarchy [menu|all|vpn|display|packages|voice|bitwarden|diagnostics|terminal|update|doctor|check]
+Usage: zenbook-omarchy [menu|all|vpn|display|voice|bitwarden|diagnostics|terminal|update|doctor|check]
 
 Short launcher for the local GitHub checkout. With no argument it opens a
 small numbered menu. Bitwarden onboarding opens in a visible Foot window.
@@ -124,7 +124,7 @@ else
 fi
 
 case "${stage}" in
-  all|vpn|display|packages|voice|diagnostics|terminal|update|doctor)
+  all|vpn|display|voice|diagnostics|terminal|update|doctor)
     exec "${BOOTSTRAP}" --profile auto --stage "${stage}" "$@"
     ;;
   bitwarden)
