@@ -51,9 +51,25 @@ The target host must pass:
 ./profiles/zenbook-um3406ka/voice/doctor.sh
 ```
 
-Then test separately: silence/noise, Russian, English, a mixed Russian-English
-phrase, the physical speakers, and the native F9/toggle controls. Recordings
-used for testing remain in `/tmp` or another local ignored path only.
+Completed on this Zenbook on 2026-09-08:
+
+- `apply.sh --apply`, `apply.sh --check` and `doctor.sh` pass;
+- exactly one echo-cancel module and one filtered source are loaded;
+- physical-mic silence is about `-35.6 dB` mean / `-14.5 dB` peak, while the
+  filtered source is about `-57.7 dB` mean / `-43.3 dB` peak;
+- the physical speaker test completed successfully at a deliberately low
+  test volume, without changing the stored default sink;
+- the native Voxtype daemon recorded through `default`, used Vulkan on the
+  Radeon 860M, transcribed and pasted text, then returned to `idle`;
+- standalone Russian and English fixture tests pass acceptably with
+  `large-v3-turbo`.
+
+The mixed fixture still auto-detects Russian for the whole recording and loses
+the English half. This is a verified limitation of the current single-pass
+Voxtype/Whisper path, not a claim that mixed-language dictation is solved.
+A real user-spoken mixed phrase should still be tested interactively after
+this profile is installed. Recordings used for testing remain in `/tmp` or
+another local ignored path only.
 
 The original `zenbook-voice` reports remain evidence for the WebRTC design, but
 not proof of this Arch/Omarchy target. Model quality and mixed-language WER

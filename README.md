@@ -46,8 +46,9 @@ documented in [profiles/zenbook-um3406ka/README.md](profiles/zenbook-um3406ka/RE
 ## Native voice extension
 
 The Zenbook profile also contains a user-scoped Omarchy voice extension. It
-preserves Omarchy's packaged bindings, changes neither global audio defaults
-nor stock files, and keeps backups before applying PipeWire and Voxtype
+preserves Omarchy's packaged bindings and stock files, changes only the
+user-session default microphone (with rollback backup), and keeps the
+physical speaker routing unchanged while applying PipeWire and Voxtype
 settings:
 
 ```bash
