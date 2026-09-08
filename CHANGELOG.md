@@ -26,6 +26,9 @@
 - Added a no-change `--plan` preview, exact source commit reporting, safe
   branch selection via `OMARCHY_REF`, and a direct `--verbose` shortcut.
 - Added CI coverage for the plan's native boundary and standalone-stage scope.
+- Made the no-argument path the only prominent user flow; advanced plan and
+  trace switches remain available internally but are no longer advertised as
+  normal steps.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

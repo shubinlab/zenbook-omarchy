@@ -515,6 +515,26 @@ print_plan() {
   fi
 }
 
+print_run_summary() {
+  local -a steps=()
+  local step
+  ((DO_VPN)) && steps+=(VPN)
+  ((DO_MONITOR)) && steps+=(Display)
+  ((DO_VOICE)) && steps+=(Voice/NPU)
+  ((DO_TERMINAL)) && steps+=(Terminal)
+  ((DO_BITWARDEN)) && steps+=(Bitwarden)
+  ((DO_DIAGNOSTICS)) && steps+=(Diagnostics)
+  printf '  Mode: %s\n' "$([[ "$STAGE" == selected ]] && printf 'selected restore' || printf 'full restore')"
+  printf '  Flow:'
+  if ((${#steps[@]})); then
+    for step in "${steps[@]}"; do
+      printf ' %s →' "$step"
+    done
+  fi
+  printf ' Verify\n'
+  printf '  Native: Omarchy installers, services and bindings remain authoritative; profile changes stay user-scoped\n'
+}
+
 selected_component() {
   [[ ",${COMPONENTS_REQUEST}," == *",$1,"* ]]
 }
@@ -856,6 +876,7 @@ stage_note() {
 on_error() {
   local exit_code=$?
   printf '\n%s✗ Failed%s during %s\n' "$C_RED" "$C_RESET" "$CURRENT_STAGE" >&2
+  printf '  Next: open zenbook-omarchy and choose the failed component to retry.\n' >&2
   exit "$exit_code"
 }
 
@@ -1011,6 +1032,9 @@ run_stage() {
 }
 
 printf '\n%sOmarchy Zenbook setup%s\nProfile: %s\n' "$C_CYAN" "$C_RESET" "$PROFILE_LABEL"
+if [[ "$STAGE" == all || "$STAGE" == selected ]]; then
+  print_run_summary
+fi
 run_stage
 if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
   :

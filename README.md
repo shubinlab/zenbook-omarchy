@@ -53,14 +53,6 @@ validates the scripts and changes nothing on the system:
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
 ```
 
-The raw URL must include the branch name (`main`).
-
-For a no-change preview of the actions and the native/user boundary:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --plan
-```
-
 The installer prints the exact source branch and commit used for the run. A
 reviewed branch or tag can be selected with `OMARCHY_REF=NAME`; an existing
 checkout on another branch is refused instead of being silently rewritten.
@@ -79,50 +71,35 @@ checkout on another branch is refused instead of being silently rewritten.
 | **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |
 | **Privacy** | No background collector or data-logging path is installed |
 
-## One command, or one short stage
+## One command
 
-The main raw entry point accepts the same small set of stages as the local
-wrappers:
+For a fresh system, run the command under **Quick install**. It performs the
+complete ordered restore, handles dependencies internally, asks only for
+interactive steps that genuinely need you, and verifies the result.
+
+After the first installation, use the short local launcher:
 
 ```bash
-# Full restore
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
-
-# After the first install, use the short local launcher; it opens a small menu
 zenbook-omarchy
+```
 
-# The menu accepts any combination and performs it in one orchestrated run;
-# for example, choose Display + Voice + Terminal + Bitwarden, then confirm once.
+It opens one small menu. Select any combination of components and confirm once;
+the launcher orders the work and runs verification automatically. If a stage
+ever fails, reopen the same menu and select that component to retry.
 
-# Or run one named stage without the long URL
+<details>
+<summary>Advanced maintenance actions</summary>
+
+These are not needed for normal use. They remain available for support and
+recovery when a specific component must be isolated.
+
+```bash
 zenbook-omarchy voice
 zenbook-omarchy bitwarden
 zenbook-omarchy doctor
-
-# Optional detailed trace when troubleshooting
-OMARCHY_VERBOSE=1 zenbook-omarchy
-
-# The same trace switch can be placed before any short command
-zenbook-omarchy --verbose voice
-
-# One stage directly from GitHub is still available on a fresh system
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
-
-# Optional technical cleanup for the next recording (native capture remains unchanged)
-voxtype record start --profile technical
-
-# Native Wayland Bitwarden (also included in the full restore)
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage bitwarden
-
-# Machine-readable stage list
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --manifest
-
-# Optional diagnostics
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage diagnostics
-
-# Explicit Omarchy update (kept separate from the clean restore)
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
 ```
+
+</details>
 
 From an existing checkout:
 
@@ -140,7 +117,7 @@ From an existing checkout:
 ./scripts/doctor.sh --profile zenbook-um3406ka
 ```
 
-Useful safety switches:
+Useful safety switches (normally unnecessary):
 
 ```text
 --check              validate without changing the system
@@ -152,6 +129,10 @@ Useful safety switches:
 --no-monitor         skip the display override
 --stage diagnostics  install optional diagnostic packages
 ```
+
+For ordinary use, ignore all switches and run the one command under **Quick
+install**. If a stage fails, reopen `zenbook-omarchy` and select that component
+from the menu; no long retry command is needed.
 
 ## Why this stays native
 

@@ -33,18 +33,11 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 ```
 
 The check clones the published repository into a temporary directory, validates
-the profile and exits without installing packages or changing user files.
-
-To preview the clean-install plan, including what remains native to Omarchy and
-what is added as a user-level profile override:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --plan
-```
-
-The normal installer reports the exact source branch and commit. Use
-`OMARCHY_REF=NAME` for a reviewed branch or tag; a modified or differently
-checked-out local repository is refused for safety.
+the profile and exits without installing packages or changing user files. The
+normal installation command needs no arguments. It reports the exact source
+branch and commit; a reviewed branch or tag can be selected with
+`OMARCHY_REF=NAME`, while a modified or differently checked-out local
+repository is refused for safety.
 
 ## Check the live system
 
@@ -151,8 +144,8 @@ the official Bitwarden clients. Edit vault items in the Bitwarden web vault. The
 user configuration is backed up before the profile changes pinentry, a
 10-minute lock timeout and hourly sync.
 
-Normal installs use a compact progress view. For troubleshooting, request the
-full component trace explicitly with `OMARCHY_VERBOSE=1`.
+Normal installs use a compact progress view. If a stage fails, reopen
+`zenbook-omarchy` and select that component to retry; no long command is needed.
 
 After the first GitHub installation, use the short local launcher instead of
 retyping the raw URL:

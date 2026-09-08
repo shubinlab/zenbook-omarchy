@@ -23,7 +23,6 @@ Usage:
 
 Useful options:
   --check                 Verify the published repository without changes.
-  --plan                  Show the selected plan and native/user boundaries.
   --stage NAME            Run one stage: vpn, display, packages, bitwarden,
                           voice, diagnostics, terminal, update or doctor.
   --manifest              Print the stage manifest as JSON.
@@ -34,8 +33,9 @@ Useful options:
   --no-bitwarden          Skip native Wayland Bitwarden setup.
   --no-terminal           Skip terminal settings.
   --profile ID            Select a profile explicitly.
-  --verbose               Show detailed component output instead of the compact view.
   OMARCHY_REF=NAME        Use a reviewed Git branch or tag (default: main).
+
+For normal installation, run this command without any arguments.
 HELP
       exit 0
       ;;
