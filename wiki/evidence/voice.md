@@ -19,10 +19,11 @@ physical PipeWire default microphone
   -> native wtype keyboard typing into the focused field
 ```
 
-Native Voxtype OSD remains enabled, and start/stop audio feedback is enabled.
-The profile does not switch to clipboard paste, install a second typing tool,
-change the default sink, or add a global echo-cancel filter. Optional VAD and
-the former virtual microphone are intentionally not part of the clean baseline.
+Native Voxtype OSD and start/stop audio feedback remain enabled. Native Silero
+VAD is enabled to reject silence-only recordings before they reach the remote
+transcriber. The profile does not switch to clipboard paste, install a second
+typing tool, change the default sink, or add a global echo-cancel filter. The
+former virtual microphone is intentionally not part of the clean baseline.
 Legacy cleanup is available only through the explicit voice-repair command.
 
 The packaged Omarchy bindings remain the source of truth: `Super+Ctrl+X`
@@ -44,6 +45,13 @@ is modified.
 - Native `type` output uses `wtype` under Hyprland and leaves the normal
   clipboard path untouched. Clipboard fallback is disabled for this profile so
   a failed native insertion cannot turn into a misleading clipboard error.
+- Native Silero VAD is installed with `voxtype setup vad` and enabled with the
+  `whisper` VAD backend at threshold `0.5`. It rejects silence-only captures;
+  it does not replace Whisper or perform language translation.
+- `text.spoken_punctuation` and native filler-word filtering are enabled.
+  The named `technical` profile applies a local, conservative glossary cleanup
+  only when explicitly requested with `voxtype record start --profile technical`.
+  It never calls a network service or an LLM.
 - The physical microphone source is restored as the default and its tested
   profile volume is applied with a backup; the global output sink is not
   changed, so feedback follows the user's normal Omarchy audio route.
@@ -83,10 +91,10 @@ native Omarchy installer owns its stock model artifact:
 ./profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh --apply
 ```
 
-The script requires remote Whisper mode, no secondary model and disabled VAD;
-it moves only `ggml-base.bin`, `ggml-base.en.bin` and
-`ggml-silero-vad.bin` into a timestamped user-state backup. It never touches
-the active `large-v3-turbo` artifact or Lemonade's NPU model.
+The script requires remote Whisper mode, no secondary model and a healthy
+enabled VAD policy; it moves only `ggml-base.bin` and `ggml-base.en.bin` into a
+timestamped user-state backup. It never touches the active `large-v3-turbo`,
+Silero VAD or Lemonade NPU model.
 
 On a truly fresh native install, cleanup can leave no local Voxtype fallback
 model. Remote NPU transcription still works, but native offline fallback and

@@ -15,6 +15,10 @@ Lemonade/FastFlowLM as `whisper-v3-turbo-FLM` on the AMD XDNA2 NPU. Native OSD
 and start/stop audio feedback are enabled. Standalone Russian and English
 fixture recognition passed; mixed-language recognition remains subject to the
 model's single-pass language behavior and must not be treated as guaranteed.
+Native Silero VAD is enabled through Voxtype to reject silence-only captures.
+For deliberate technical terminology cleanup, use the named local `technical`
+post-process profile; it is opt-in and does not call a network service or an
+LLM.
 
 ## Camera
 

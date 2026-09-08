@@ -20,11 +20,12 @@ usage() {
 Usage: profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh [--check|--apply]
 
 --check  verify the active remote/NPU policy and list removable files (default)
---apply  move base, base.en and Silero VAD files to a recoverable backup
+--apply  move base and base.en files to a recoverable backup
 
 The script refuses to run unless Voxtype is in remote Whisper mode, has no
-secondary local model, and VAD is disabled. It never removes the active
-large-v3-turbo artifact or any Lemonade model.
+secondary local model, and the native Silero VAD policy is enabled. It never
+removes the active large-v3-turbo artifact, the Silero VAD model or any
+Lemonade model.
 EOF
 }
 
@@ -64,18 +65,20 @@ curl --fail --silent --show-error --max-time 10 \
 secondary_model="$(voxtype config get whisper.secondary_model 2>/dev/null || true)"
 [[ -z ${secondary_model} || ${secondary_model} == null || ${secondary_model} == unset ]] ||
   die "secondary local model is configured: ${secondary_model}"
-[[ "$(voxtype config get vad.enabled 2>/dev/null || true)" == false ]] ||
-  die 'Voxtype VAD is enabled; refusing to remove its model'
+[[ "$(voxtype config get vad.enabled 2>/dev/null || true)" == true ]] ||
+  die 'Voxtype native VAD is not enabled; refusing cleanup'
+[[ "$(voxtype config get vad.backend 2>/dev/null || true)" == whisper ]] ||
+  die 'Voxtype is not using native Silero VAD; refusing cleanup'
 
 targets=(
   "${MODELS_DIR}/ggml-base.bin"
   "${MODELS_DIR}/ggml-base.en.bin"
-  "${MODELS_DIR}/ggml-silero-vad.bin"
 )
 
 printf 'voice-model-cleanup: active path remote Whisper -> Lemonade/FLM NPU\n'
 printf 'voice-model-cleanup: verified %s model on the live NPU endpoint\n' "${remote_model}"
-printf 'voice-model-cleanup: VAD disabled; large-v3-turbo is not a cleanup target\n'
+printf 'voice-model-cleanup: native Silero VAD is enabled and its model is retained\n'
+printf 'voice-model-cleanup: large-v3-turbo is not a cleanup target\n'
 found=0
 for target in "${targets[@]}"; do
   if [[ -L ${target} ]]; then

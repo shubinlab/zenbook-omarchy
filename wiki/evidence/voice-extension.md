@@ -16,6 +16,11 @@ profile then keeps only these Zenbook-specific choices:
 - native `type` output through `wtype`;
 - a 300 ms native pre-type focus delay to avoid first-character loss;
 - native Voxtype OSD and start/stop audio feedback enabled.
+- native Silero VAD installed with `voxtype setup vad` and enabled through the
+  `whisper` backend at threshold `0.5`;
+- native spoken punctuation and filler-word filtering enabled;
+- an opt-in local `technical` post-process profile for conservative glossary
+  cleanup, invoked with `voxtype record start --profile technical`.
 
 The native model setting and artifact may remain in the config because the
 Omarchy installer owns them, but remote mode selects the Lemonade FLM model
@@ -44,7 +49,7 @@ The operation creates a timestamped user-state backup. Restore it with:
 ```
 
 There is no profile PipeWire drop-in and no changed global sink. The clean
-profile does not inspect or remove legacy PipeWire/VAD state. Older installs
+profile does not inspect or remove legacy PipeWire/VAD drop-ins. Older installs
 can use the explicit migration command:
 
 ```bash

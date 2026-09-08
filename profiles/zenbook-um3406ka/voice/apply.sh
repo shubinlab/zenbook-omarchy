@@ -10,6 +10,9 @@ SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 PROFILE_FILE="${VOICE_PROFILE_FILE:-${SCRIPT_DIR}/voxtype-omarchy.env.example}"
 NATIVE_CONFIG="/usr/share/omarchy/default/voxtype/config.toml"
 VOXTYPE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/voxtype/config.toml"
+POSTPROCESS_TARGET="${HOME}/.local/bin/voxtype-technical-postprocess"
+TECHNICAL_PROFILE_BEGIN="# >>> zenbook-omarchy technical profile >>>"
+TECHNICAL_PROFILE_END="# <<< zenbook-omarchy technical profile <<<"
 # Kept only so rollback remains compatible with backups from older profile
 # revisions. The clean apply path never reads, writes or removes these files.
 PIPEWIRE_DIR="${XDG_CONFIG_HOME:-${HOME}/.config}/pipewire/pipewire-pulse.conf.d"
@@ -58,8 +61,14 @@ source "${PROFILE_FILE}"
 : "${VOICE_REMOTE_ENDPOINT:=http://127.0.0.1:13305}"
 : "${VOICE_REMOTE_MODEL:=whisper-v3-turbo-FLM}"
 : "${VOICE_SOURCE_VOLUME_PERCENT:=60}"
+: "${VOICE_VAD_ENABLED:=true}"
+: "${VOICE_VAD_BACKEND:=whisper}"
+: "${VOICE_VAD_THRESHOLD:=0.5}"
 [[ "${VOICE_TYPE_DELAY_MS}" =~ ^[0-9]+$ ]] || die 'VOICE_TYPE_DELAY_MS must be an integer'
 [[ "${VOICE_SOURCE_VOLUME_PERCENT}" =~ ^([1-9][0-9]?|100)$ ]] || die 'VOICE_SOURCE_VOLUME_PERCENT must be 1..100'
+[[ "${VOICE_VAD_ENABLED}" == true || "${VOICE_VAD_ENABLED}" == false ]] || die 'VOICE_VAD_ENABLED must be true or false'
+[[ "${VOICE_VAD_BACKEND}" == auto || "${VOICE_VAD_BACKEND}" == energy || "${VOICE_VAD_BACKEND}" == whisper ]] || die 'VOICE_VAD_BACKEND must be auto, energy or whisper'
+[[ "${VOICE_VAD_THRESHOLD}" =~ ^(0(\.[0-9]+)?|1(\.0+)?)$ ]] || die 'VOICE_VAD_THRESHOLD must be between 0 and 1'
 [[ "${VOICE_MODE}" == remote ]] || die 'this profile requires the Lemonade remote mode'
 [[ "${VOICE_REMOTE_ENDPOINT}" == http://127.0.0.1:* ]] || die 'Lemonade endpoint must stay on localhost'
 
@@ -109,6 +118,21 @@ lemonade_npu_loaded() {
         .loaded == true
       )
   ' >/dev/null
+}
+
+vad_model_ready() {
+  voxtype setup vad --status 2>&1 | grep -Eiq 'Silero VAD model installed'
+}
+
+ensure_vad_model() {
+  [[ "${VOICE_VAD_ENABLED}" == true && "${VOICE_VAD_BACKEND}" == whisper ]] || return 0
+  need voxtype
+  if vad_model_ready; then
+    return 0
+  fi
+  printf 'voice-omarchy: installing native Silero VAD model\n'
+  voxtype setup vad
+  vad_model_ready || die 'native Voxtype Silero VAD model did not become available'
 }
 
 wait_lemonade_npu_loaded() {
@@ -213,6 +237,42 @@ backup_target() {
   fi
 }
 
+technical_profile_ready() {
+  [[ -x "${POSTPROCESS_TARGET}" ]] || return 1
+  grep -Fqx "${TECHNICAL_PROFILE_BEGIN}" "${VOXTYPE_TARGET}" 2>/dev/null || return 1
+  grep -Fqx "${TECHNICAL_PROFILE_END}" "${VOXTYPE_TARGET}" 2>/dev/null || return 1
+  grep -Fq "post_process_command = \"${POSTPROCESS_TARGET}\"" "${VOXTYPE_TARGET}" 2>/dev/null
+}
+
+install_technical_helper() {
+  [[ -x "${SCRIPT_DIR}/technical-postprocess.sh" ]] ||
+    die "missing technical postprocess helper: ${SCRIPT_DIR}/technical-postprocess.sh"
+  if [[ -x "${POSTPROCESS_TARGET}" ]] &&
+     cmp -s "${SCRIPT_DIR}/technical-postprocess.sh" "${POSTPROCESS_TARGET}"; then
+    return 0
+  fi
+  install -Dm0755 "${SCRIPT_DIR}/technical-postprocess.sh" "${POSTPROCESS_TARGET}"
+}
+
+install_technical_profile() {
+  if ! grep -Fqx "${TECHNICAL_PROFILE_BEGIN}" "${VOXTYPE_TARGET}" 2>/dev/null &&
+     grep -Eq '^[[:space:]]*\[profiles\.technical\][[:space:]]*$' "${VOXTYPE_TARGET}" 2>/dev/null; then
+    die 'an unmanaged [profiles.technical] already exists; refusing to overwrite it'
+  fi
+
+  local temporary
+  temporary="$(mktemp "${VOXTYPE_TARGET}.tmp.XXXXXX")"
+  awk -v begin="${TECHNICAL_PROFILE_BEGIN}" -v end="${TECHNICAL_PROFILE_END}" '
+    $0 == begin { skip = 1; next }
+    $0 == end { skip = 0; next }
+    !skip { print }
+  ' "${VOXTYPE_TARGET}" >"${temporary}"
+  printf '\n%s\n[profiles.technical]\npost_process_command = "%s"\npost_process_timeout_ms = 30000\n%s\n' \
+    "${TECHNICAL_PROFILE_BEGIN}" "${POSTPROCESS_TARGET}" "${TECHNICAL_PROFILE_END}" >>"${temporary}"
+  install -m0644 "${temporary}" "${VOXTYPE_TARGET}"
+  rm -f -- "${temporary}"
+}
+
 restore_one() {
   local target="$1" backup_name="$2"
   if [[ -e "${BACKUP_ROOT}/${BACKUP_ID}/${backup_name}" ]]; then
@@ -287,6 +347,25 @@ check_state() {
   check_value output.pre_type_delay_ms 300 "$(voxtype config get output.pre_type_delay_ms 2>/dev/null || true)"
   check_value audio.feedback.enabled true "$(voxtype config get audio.feedback.enabled 2>/dev/null || true)"
   check_value osd.enabled true "$(voxtype config get osd.enabled 2>/dev/null || true)"
+  check_value text.spoken_punctuation true "$(voxtype config get text.spoken_punctuation 2>/dev/null || true)"
+  check_value text.filter_filler_words true "$(voxtype config get text.filter_filler_words 2>/dev/null || true)"
+  check_value vad.enabled "${VOICE_VAD_ENABLED}" "$(voxtype config get vad.enabled 2>/dev/null || true)"
+  check_value vad.backend "${VOICE_VAD_BACKEND}" "$(voxtype config get vad.backend 2>/dev/null || true)"
+  check_value vad.threshold "${VOICE_VAD_THRESHOLD}" "$(voxtype config get vad.threshold 2>/dev/null || true)"
+  if technical_profile_ready; then
+    printf 'PASS technical postprocess profile is installed\n'
+  else
+    printf 'FAIL technical postprocess profile is missing\n'
+    CHECK_FAILURES=$((CHECK_FAILURES + 1))
+  fi
+  if [[ "${VOICE_VAD_ENABLED}" == true && "${VOICE_VAD_BACKEND}" == whisper ]]; then
+    if vad_model_ready; then
+      printf 'PASS native Silero VAD model installed\n'
+    else
+      printf 'FAIL native Silero VAD model is missing\n'
+      CHECK_FAILURES=$((CHECK_FAILURES + 1))
+    fi
+  fi
   if systemctl --user is-active --quiet voxtype.service; then
     printf 'PASS voxtype.service active\n'
   else
@@ -343,12 +422,9 @@ apply_profile() {
   check_native_bindings
   [[ "${VOICE_LANGUAGE}" == auto ]] || die 'this profile requires language=auto'
   ensure_lemonade_npu
+  ensure_vad_model
 
   if (check_state >/dev/null 2>&1); then
-    # A previous apply may have written a valid config immediately before an
-    # interrupted restart. Reload it even when the resulting state is already
-    # correct, so the running daemon cannot retain stale settings.
-    systemctl --user restart voxtype.service
     printf 'voice-omarchy: native profile already applied\n'
     check_state
     return 0
@@ -362,6 +438,7 @@ apply_profile() {
   BACKUP_ID="$(date -u +%Y%m%dT%H%M%S%N)-${BASHPID}"
   mkdir -p "${BACKUP_ROOT}/${BACKUP_ID}"
   backup_target "${VOXTYPE_TARGET}" voxtype.config.toml
+  backup_target "${POSTPROCESS_TARGET}" technical-postprocess
   local source_volume_before
   source_volume_before="$(pactl get-source-volume "${source}" 2>/dev/null | grep -oE '[0-9]+%' | head -n 1 | tr -d '%' || true)"
   printf 'default_source=%s\ndefault_sink=%s\nphysical_source=%s\n' \
@@ -386,7 +463,14 @@ apply_profile() {
   voxtype config set audio.feedback.volume 0.7
   voxtype config set osd.enabled true
   voxtype config set osd.frontend gtk4
+  voxtype config set text.spoken_punctuation true
+  voxtype config set text.filter_filler_words true
+  voxtype config set vad.enabled "${VOICE_VAD_ENABLED}"
+  voxtype config set vad.backend "${VOICE_VAD_BACKEND}"
+  voxtype config set vad.threshold "${VOICE_VAD_THRESHOLD}"
 
+  install_technical_helper
+  install_technical_profile
   pactl set-source-volume "${source}" "${VOICE_SOURCE_VOLUME_PERCENT}%"
   pactl set-default-source "${source}"
   systemctl --user restart voxtype.service
@@ -402,6 +486,7 @@ select_latest_backup() {
 rollback_profile() {
   select_latest_backup
   restore_one "${VOXTYPE_TARGET}" voxtype.config.toml
+  restore_if_backed_up "${POSTPROCESS_TARGET}" technical-postprocess || true
   local restore_pipewire=0
   if restore_if_backed_up "${PIPEWIRE_TARGET}" pipewire.conf; then
     restore_pipewire=1
