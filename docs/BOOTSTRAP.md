@@ -49,11 +49,5 @@ update itself. Use `--enable-telemetry` only when local five-second monitor
 telemetry is wanted; its JSONL data remains under
 `~/.local/state/omarchy/monitor-telemetry/` and is ignored by Git.
 
-The shortest command is:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
-```
-
 The full operating-system update is intentionally `omarchy update`, not a raw
 `pacman -Syu`: Omarchy owns snapshots and migrations around that operation.

@@ -42,16 +42,16 @@ The wrapper blocks idle, suspend and the closed-lid action with `systemd-inhibit
 
 Results are written locally to `runs/` as JSON and Markdown; these raw artifacts are Git-ignored because they can contain machine-specific metadata. The local telemetry service writes its private JSONL log under `~/.local/state/omarchy/monitor-telemetry/` and is not copied into this repository automatically.
 
-For flags, first-time AdGuard setup and the public/private boundary, see [docs/BOOTSTRAP.md](docs/BOOTSTRAP.md) and [docs/PUBLIC-REPOSITORY-SECURITY.md](docs/PUBLIC-REPOSITORY-SECURITY.md).
+For flags, first-time AdGuard setup and the public/private boundary, see [docs/BOOTSTRAP.md](docs/BOOTSTRAP.md) and [SECURITY.md](SECURITY.md).
 
-The latest full audit is [docs/AUDIT-2026-09-08.md](docs/AUDIT-2026-09-08.md), with the protected display results in [docs/RESULTS-2026-09-08.md](docs/RESULTS-2026-09-08.md) and the aggregate system baseline in [docs/DIAGNOSTICS-2026-09-08.md](docs/DIAGNOSTICS-2026-09-08.md).
+The full documentation map is [docs/README.md](docs/README.md). The latest full audit is [docs/AUDIT-2026-09-08.md](docs/AUDIT-2026-09-08.md), with protected display results in [docs/RESULTS-2026-09-08.md](docs/RESULTS-2026-09-08.md) and the aggregate system baseline in [docs/DIAGNOSTICS-2026-09-08.md](docs/DIAGNOSTICS-2026-09-08.md).
 
 The follow-up runtime mode drift and recovery are recorded in [docs/INCIDENT-2026-09-08-display-mode-drift.md](docs/INCIDENT-2026-09-08-display-mode-drift.md). The exact cause was the enabled Omarchy internal-monitor mirror toggle, which requested the external display's preferred mode after reload. That toggle is now off, while the explicit 240 Hz rule remains active.
 
 The expanded hardware and component review is [docs/COMPONENT-AUDIT-2026-09-08.md](docs/COMPONENT-AUDIT-2026-09-08.md); raw component runs stay local and ignored.
 
-The cross-repository search map is [docs/REPO-INDEX-2026-09-08.md](docs/REPO-INDEX-2026-09-08.md). Current vendor and community findings, package decisions and open checks are in [docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md](docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md).
+The cross-repository search map is [docs/REPOSITORY-MAP.md](docs/REPOSITORY-MAP.md). Current vendor and community findings, package decisions and open checks are in [docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md](docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md), with external sources consolidated in [docs/RESEARCH.md](docs/RESEARCH.md).
 
 The installed diagnostics and staged validation are recorded in [docs/DIAGNOSTICS-2026-09-08.md](docs/DIAGNOSTICS-2026-09-08.md).
 
-The HDR A/B investigation is [docs/HDR-2026-09-08.md](docs/HDR-2026-09-08.md); it records why the persistent desktop profile stays sRGB while auto-HDR remains available.
+The HDR A/B investigation is [docs/HDR-2026-09-08.md](docs/HDR-2026-09-08.md); it records why the persistent desktop profile stays sRGB while auto-HDR remains available. Contribution and security rules are in [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md).

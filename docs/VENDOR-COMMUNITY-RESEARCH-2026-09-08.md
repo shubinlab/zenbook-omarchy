@@ -50,7 +50,7 @@ The MediaTek MT7922 is bound to `mt7921e` and the Bluetooth controller to `btusb
 
 The webcam uses `uvcvideo`; the microphone and HDMI audio use the kernel ALSA/PipeWire stack. The LG display needs no Linux vendor driver: DRM/KMS, EDID and DDC/CI are sufficient for the tested functions.
 
-The WD_BLACK SN850X is directly attached as NVMe and reports firmware 620361WD. The local Btrfs and temporary I/O checks passed, while `nvme-cli`, `smartmontools` and `fwupd` are absent. Install those only as observability tools when convenient; they do not change the driver. WD's product material still describes the dashboard as Windows software, and no matching LVFS update was found in this review. [WD_BLACK SN850X data sheet](https://documents.westerndigital.com/content/dam/doc-library/th_th/assets/public/western-digital/product/internal-drives/wd-black-ssd/data-sheet-wd-black-sn850x-nvme-ssd.pdf), [WD community](https://community.wd.com/c/wd-software-mobile-apps/10)
+The WD_BLACK SN850X is directly attached as NVMe and reports firmware 620361WD. The local Btrfs and temporary I/O checks passed. `nvme-cli`, `smartmontools` and `fwupd` are now recorded in the bootstrap package set as observability tools; they do not change the driver. WD's product material still describes the dashboard as Windows software, and no matching LVFS update was found in this review. [WD_BLACK SN850X data sheet](https://documents.westerndigital.com/content/dam/doc-library/th_th/assets/public/western-digital/product/internal-drives/wd-black-ssd/data-sheet-wd-black-sn850x-nvme-ssd.pdf), [WD community](https://community.wd.com/c/wd-software-mobile-apps/10)
 
 ## Package plan
 

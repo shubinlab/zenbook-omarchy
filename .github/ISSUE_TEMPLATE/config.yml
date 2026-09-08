@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Installation and verification guide
+    url: https://github.com/shubinlab/zenbook-omarchy/blob/main/docs/BOOTSTRAP.md
+    about: Start here for the one-command installer and no-change check.

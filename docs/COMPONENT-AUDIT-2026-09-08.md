@@ -17,7 +17,7 @@ The protected phases used `systemd-inhibit` for idle, sleep and lid-switch actio
 | NPU | AMD XDNA device and driver enumerated | Enumerated; no workload test installed |
 | Display path | DP-1 connected through JSAUX; current profile is 1440p/240 Hz/10-bit/VRR/DPMS with `cm=srgb`, plus an 8-sample 144 Hz post-fix control run | Passed |
 | Display scale | DP-1 uses the Omarchy-managed `omarchy_monitor_scale` variable; scale 1.6 survives the official scaling command and reload | Current user profile |
-| NVMe/Btrfs | WD_BLACK SN850X; temporary 512 MiB write with `fdatasync`, read and delete; Btrfs device stats all zero | Passed; SMART/firmware inventory unavailable because tools are absent |
+| NVMe/Btrfs | WD_BLACK SN850X; temporary 512 MiB write with `fdatasync`, read and delete; Btrfs device stats all zero | Passed; diagnostic tools are installed, but direct SMART access was not completed in the restricted test shell |
 | Camera | 30-frame V4L2 stream, about 24.32 fps, output discarded | Passed |
 | Microphone | 2-second ALSA capture to `/dev/null` | Passed |
 | Audio | PipeWire, WirePlumber, analog sink/source and HDMI sink active | Routing healthy; audible speaker test was not run |
@@ -58,5 +58,5 @@ The CPU phase produced valid thermal samples and SHA-256 results, then the runne
 - Raw component and steady-state runs remain local under the Git-ignored `runs/` directory.
 - `docs/AUDIT-2026-09-08.md`
 - `docs/INCIDENT-2026-09-08-display-mode-drift.md`
-- `docs/REPO-INDEX-2026-09-08.md`
+- `docs/REPOSITORY-MAP.md`
 - `docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md`
