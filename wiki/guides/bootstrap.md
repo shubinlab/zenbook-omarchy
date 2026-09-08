@@ -140,6 +140,9 @@ the official Bitwarden clients. Edit vault items in the Bitwarden web vault. The
 user configuration is backed up before the profile changes pinentry, a
 10-minute lock timeout and hourly sync.
 
+Normal installs use a compact progress view. For troubleshooting, request the
+full component trace explicitly with `OMARCHY_VERBOSE=1`.
+
 After the first GitHub installation, use the short local launcher instead of
 retyping the raw URL:
 

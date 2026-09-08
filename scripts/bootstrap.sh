@@ -36,6 +36,7 @@ BITWARDEN_SOURCE=""
 BITWARDEN_DOCTOR=""
 BITWARDEN_ONBOARD=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
+BITWARDEN_ONBOARDING_STATE="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles/bitwarden/onboarding-complete"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
 ADGUARD_INSTALLER_URL="https://raw.githubusercontent.com/AdguardTeam/AdGuardCLI/release/install.sh"
@@ -55,6 +56,7 @@ BITWARDEN_OPTION_SET=0
 STAGE=all
 MANIFEST=0
 NON_INTERACTIVE=0
+CURRENT_STAGE='startup'
 
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
   C_CYAN=$'\033[36m'
@@ -244,8 +246,12 @@ install_package_set() {
     return 0
   fi
   need_command omarchy-pkg-add
-  printf 'bootstrap: installing/verifying %d %s package entries for %s\n' \
-    "${#packages[@]}" "$label" "$PROFILE_ID"
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    printf 'bootstrap: %s runtime ready (%d packages)\n' "$label" "${#packages[@]}"
+  else
+    printf 'bootstrap: installing/verifying %d %s package entries for %s\n' \
+      "${#packages[@]}" "$label" "$PROFILE_ID"
+  fi
   omarchy-pkg-add "${packages[@]}"
 }
 
@@ -473,7 +479,100 @@ configure_selected_components() {
   fi
 }
 
+compact_check() {
+  local label="$1"
+  shift
+  local output
+  if output="$("$@" 2>&1)"; then
+    if grep -q '^WARN' <<<"${output}"; then
+      printf '  ! %s\n' "${label}"
+      grep '^WARN' <<<"${output}" | head -n 2 | sed 's/^/    /'
+      COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
+    else
+      printf '  ✓ %s\n' "${label}"
+    fi
+  else
+    printf '  ✗ %s\n' "${label}"
+    grep -E '^(FAIL|WARN|result=)' <<<"${output}" | head -n 4 | sed 's/^/    /'
+    COMPACT_FAILURES=$((COMPACT_FAILURES + 1))
+  fi
+}
+
+run_doctor_compact() {
+  local failures=0 version status errors
+  COMPACT_FAILURES=0
+  COMPACT_WARNINGS=0
+  printf '\n%sVerification%s (read-only)\n' "$C_CYAN" "$C_RESET"
+  printf '  Profile: %s\n' "$PROFILE_ID"
+
+  if command -v omarchy >/dev/null 2>&1; then
+    version="$(omarchy version 2>/dev/null || true)"
+    printf '  ✓ Omarchy%s\n' "${version:+ ${version}}"
+  else
+    printf '  ✗ Omarchy command is missing\n'
+    COMPACT_FAILURES=$((COMPACT_FAILURES + 1))
+  fi
+  if ((DO_VOICE)) && [[ -n "$VOICE_SOURCE" ]]; then
+    compact_check 'Voice / NPU' "$VOICE_SOURCE" --check
+  fi
+  if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]] && command -v terminal-doctor >/dev/null 2>&1; then
+    compact_check 'Terminal' terminal-doctor
+  fi
+  if ((DO_BITWARDEN)) && [[ -n "$BITWARDEN_DOCTOR" ]]; then
+    if [[ -e "${HOME}/.local/bin/omarchy-bitwarden" ||
+          -e "${XDG_CONFIG_HOME:-${HOME}/.config}/rbw/config.json" ]]; then
+      compact_check 'Bitwarden' "$BITWARDEN_DOCTOR"
+    else
+      printf '  ! Bitwarden (setup deferred)\n'
+      COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
+    fi
+  fi
+  if command -v hyprctl >/dev/null 2>&1; then
+    errors="$(hyprctl configerrors 2>/dev/null || true)"
+    if [[ -z "$errors" ]]; then
+      printf '  ✓ Hyprland configuration\n'
+    else
+      printf '  ✗ Hyprland configuration\n'
+      printf '%s\n' "$errors" | head -n 4 | sed 's/^/    /'
+      COMPACT_FAILURES=$((COMPACT_FAILURES + 1))
+    fi
+  else
+    printf '  ! Hyprland check unavailable\n'
+    COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
+  fi
+  if ((DO_VPN)); then
+    if find_vpn_cli; then
+      status="$($VPN_CLI status 2>/dev/null || true)"
+      if grep -Eiq '(^|[^[:alpha:]])connected([^[:alpha:]]|$)|protected' <<<"$status"; then
+        printf '  ✓ AdGuard VPN connected\n'
+      else
+        printf '  ! AdGuard VPN is not connected\n'
+        COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
+      fi
+    else
+      printf '  ! AdGuard VPN CLI is not installed\n'
+      COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
+    fi
+  fi
+
+  failures=$COMPACT_FAILURES
+  if ((failures == 0)); then
+    printf '\n%s✓ Complete%s' "$C_GREEN" "$C_RESET"
+    if ((COMPACT_WARNINGS)); then
+      printf ' (%d warning(s))' "$COMPACT_WARNINGS"
+    fi
+    printf '\n'
+  else
+    printf '\n%s✗ Failed%s (%d check(s))\n' "$C_RED" "$C_RESET" "$failures"
+  fi
+  return "$failures"
+}
+
 run_doctor() {
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    run_doctor_compact
+    return
+  fi
   local failures=0 version status errors
   printf '\n%sOmarchy profile doctor%s (read-only)\n' "$C_CYAN" "$C_RESET"
   printf 'Profile: %s\n' "$PROFILE_ID"
@@ -604,6 +703,9 @@ if ((DO_CHECK)); then
   check_profile
   exit 0
 fi
+if [[ "${OMARCHY_VERBOSE:-0}" != 1 && ( "$STAGE" == all || "$STAGE" == selected ) ]]; then
+  export OMARCHY_COMPACT_OUTPUT=1
+fi
 apply_terminal() {
   if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
     "$TERMINAL_SOURCE" --apply
@@ -661,11 +763,24 @@ terminal_network_needed() {
 }
 
 stage_note() {
+  CURRENT_STAGE="$2"
   printf '\n[%s] %s\n' "$1" "$2"
 }
 
+on_error() {
+  local exit_code=$?
+  printf '\n%s✗ Failed%s during %s\n' "$C_RED" "$C_RESET" "$CURRENT_STAGE" >&2
+  exit "$exit_code"
+}
+
+trap on_error ERR
+
 ask_bitwarden_install() {
   ((NON_INTERACTIVE == 0)) || return 1
+  if [[ -e "$BITWARDEN_ONBOARDING_STATE" ]]; then
+    printf 'bootstrap: Bitwarden onboarding already complete; continuing without a prompt\n'
+    return 0
+  fi
   [[ -r /dev/tty ]] || return 1
   printf '\nBitwarden: install the native Wayland launcher and start the guided setup now? [y/N] '
   local answer
@@ -681,27 +796,29 @@ run_stage() {
     all)
       # Keep the least surprising clean-install order: network first, then
       # simple tested user settings, then package/model/service work.
-      stage_note '1/7' 'Network: AdGuard VPN'
+      stage_note 'network' 'AdGuard VPN'
       if ((DO_VPN)); then connect_vpn; else printf 'bootstrap: VPN disabled\n'; fi
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
-      stage_note '2/7' 'Display: tested user settings'
+      stage_note 'display' 'Display settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/7' 'Runtime dependencies: selected components'
-      if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
-      stage_note '4/7' 'Voice: native Voxtype + NPU inference'
+      if ((${#PACKAGE_SOURCES[@]})); then
+        stage_note 'packages' 'Base runtime dependencies'
+        install_packages
+      fi
+      stage_note 'voice' 'Voice / NPU transcription'
       if ((DO_VOICE)); then install_voice_packages; install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
-      stage_note '5/7' 'Terminal: user settings'
+      stage_note 'terminal' 'Terminal enhancements'
       apply_terminal
       if ((DO_SYSTEM_UPDATE)); then
-        stage_note '6/8' 'System: supported Omarchy update'
+        stage_note 'update' 'Omarchy system update'
         apply_update
-        stage_note '7/8' 'Bitwarden: optional native Wayland setup'
+        stage_note 'bitwarden' 'Bitwarden passwords'
         if ((DO_BITWARDEN)) && ask_bitwarden_install; then install_bitwarden; else DO_BITWARDEN=0; printf 'bootstrap: Bitwarden setup deferred\n'; fi
-        stage_note '8/8' 'Doctor: verify the installed profile'
+        stage_note 'verify' 'Verification'
       else
-        stage_note '6/7' 'Bitwarden: optional native Wayland setup'
+        stage_note 'bitwarden' 'Bitwarden passwords'
         if ((DO_BITWARDEN)) && ask_bitwarden_install; then install_bitwarden; else DO_BITWARDEN=0; printf 'bootstrap: Bitwarden setup deferred\n'; fi
-        stage_note '7/7' 'Doctor: verify the installed profile'
+        stage_note 'verify' 'Verification'
       fi
       run_doctor
       ;;
@@ -717,12 +834,14 @@ run_stage() {
       backup_and_install_monitor
       ;;
     packages)
-      stage_note '1/1' 'Runtime dependencies: profile packages'
+      stage_note 'packages' 'Base runtime dependencies'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
       if ((${#PACKAGE_SOURCES[@]})); then
         ensure_vpn_for_network_stage
+        install_packages
+      else
+        printf 'bootstrap: no standalone profile packages for this profile\n'
       fi
-      install_packages
       ;;
     bitwarden)
       stage_note '1/1' 'Bitwarden: native Wayland launcher'
@@ -770,27 +889,29 @@ run_stage() {
       if ((DO_VPN)) && {
         ((DO_PACKAGES)) || ((DO_DIAGNOSTICS)) || selected_component update
       }; then selected_network=1; fi
-      stage_note '1/7' 'Network: AdGuard VPN'
+      stage_note 'network' 'AdGuard VPN'
       if ((selected_network)); then
         connect_vpn
       else
         printf 'bootstrap: VPN not selected or not required\n'
       fi
-      stage_note '2/7' 'Display: tested user settings'
+      stage_note 'display' 'Display settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/7' 'Runtime dependencies: selected components'
-      if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
-      stage_note '4/7' 'Voice: native Voxtype + NPU inference'
+      if ((${#PACKAGE_SOURCES[@]})); then
+        stage_note 'packages' 'Base runtime dependencies'
+        install_packages
+      fi
+      stage_note 'voice' 'Voice / NPU transcription'
       if ((DO_VOICE)); then install_voice_packages; install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
-      stage_note '5/7' 'Terminal: user settings'
+      stage_note 'terminal' 'Terminal enhancements'
       if ((DO_TERMINAL)); then apply_terminal; else printf 'bootstrap: terminal stage skipped\n'; fi
-      stage_note '6/7' 'Bitwarden: native Wayland setup'
+      stage_note 'bitwarden' 'Bitwarden passwords'
       if ((DO_BITWARDEN)); then install_bitwarden; else printf 'bootstrap: Bitwarden stage skipped\n'; fi
       if ((DO_DIAGNOSTICS)); then
-        stage_note '7/8' 'Optional diagnostics: package tools'
+        stage_note 'diagnostics' 'Optional hardware diagnostics'
         install_diagnostics
       else
-        stage_note '7/7' 'Doctor: verify the selected components'
+        stage_note 'verify' 'Verification'
       fi
       run_doctor
       ;;
@@ -805,4 +926,8 @@ run_stage() {
 
 printf '\n%sOmarchy Zenbook setup%s\nProfile: %s\n' "$C_CYAN" "$C_RESET" "$PROFILE_LABEL"
 run_stage
-printf '\n%sDONE%s profile=%s stage=%s\n' "$C_GREEN" "$C_RESET" "$PROFILE_ID" "$STAGE"
+if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+  :
+else
+  printf '\n%sDONE%s profile=%s stage=%s\n' "$C_GREEN" "$C_RESET" "$PROFILE_ID" "$STAGE"
+fi

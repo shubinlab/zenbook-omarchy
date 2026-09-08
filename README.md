@@ -89,6 +89,9 @@ zenbook-omarchy voice
 zenbook-omarchy bitwarden
 zenbook-omarchy doctor
 
+# Optional detailed trace when troubleshooting
+OMARCHY_VERBOSE=1 zenbook-omarchy
+
 # One stage directly from GitHub is still available on a fresh system
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
 

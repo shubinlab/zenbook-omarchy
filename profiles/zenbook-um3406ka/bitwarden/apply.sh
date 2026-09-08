@@ -61,6 +61,9 @@ check_repository() {
     die 'OMARCHY_BITWARDEN_FORCE_CHROMIUM_EXTENSION must be 0 or 1'
   [[ ${PINENTRY} == /usr/bin/pinentry-gnome3 ]] || die 'pinentry path is not the expected native default'
   [[ ${BITWARDEN_EXTENSION_ID} =~ ^[a-z]{32}$ ]] || die 'Bitwarden extension ID is invalid'
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    return 0
+  fi
   printf 'bitwarden check: PASS (native Wayland assets valid; no system changes made)\n'
 }
 
@@ -86,7 +89,9 @@ write_chromium_policy() {
 
 install_chromium_policy() {
   if [[ ${FORCE_CHROMIUM_EXTENSION} != 1 ]]; then
-    printf 'bitwarden-omarchy: Chromium extension auto-install is opt-in; manual Web Store setup remains available\n'
+    if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" != 1 ]]; then
+      printf 'bitwarden-omarchy: Chromium extension auto-install is opt-in; manual Web Store setup remains available\n'
+    fi
     return 0
   fi
   chromium_is_default || {
@@ -254,8 +259,12 @@ apply_profile() {
     errors="$(hyprctl configerrors 2>/dev/null || true)"
     [[ -z ${errors} ]] || die "Hyprland configuration errors after Bitwarden binding update: ${errors}"
   fi
-  printf 'bitwarden-omarchy: applied native Wayland integration (backup: %s)\n' \
-    "${BACKUP_ID:-none; no files needed changing}"
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    printf 'bitwarden-omarchy: ready (native Wayland launcher and safe clipboard)\n'
+  else
+    printf 'bitwarden-omarchy: applied native Wayland integration (backup: %s)\n' \
+      "${BACKUP_ID:-none; no files needed changing}"
+  fi
 }
 
 remove_chromium_policy() {

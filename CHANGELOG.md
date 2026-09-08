@@ -21,6 +21,8 @@
 - Removed the confusing user-facing Packages choice: runtime packages are now
   internal dependencies of the selected components, and the package-only stage
   no longer installs voice packages accidentally.
+- Added a compact installer progress view with a single final verification
+  summary, warning/error context and an explicit `OMARCHY_VERBOSE=1` trace mode.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

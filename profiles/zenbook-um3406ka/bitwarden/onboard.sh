@@ -42,7 +42,9 @@ done
 check_repository() {
   [[ ${CHROME_STORE_URL} == https://chromewebstore.google.com/* ]] || die 'Chrome extension URL is invalid'
   [[ ${FIREFOX_STORE_URL} == https://addons.mozilla.org/* ]] || die 'Firefox extension URL is invalid'
-  printf 'bitwarden onboarding check: PASS (no system changes made)\n'
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" != 1 ]]; then
+    printf 'bitwarden onboarding check: PASS (no system changes made)\n'
+  fi
 }
 
 print_next_actions() {

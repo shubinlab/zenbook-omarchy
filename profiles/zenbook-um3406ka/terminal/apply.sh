@@ -59,7 +59,9 @@ check_repository() {
   [[ ${BLE_URL} == https://github.com/akinomyoga/ble.sh/releases/download/nightly/* ]] ||
     die 'ble.sh source is not pinned to the official GitHub release path'
   [[ ${BLE_SHA256} =~ ^[0-9a-f]{64}$ ]] || die 'ble.sh SHA-256 is invalid'
-  printf 'terminal check: PASS (repository assets valid; no system changes made)\n'
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" != 1 ]]; then
+    printf 'terminal check: PASS (repository assets valid; no system changes made)\n'
+  fi
 }
 
 backup_target() {
@@ -102,7 +104,9 @@ install_if_changed() {
 
 install_ble() {
   if [[ -r ${BLE_DIR}/ble.sh ]]; then
-    printf 'terminal-omarchy: keeping existing ble.sh at %s\n' "${BLE_DIR}"
+    if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" != 1 ]]; then
+      printf 'terminal-omarchy: keeping existing ble.sh at %s\n' "${BLE_DIR}"
+    fi
     return 0
   fi
   backup_once
@@ -242,7 +246,11 @@ apply_profile() {
     errors="$(hyprctl configerrors 2>/dev/null || true)"
     [[ -z ${errors} ]] || die "Hyprland configuration errors after terminal binding update: ${errors}"
   fi
-  printf 'terminal-omarchy: applied user-scoped terminal profile\n'
+  if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+    printf 'terminal-omarchy: ready (Foot, Sixel, fzf and shell integration)\n'
+  else
+    printf 'terminal-omarchy: applied user-scoped terminal profile\n'
+  fi
 }
 
 select_latest_backup() {

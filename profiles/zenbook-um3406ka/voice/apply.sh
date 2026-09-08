@@ -428,8 +428,12 @@ apply_profile() {
   ensure_vad_model
 
   if (check_state >/dev/null 2>&1); then
-    printf 'voice-omarchy: native profile already applied\n'
-    check_state
+    if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" == 1 ]]; then
+      printf 'voice-omarchy: profile already ready (Whisper FLM on NPU, VAD and native feedback)\n'
+    else
+      printf 'voice-omarchy: native profile already applied\n'
+      check_state
+    fi
     return 0
   fi
 
@@ -524,6 +528,11 @@ rollback_profile() {
 
 case "${ACTION}" in
   check) check_state ;;
-  apply) apply_profile; check_state ;;
+  apply)
+    apply_profile
+    if [[ "${OMARCHY_COMPACT_OUTPUT:-0}" != 1 ]]; then
+      check_state
+    fi
+    ;;
   rollback) rollback_profile; check_native_bindings ;;
 esac

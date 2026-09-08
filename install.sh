@@ -65,8 +65,9 @@ if [[ -d "$repo_dir/.git" ]]; then
   if ((manifest_only)); then
     git -C "$repo_dir" pull --ff-only --quiet
   else
-    printf 'omarchy-profiles: updating %s\n' "$repo_dir"
-    git -C "$repo_dir" pull --ff-only
+    printf 'omarchy-profiles: checking updates... '
+    git -C "$repo_dir" pull --ff-only --quiet
+    printf '%s\n' 'up to date'
   fi
 else
   if ((manifest_only)); then
@@ -78,7 +79,12 @@ else
 fi
 
 mkdir -p "$HOME/.local/bin"
-install -m0755 "$repo_dir/scripts/zenbook-omarchy" "$HOME/.local/bin/zenbook-omarchy"
-printf '%s\n' 'omarchy-profiles: short launcher installed as zenbook-omarchy'
+if [[ -e "$HOME/.local/bin/zenbook-omarchy" ]] &&
+   cmp -s "$repo_dir/scripts/zenbook-omarchy" "$HOME/.local/bin/zenbook-omarchy"; then
+  printf '%s\n' 'omarchy-profiles: launcher ready (zenbook-omarchy)'
+else
+  install -m0755 "$repo_dir/scripts/zenbook-omarchy" "$HOME/.local/bin/zenbook-omarchy"
+  printf '%s\n' 'omarchy-profiles: launcher installed (zenbook-omarchy)'
+fi
 
 exec "$repo_dir/scripts/bootstrap.sh" --profile auto "$@"
