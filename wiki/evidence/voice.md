@@ -70,6 +70,20 @@ configured system directly:
 ./profiles/zenbook-um3406ka/voice/doctor.sh
 ```
 
+After verifying the remote/NPU route, the optional cleanup can reclaim old
+native model files. It is deliberately not part of clean install because the
+native Omarchy installer owns its stock model artifact:
+
+```bash
+./profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh --check
+./profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh --apply
+```
+
+The script requires remote Whisper mode, no secondary model and disabled VAD;
+it moves only `ggml-base.bin`, `ggml-base.en.bin` and
+`ggml-silero-vad.bin` into a timestamped user-state backup. It never touches
+the active `large-v3-turbo` artifact or Lemonade's NPU model.
+
 Restore the latest saved voice state with:
 
 ```bash

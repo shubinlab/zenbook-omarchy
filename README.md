@@ -95,6 +95,7 @@ From an existing checkout:
 ./scripts/install-display.sh --profile zenbook-um3406ka
 ./scripts/install-packages.sh --profile zenbook-um3406ka
 ./scripts/install-voice.sh --profile zenbook-um3406ka
+./profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh --check
 ./scripts/install-terminal.sh --profile zenbook-um3406ka
 ./scripts/install-update.sh --profile zenbook-um3406ka
 ./scripts/install-diagnostics.sh --profile zenbook-um3406ka
