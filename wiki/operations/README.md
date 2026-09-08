@@ -29,6 +29,7 @@
 | Connect VPN only | `./scripts/install-vpn.sh --profile zenbook-um3406ka` |
 | Restore display only | `./scripts/install-display.sh --profile zenbook-um3406ka` |
 | Verify required package set | `./scripts/install-packages.sh --profile zenbook-um3406ka` |
+| Install native Wayland Bitwarden | `./scripts/install-bitwarden.sh --profile zenbook-um3406ka` |
 | Install optional diagnostics | `./scripts/install-diagnostics.sh --profile zenbook-um3406ka` |
 | Repair/check native voice | `./scripts/install-voice.sh --profile zenbook-um3406ka` or `voice/doctor.sh` |
 | Repair an older voice setup | `./scripts/repair-voice-legacy.sh --check` then `--apply` |
@@ -45,6 +46,7 @@
 - Lemonade FLM model readiness on `device=npu` and telemetry state;
 - physical PipeWire microphone and available output sink;
 - terminal, Foot Sixel, ble.sh/fzf and managed shortcut;
+- native Bitwarden packages, launcher, rbw policy and managed password hotkey;
 - Hyprland configuration errors;
 - AdGuard VPN status when the selected profile enables it.
 

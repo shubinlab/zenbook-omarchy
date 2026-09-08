@@ -18,7 +18,7 @@ The installer clones or updates the repository, selects the profile from DMI
 and runs the supported stages in this order:
 
 ```text
-VPN → display → NPU packages → native Voxtype → Lemonade model → terminal → doctor
+VPN → display → NPU packages → native Bitwarden → native Voxtype → Lemonade model → terminal → doctor
 ```
 
 On the first run, the only expected questions are the official AdGuard login
@@ -53,6 +53,7 @@ Use the same raw entry point when you want one action only:
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage vpn
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage display
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage packages
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage bitwarden
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage diagnostics
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage terminal
@@ -65,6 +66,7 @@ From an existing checkout, the equivalent short commands are:
 ./scripts/install-vpn.sh
 ./scripts/install-display.sh
 ./scripts/install-packages.sh
+./scripts/install-bitwarden.sh
 ./scripts/install-diagnostics.sh
 ./scripts/install-voice.sh
 ./scripts/install-terminal.sh
@@ -90,6 +92,7 @@ an incomplete installation.
 | `--non-interactive` | Stop before VPN login or first-run Voxtype confirmation |
 | `--no-vpn` | Do not connect AdGuard VPN for this run |
 | `--no-voice` | Skip native Voxtype and its Zenbook policy |
+| `--no-bitwarden` | Skip native Wayland Bitwarden setup |
 | `--no-terminal` | Skip terminal settings |
 | `--no-monitor` | Skip the tested display override |
 | `--profile ID` | Select a profile instead of DMI detection |
@@ -97,8 +100,9 @@ an incomplete installation.
 ## Profile behavior
 
 `zenbook-um3406ka` is selected when DMI reports `UM3406KA`. It enables the
-official AdGuard VPN CLI, tested display configuration, the two-package local
-Lemonade/FLM NPU voice backend, native Voxtype policy and terminal extension.
+official AdGuard VPN CLI, tested display configuration, native Wayland Bitwarden
+launcher, the two-package local Lemonade/FLM NPU voice backend, native Voxtype
+policy and terminal extension.
 The NPU package set is voice-scoped: `--no-voice` skips both native Voxtype and
 Lemonade/FLM installation.
 Other hosts use `generic`, which makes no automatic changes. Run the diagnostic
@@ -107,6 +111,27 @@ stage explicitly only when that is intended.
 The installer never edits `/usr/share/omarchy`. It uses native Omarchy commands,
 keeps user changes under `~/.config`, and stores recoverable backups under
 `~/.local/state/omarchy-profiles/`.
+
+## Native Bitwarden
+
+The Zenbook profile installs only the Wayland path: `rbw`, `rofi-rbw`, `fuzzel`,
+`wl-clipboard`, `wtype` and `pinentry`. It does not install the Electron
+Bitwarden desktop client or X11 typing/clipboard tools. The profile creates
+`~/.local/bin/omarchy-bitwarden` and replaces the default password-manager
+binding `Super + Shift + /` with that launcher.
+
+The first-time `rbw register`/login still requires the user to enter their
+Bitwarden credentials and API key; no credential is accepted by the installer
+or stored in this repository. Browser autofill and Android autofill remain the
+responsibility of the official Bitwarden clients. Edit vault items in the
+Bitwarden web vault. The user configuration is backed up before the profile
+changes pinentry, a 10-minute lock timeout and hourly sync.
+
+Run the read-only live check with:
+
+```bash
+./scripts/doctor.sh --profile zenbook-um3406ka
+```
 
 ## Full update policy
 

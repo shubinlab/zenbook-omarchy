@@ -33,11 +33,12 @@ flowchart LR
   A[Fresh Omarchy 4] --> B[VPN]
   B --> C[Simple display override]
   C --> D[Profile packages]
-  D --> E[Native Voxtype]
-  E --> F[Terminal settings]
-  F --> G[doctor]
-  G --> H[Backups and rollback]
-  G -.-> I[optional: diagnostics or update]
+  D --> E[Native Bitwarden]
+  E --> F[Native Voxtype]
+  F --> G[Terminal settings]
+  G --> H[doctor]
+  H --> I[Backups and rollback]
+  H -.-> J[optional: diagnostics or update]
 ```
 
 The important boundary is simple:
