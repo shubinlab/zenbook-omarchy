@@ -4,5 +4,4 @@ rbw
 rofi-rbw
 fuzzel
 wl-clipboard
-wtype
 pinentry

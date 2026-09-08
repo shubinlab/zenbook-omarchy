@@ -116,29 +116,29 @@ keeps user changes under `~/.config`, and stores recoverable backups under
 ## Native Bitwarden
 
 The Zenbook profile installs only the Wayland path: `rbw`, `rofi-rbw`, `fuzzel`,
-`wl-clipboard`, `wtype` and `pinentry`. It does not install the Electron
+`wl-clipboard` and `pinentry`. Native Omarchy Voxtype owns `wtype`. It does not install the Electron
 Bitwarden desktop client or X11 typing/clipboard tools. The profile creates
 `~/.local/bin/omarchy-bitwarden` and replaces the default password-manager
 binding `Super + Shift + /` with that launcher.
 
-When Chromium is the default browser and Bitwarden is not already present, the
-apply step creates `/etc/chromium/policies/managed/zenbook-omarchy-bitwarden.json`
-with `sudo`. Chromium then installs the official Web Store extension without a
-store click. This is a mandatory local browser policy, so the extension remains
+The default path keeps Chromium user-managed: onboarding opens the official Web
+Store and asks you to confirm the extension is installed. A machine-wide
+Chromium force-install policy is deliberately opt-in via
+`OMARCHY_BITWARDEN_FORCE_CHROMIUM_EXTENSION=1`; it requires `sudo` and remains
 managed until `bitwarden/apply.sh --rollback` removes the repository's policy.
-An existing Bitwarden installation is detected and left user-managed. Other
-default browsers use the one-click store fallback.
+An existing Bitwarden installation is detected and left user-managed.
 
 The full restore asks before entering this stage. If accepted, the guided
 onboarding asks for the Bitwarden email, runs the first-time `rbw register`,
 login and sync, opens the official browser-extension store, waits for the user
 to install and log in to the extension, and finishes with a hotkey test. The
-first-time `rbw register` still requires the user to enter their API key; no
-credential is accepted by the installer or stored in this repository. Browser
-autofill and Android autofill remain the responsibility of the official
-Bitwarden clients. Edit vault items in the Bitwarden web vault. The user
-configuration is backed up before the profile changes pinentry, a 10-minute
-lock timeout and hourly sync.
+onboarding refuses to mark completion until the extension installation is
+confirmed. The first-time `rbw register` still requires the user to enter
+their API key; no credential is accepted by the installer or stored in this
+repository. Browser autofill and Android autofill remain the responsibility of
+the official Bitwarden clients. Edit vault items in the Bitwarden web vault. The
+user configuration is backed up before the profile changes pinentry, a
+10-minute lock timeout and hourly sync.
 
 Run the read-only live check with:
 
@@ -150,8 +150,8 @@ Run the read-only live check with:
 
 The clean restore does not update the operating system automatically. Use
 `--stage update` only when you explicitly want Omarchy to own the snapshot,
-migrations and package update. Apply the profile again after an update if a
-stock migration changes a user-facing default.
+migrations and package update. Run the profile again after the update so
+user-owned overrides are checked against the new Omarchy defaults.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update

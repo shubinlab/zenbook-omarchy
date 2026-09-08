@@ -55,9 +55,13 @@ else
   warning 'rbw configuration permissions are not 0600'
 fi
 
-if grep -Fq -- 'zenbook-omarchy Bitwarden (managed)' "${BINDINGS}" 2>/dev/null &&
-   grep -Fq -- 'omarchy-bitwarden' "${BINDINGS}" 2>/dev/null; then
+managed_binding_count="$(grep -Fc -- 'o.bind("SUPER + SHIFT + SLASH", "Passwords", "omarchy-bitwarden")' "${BINDINGS}" 2>/dev/null || true)"
+legacy_binding_count="$(grep -Fc -- 'o.bind("SUPER + SHIFT + SLASH", "Passwords", "rofi-rbw --selector fuzzel --clipboarder wl-copy --typer wtype")' "${BINDINGS}" 2>/dev/null || true)"
+if [[ ${managed_binding_count} -eq 1 && ${legacy_binding_count} -eq 0 ]] &&
+   grep -Fq -- 'zenbook-omarchy Bitwarden (managed)' "${BINDINGS}" 2>/dev/null; then
   ok 'Hyprland password hotkey is managed by the native launcher'
+elif [[ ${legacy_binding_count} -gt 0 ]]; then
+  bad 'older unmanaged Bitwarden binding is still present; run the Bitwarden stage again'
 else
   bad 'Hyprland password hotkey is not configured'
 fi

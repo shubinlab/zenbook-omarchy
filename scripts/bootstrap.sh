@@ -79,7 +79,7 @@ Options:
   --no-vpn              Do not use VPN, even when the profile enables it.
   --vpn-location NAME   Use an AdGuard location or ISO code for this run.
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
-  --update-system       Run `omarchy update` after applying the profile (opt-in).
+  --update-system       Run `omarchy update` as a separate explicit stage (opt-in).
   --stage NAME          Run one stage: all, vpn, display, packages, bitwarden,
                         voice, diagnostics, terminal, update or doctor.
                         Default: all.
@@ -535,6 +535,9 @@ detect_profile
 if ((DO_VOICE && !DO_PACKAGES)); then
   die 'voice requires the package stage; remove --no-packages or add --no-voice'
 fi
+if ((DO_SYSTEM_UPDATE)) && [[ "$STAGE" == all ]]; then
+  die '--update-system must be run separately with --stage update; apply the profile again after the Omarchy update'
+fi
 if ((DO_BITWARDEN && !DO_PACKAGES)); then
   die 'Bitwarden requires the package stage; remove --no-packages or add --no-bitwarden'
 fi
@@ -582,6 +585,25 @@ ensure_vpn_for_network_stage() {
   if ((DO_VPN)); then
     connect_vpn
   fi
+}
+
+voice_network_needed() {
+  command -v pacman >/dev/null 2>&1 || return 0
+  pacman -Q lemonade-server fastflowlm >/dev/null 2>&1 || return 0
+  [[ -f "${HOME}/.config/voxtype/config.toml" ]] || return 0
+  [[ -f "${HOME}/.local/share/voxtype/models/ggml-silero-vad.bin" ]] || return 0
+  command -v curl >/dev/null 2>&1 || return 0
+  curl --fail --silent --show-error --max-time 5 \
+    http://127.0.0.1:13305/api/v1/health |
+    jq -e '.all_models_loaded[]? | select(.model_name == "whisper-v3-turbo-FLM" and .device == "npu" and .backend_health == "ready" and .loaded == true)' \
+    >/dev/null 2>&1 || return 0
+  return 1
+}
+
+terminal_network_needed() {
+  command -v chafa >/dev/null 2>&1 || return 0
+  [[ -r "${HOME}/.local/share/blesh/ble.sh" ]] || return 0
+  return 1
 }
 
 stage_note() {
@@ -644,7 +666,6 @@ run_stage() {
       stage_note '1/1' 'Packages: profile and native runtimes'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
       if ((${#PACKAGE_SOURCES[@]})) ||
-         { ((DO_BITWARDEN)) && ((${#BITWARDEN_PACKAGE_SOURCES[@]})); } ||
          { ((DO_VOICE)) && ((${#VOICE_PACKAGE_SOURCES[@]})); }; then
         ensure_vpn_for_network_stage
       fi
@@ -665,7 +686,11 @@ run_stage() {
       stage_note '1/1' 'Voice: native Voxtype + NPU inference'
       ((DO_VOICE)) || die 'voice stage is disabled by --no-voice or this profile'
       ((DO_PACKAGES)) || die 'voice requires packages; remove --no-packages'
-      ensure_vpn_for_network_stage
+      if voice_network_needed; then
+        ensure_vpn_for_network_stage
+      else
+        printf 'bootstrap: local NPU voice prerequisites already ready; VPN not required\n'
+      fi
       install_voice_packages
       install_voice
       ;;
@@ -673,7 +698,11 @@ run_stage() {
       stage_note '1/1' 'Terminal: user settings'
       [[ -n "$TERMINAL_SOURCE" ]] || die "profile $PROFILE_ID has no terminal stage"
       ((DO_TERMINAL)) || die 'terminal stage is disabled by --no-terminal'
-      ensure_vpn_for_network_stage
+      if terminal_network_needed; then
+        ensure_vpn_for_network_stage
+      else
+        printf 'bootstrap: local terminal prerequisites already ready; VPN not required\n'
+      fi
       apply_terminal
       ;;
     update)

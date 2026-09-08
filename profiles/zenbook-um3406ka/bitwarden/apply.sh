@@ -14,6 +14,7 @@ RBW_CONFIG="${CONFIG_HOME}/rbw/config.json"
 PINENTRY="/usr/bin/pinentry-gnome3"
 LOCK_TIMEOUT="${OMARCHY_BITWARDEN_LOCK_TIMEOUT:-600}"
 SYNC_INTERVAL="${OMARCHY_BITWARDEN_SYNC_INTERVAL:-3600}"
+FORCE_CHROMIUM_EXTENSION="${OMARCHY_BITWARDEN_FORCE_CHROMIUM_EXTENSION:-0}"
 MARKER="zenbook-omarchy Bitwarden (managed)"
 CHROMIUM_POLICY_DIR="/etc/chromium/policies/managed"
 CHROMIUM_POLICY_FILE="${CHROMIUM_POLICY_DIR}/zenbook-omarchy-bitwarden.json"
@@ -22,6 +23,7 @@ BITWARDEN_EXTENSION_UPDATE_URL="https://clients2.google.com/service/update2/crx"
 
 ACTION=check
 BACKUP_ID=""
+BINDINGS_CHANGED=0
 
 die() { printf 'bitwarden-omarchy: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"; }
@@ -55,6 +57,8 @@ check_repository() {
   bash -n "${SCRIPT_DIR}/launcher"
   [[ ${LOCK_TIMEOUT} =~ ^[0-9]+$ ]] || die 'lock timeout must be an integer'
   [[ ${SYNC_INTERVAL} =~ ^[0-9]+$ ]] || die 'sync interval must be an integer'
+  [[ ${FORCE_CHROMIUM_EXTENSION} == 0 || ${FORCE_CHROMIUM_EXTENSION} == 1 ]] ||
+    die 'OMARCHY_BITWARDEN_FORCE_CHROMIUM_EXTENSION must be 0 or 1'
   [[ ${PINENTRY} == /usr/bin/pinentry-gnome3 ]] || die 'pinentry path is not the expected native default'
   [[ ${BITWARDEN_EXTENSION_ID} =~ ^[a-z]{32}$ ]] || die 'Bitwarden extension ID is invalid'
   printf 'bitwarden check: PASS (native Wayland assets valid; no system changes made)\n'
@@ -81,6 +85,10 @@ write_chromium_policy() {
 }
 
 install_chromium_policy() {
+  if [[ ${FORCE_CHROMIUM_EXTENSION} != 1 ]]; then
+    printf 'bitwarden-omarchy: Chromium extension auto-install is opt-in; manual Web Store setup remains available\n'
+    return 0
+  fi
   chromium_is_default || {
     printf 'bitwarden-omarchy: Chromium is not the default browser; automatic Chromium extension install skipped\n'
     return 0
@@ -130,6 +138,27 @@ backup_once() {
   backup_target "${LAUNCHER}" launcher
 }
 
+legacy_binding_present() {
+  [[ -r ${BINDINGS} ]] || return 1
+  grep -Fqx -- '-- Native Wayland Bitwarden launcher. The Omarchy default password binding' "${BINDINGS}" &&
+    grep -Fqx -- '-- points to 1Password; keep the key but use rbw + fuzzel instead.' "${BINDINGS}" &&
+    grep -Fqx -- 'hl.unbind("SUPER + SHIFT + SLASH")' "${BINDINGS}" &&
+    grep -Fqx -- 'o.bind("SUPER + SHIFT + SLASH", "Passwords", "rofi-rbw --selector fuzzel --clipboarder wl-copy --typer wtype")' "${BINDINGS}"
+}
+
+remove_legacy_binding() {
+  legacy_binding_present || return 0
+  backup_once
+  local temporary
+  temporary="$(mktemp "${BINDINGS}.tmp.XXXXXX")"
+  sed '/^-- Native Wayland Bitwarden launcher\. The Omarchy default password binding$/,/^o\.bind("SUPER + SHIFT + SLASH", "Passwords", "rofi-rbw --selector fuzzel --clipboarder wl-copy --typer wtype")$/d' \
+    "${BINDINGS}" >"${temporary}"
+  install -m0644 "${temporary}" "${BINDINGS}"
+  rm -f -- "${temporary}"
+  BINDINGS_CHANGED=1
+  printf 'bitwarden-omarchy: removed the older unmanaged Bitwarden binding\n'
+}
+
 apply_launcher() {
   if [[ -e ${LAUNCHER} ]] && cmp -s "${SCRIPT_DIR}/launcher" "${LAUNCHER}"; then
     return 0
@@ -158,7 +187,13 @@ apply_rbw_config() {
 
 apply_binding() {
   mkdir -p "$(dirname -- "${BINDINGS}")"
-  grep -Fq -- "${MARKER}" "${BINDINGS}" 2>/dev/null && return 0
+  remove_legacy_binding
+  if (( $(grep -Fc -- 'o.bind("SUPER + SHIFT + SLASH", "Passwords", "omarchy-bitwarden")' "$BINDINGS" 2>/dev/null || true) > 1 )); then
+    deduplicate_managed_bindings
+  fi
+  if grep -Fq -- "${MARKER}" "${BINDINGS}" 2>/dev/null; then
+    return 0
+  fi
   backup_once
   cat >>"${BINDINGS}" <<'EOF'
 
@@ -168,6 +203,44 @@ hl.unbind("SUPER + SHIFT + SLASH")
 o.bind("SUPER + SHIFT + SLASH", "Passwords", "omarchy-bitwarden")
 -- <<< zenbook-omarchy Bitwarden (managed) <<<
 EOF
+  BINDINGS_CHANGED=1
+}
+
+remove_managed_binding() {
+  [[ -r ${BINDINGS} ]] || return 0
+  local temporary
+  temporary="$(mktemp "${BINDINGS}.tmp.XXXXXX")"
+  sed '/^-- >>> zenbook-omarchy Bitwarden (managed) >>>$/,/^-- <<< zenbook-omarchy Bitwarden (managed) <<<$/{d;}' \
+    "${BINDINGS}" >"${temporary}"
+  install -m0644 "${temporary}" "${BINDINGS}"
+  rm -f -- "${temporary}"
+  remove_legacy_binding
+}
+
+deduplicate_managed_bindings() {
+  local temporary
+  backup_once
+  temporary="$(mktemp "$BINDINGS.tmp.XXXXXX")"
+  awk '
+    /^-- >>> zenbook-omarchy Bitwarden \(managed\) >>>$/ {
+      block_count += 1
+      if (block_count > 1) {
+        skip = 1
+        next
+      }
+    }
+    /^-- <<< zenbook-omarchy Bitwarden \(managed\) <<</ {
+      if (skip) {
+        skip = 0
+        next
+      }
+    }
+    !skip { print }
+  ' "$BINDINGS" >"$temporary"
+  install -m0644 "$temporary" "$BINDINGS"
+  rm -f -- "$temporary"
+  BINDINGS_CHANGED=1
+  printf 'bitwarden-omarchy: removed duplicate managed bindings\n'
 }
 
 apply_profile() {
@@ -175,6 +248,12 @@ apply_profile() {
   apply_rbw_config
   apply_launcher
   apply_binding
+  if ((BINDINGS_CHANGED)) && command -v hyprctl >/dev/null 2>&1; then
+    hyprctl reload >/dev/null
+    local errors
+    errors="$(hyprctl configerrors 2>/dev/null || true)"
+    [[ -z ${errors} ]] || die "Hyprland configuration errors after Bitwarden binding update: ${errors}"
+  fi
   printf 'bitwarden-omarchy: applied native Wayland integration (backup: %s)\n' \
     "${BACKUP_ID:-none; no files needed changing}"
 }
@@ -216,7 +295,10 @@ rollback_profile() {
   remove_chromium_policy
   if [[ -d ${BACKUP_ROOT} ]]; then
     select_latest_backup
-    restore_target "${BINDINGS}" bindings.lua
+    # Do not restore the whole shared Hyprland file: terminal and other
+    # profile components may have added independent managed blocks since this
+    # backup was created. Remove only Bitwarden-owned blocks.
+    remove_managed_binding
     restore_target "${RBW_CONFIG}" rbw-config.json
     restore_target "${LAUNCHER}" launcher
     printf 'bitwarden-omarchy: restored backup %s\n' "${BACKUP_ID}"

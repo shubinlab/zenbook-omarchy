@@ -80,9 +80,11 @@ else
   bad 'omarchy-default-agent is unavailable'
 fi
 
+chatgpt_binding_count=$(grep -Fc 'o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })' "$HOME/.config/hypr/bindings.lua" 2>/dev/null || true)
 if ! grep -q '^hl\.unbind("SUPER + SHIFT + CTRL + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
    grep -q '^hl\.unbind("SUPER + SHIFT + ALT + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
-   grep -q 'https://chatgpt.com' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
+   [[ ${chatgpt_binding_count} -eq 1 ]] &&
+   grep -Fq 'zenbook-omarchy ChatGPT shortcut (managed)' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
   ok 'Agent default and ChatGPT shortcut overrides are correct'
 else
   bad 'Agent default or ChatGPT shortcut override is incorrect'

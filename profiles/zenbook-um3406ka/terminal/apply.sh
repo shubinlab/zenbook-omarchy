@@ -16,6 +16,7 @@ BLE_SHA256="b376301fd63d60e1659ba74dbc3ec91bd4084d8e09b33d5740ae38c5026fe402"
 
 ACTION=check
 BACKUP_ID=""
+BINDINGS_CHANGED=0
 
 die() { printf 'terminal-omarchy: %s\n' "$*" >&2; exit 1; }
 need() { command -v "$1" >/dev/null 2>&1 || die "required command not found: $1"; }
@@ -191,11 +192,33 @@ hl.unbind("SUPER + SHIFT + ALT + A")
 o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })
 -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<'
   mkdir -p "$(dirname -- "${target}")"
-  if grep -q 'https://chatgpt.com' "${target}" 2>/dev/null; then
-    return 0
+  if grep -Fqx -- '  -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<' "${target}" 2>/dev/null; then
+    backup_once
+    local marker_temporary
+    marker_temporary="$(mktemp "${target}.tmp.XXXXXX")"
+    awk '{ if ($0 == "  -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<") print "-- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<"; else print }' \
+      "${target}" >"${marker_temporary}"
+    install -m0644 "${marker_temporary}" "${target}"
+    rm -f -- "${marker_temporary}"
+    BINDINGS_CHANGED=1
   fi
-  backup_once
-  append_block "${target}" "${block}" 'zenbook-omarchy ChatGPT shortcut (managed)'
+  if grep -Fqx -- '-- Use ChatGPT instead of the preinstalled Grok web app shortcut.' "${target}" 2>/dev/null &&
+     grep -Fqx -- 'hl.unbind("SUPER + SHIFT + ALT + A")' "${target}" &&
+     grep -Fqx -- 'o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })' "${target}"; then
+    backup_once
+    local legacy_temporary
+    legacy_temporary="$(mktemp "${target}.tmp.XXXXXX")"
+    sed '/^-- Use ChatGPT instead of the preinstalled Grok web app shortcut\.$/,/^o\.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https:\/\/chatgpt\.com" })$/d' \
+      "${target}" >"${legacy_temporary}"
+    install -m0644 "${legacy_temporary}" "${target}"
+    rm -f -- "${legacy_temporary}"
+    BINDINGS_CHANGED=1
+  fi
+  if ! grep -Fq -- 'zenbook-omarchy ChatGPT shortcut (managed)' "${target}" 2>/dev/null; then
+    backup_once
+    append_block "${target}" "${block}" 'zenbook-omarchy ChatGPT shortcut (managed)'
+    BINDINGS_CHANGED=1
+  fi
 }
 
 apply_profile() {
@@ -213,6 +236,12 @@ apply_profile() {
   apply_blerc
   apply_foot
   apply_bindings
+  if ((BINDINGS_CHANGED)) && command -v hyprctl >/dev/null 2>&1; then
+    hyprctl reload >/dev/null
+    local errors
+    errors="$(hyprctl configerrors 2>/dev/null || true)"
+    [[ -z ${errors} ]] || die "Hyprland configuration errors after terminal binding update: ${errors}"
+  fi
   printf 'terminal-omarchy: applied user-scoped terminal profile\n'
 }
 
@@ -239,11 +268,32 @@ rollback_profile() {
   restore_target "${HOME}/.bashrc" bashrc
   restore_target "${HOME}/.blerc" blerc
   restore_target "${CONFIG_HOME}/foot/foot.ini" foot.ini
-  restore_target "${CONFIG_HOME}/hypr/bindings.lua" bindings.lua
+  # bindings.lua is shared with Bitwarden and other profile components.
+  # Restore only this component's managed block instead of replacing the file.
+  local target="${CONFIG_HOME}/hypr/bindings.lua" temporary
+  if [[ -r ${target} ]]; then
+    temporary="$(mktemp "${target}.tmp.XXXXXX")"
+    sed '/^-- >>> zenbook-omarchy ChatGPT shortcut (managed) >>>$/,/^-- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<$/{d;}' \
+      "${target}" >"${temporary}"
+    install -m0644 "${temporary}" "${target}"
+    rm -f -- "${temporary}"
+    if grep -Fqx -- '-- Use ChatGPT instead of the preinstalled Grok web app shortcut.' "${target}" 2>/dev/null &&
+       grep -Fqx -- 'hl.unbind("SUPER + SHIFT + ALT + A")' "${target}" &&
+       grep -Fqx -- 'o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })' "${target}"; then
+      temporary="$(mktemp "${target}.tmp.XXXXXX")"
+      sed '/^-- Use ChatGPT instead of the preinstalled Grok web app shortcut\.$/,/^o\.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https:\/\/chatgpt\.com" })$/d' \
+        "${target}" >"${temporary}"
+      install -m0644 "${temporary}" "${target}"
+      rm -f -- "${temporary}"
+    fi
+  fi
   restore_target "${HOME}/.local/bin/omarchy-fzf-preview" fzf-preview
   restore_target "${HOME}/.local/bin/terminal-doctor" terminal-doctor
   if [[ -e ${BACKUP_ROOT}/${BACKUP_ID}/blesh.absent ]]; then
     rm -rf -- "${BLE_DIR}"
+  fi
+  if command -v hyprctl >/dev/null 2>&1; then
+    hyprctl reload >/dev/null
   fi
   printf 'terminal-omarchy: restored backup %s\n' "${BACKUP_ID}"
 }

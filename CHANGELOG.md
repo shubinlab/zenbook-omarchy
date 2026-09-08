@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- Hardened shared Hyprland binding migration and rollback so Bitwarden and
+  terminal changes cannot erase each other's managed blocks; legacy duplicate
+  bindings are removed safely.
+- Made Chromium extension force-install opt-in, made Bitwarden onboarding fail
+  closed when the official extension is not confirmed, and removed duplicate
+  `wtype` package ownership from the Bitwarden stage.
+- Decoupled already-ready local Lemonade/NPU voice and terminal stages from the
+  VPN, while keeping network-dependent package and update stages ordered behind
+  the explicit AdGuard VPN step.
+- Added an HDMI feedback-sink warning and rejected combining a system update
+  with the all-in-one stage; re-apply the profile after Omarchy updates.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

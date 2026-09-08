@@ -387,7 +387,10 @@ check_state() {
   printf 'INFO microphone volume=%s%% mute=%s\n' "${source_percent:-unknown}" "${source_mute:-unknown}"
   printf 'INFO feedback sink=%s volume=%s%% mute=%s\n' \
     "${default_sink:-unavailable}" "${sink_percent:-unknown}" "${sink_mute:-unknown}"
-  if [[ "${source_mute}" == yes ]]; then
+  if [[ "${default_sink}" == *\.hdmi-* ]]; then
+    printf 'WARN feedback sink is HDMI; start/stop sounds may be playing through the monitor instead of laptop speakers\n'
+  fi
+  if [[ "${source_mute,,}" == *yes* ]]; then
     printf 'WARN microphone is muted; transcription cannot be reliable\n'
   elif [[ "${source_percent}" == "${VOICE_SOURCE_VOLUME_PERCENT}" ]]; then
     printf 'PASS microphone volume policy=%s%%\n' "${VOICE_SOURCE_VOLUME_PERCENT}"
@@ -395,7 +398,7 @@ check_state() {
     printf 'WARN microphone volume=%s%%; expected profile value=%s%%\n' \
       "${source_percent:-unknown}" "${VOICE_SOURCE_VOLUME_PERCENT}"
   fi
-  if [[ "${sink_mute}" == yes ]]; then
+  if [[ "${sink_mute,,}" == *yes* ]]; then
     printf 'WARN feedback sink is muted; start/stop sounds cannot be heard\n'
   fi
   if lemonade_npu_loaded; then

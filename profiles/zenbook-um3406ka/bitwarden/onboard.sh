@@ -152,12 +152,19 @@ run_onboarding() {
     if chromium_extension_path="$(chromium_bitwarden_path || true)"; then
       printf 'Bitwarden is now available in Chromium: %s\n' "$chromium_extension_path"
     else
-      printf 'Chromium has not shown the extension yet; check chrome://policy after restarting.\n'
+      die 'Chromium did not show the Bitwarden extension; check chrome://policy and run onboarding again'
     fi
   else
     store_url="$(browser_store_url)"
     open_url "$store_url"
     pause 'In the store, click Add/Install for the official Bitwarden Password Manager'
+    printf 'Is the official Bitwarden extension now installed and enabled? [y/N] '
+    local extension_answer
+    IFS= read -r extension_answer </dev/tty || die 'No answer was received'
+    case "$extension_answer" in
+      y|Y|yes|YES) ;;
+      *) die 'Bitwarden extension was not confirmed; finish installation and run onboarding again' ;;
+    esac
   fi
 
   printf '\nStep 4/5. First extension launch\n'
