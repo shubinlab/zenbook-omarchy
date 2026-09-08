@@ -67,7 +67,7 @@ backup_target() {
 backup_once() {
   [[ -n ${BACKUP_ID} ]] && return
   BACKUP_ID="$(date -u +%Y%m%dT%H%M%S)-${BASHPID}"
-  mkdir -p "${BACKUP_ROOT}/${BACKUP_ID}"
+  install -d -m 0700 "${BACKUP_ROOT}/${BACKUP_ID}"
   backup_target "${BINDINGS}" bindings.lua
   backup_target "${RBW_CONFIG}" rbw-config.json
   backup_target "${LAUNCHER}" launcher

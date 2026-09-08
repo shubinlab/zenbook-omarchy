@@ -19,6 +19,7 @@ PROFILE_VOICE_EXTENSION=""
 PROFILE_BITWARDEN_INSTALL=0
 PROFILE_BITWARDEN_EXTENSION=""
 PROFILE_BITWARDEN_DOCTOR=""
+PROFILE_BITWARDEN_ONBOARD=""
 PROFILE_BITWARDEN_PACKAGE_MANIFESTS=""
 PROFILE_PACKAGE_MANIFESTS=""
 PROFILE_VOICE_PACKAGE_MANIFESTS=""
@@ -32,6 +33,7 @@ TERMINAL_SOURCE=""
 VOICE_SOURCE=""
 BITWARDEN_SOURCE=""
 BITWARDEN_DOCTOR=""
+BITWARDEN_ONBOARD=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
@@ -151,6 +153,9 @@ detect_profile() {
   if [[ -n "$PROFILE_BITWARDEN_DOCTOR" ]]; then
     BITWARDEN_DOCTOR="$PROFILE_DIR/$PROFILE_BITWARDEN_DOCTOR"
   fi
+  if [[ -n "$PROFILE_BITWARDEN_ONBOARD" ]]; then
+    BITWARDEN_ONBOARD="$PROFILE_DIR/$PROFILE_BITWARDEN_ONBOARD"
+  fi
   if ((VPN_OPTION_SET == 0)); then
     DO_VPN="$PROFILE_ENABLE_VPN"
   fi
@@ -244,7 +249,6 @@ install_packages() {
   if ((${#PACKAGE_SOURCES[@]})); then
     install_package_set profile "${PACKAGE_SOURCES[@]}"
   fi
-  install_bitwarden_packages
   install_voice_packages
 }
 
@@ -260,7 +264,15 @@ install_bitwarden() {
   [[ "$DO_BITWARDEN" -eq 1 ]] || return 0
   [[ -n "$BITWARDEN_SOURCE" && -x "$BITWARDEN_SOURCE" ]] ||
     die "missing Bitwarden extension: $BITWARDEN_SOURCE"
+  [[ -n "$BITWARDEN_ONBOARD" && -x "$BITWARDEN_ONBOARD" ]] ||
+    die "missing Bitwarden onboarding: $BITWARDEN_ONBOARD"
+  install_bitwarden_packages
   "$BITWARDEN_SOURCE" --apply
+  if ((NON_INTERACTIVE)); then
+    "$BITWARDEN_ONBOARD" --non-interactive
+  else
+    "$BITWARDEN_ONBOARD" --run
+  fi
 }
 
 install_voice_packages() {
@@ -388,7 +400,9 @@ check_profile() {
   if ((DO_BITWARDEN)); then
     [[ -n "$BITWARDEN_SOURCE" && -x "$BITWARDEN_SOURCE" ]] || die "missing Bitwarden extension: $BITWARDEN_SOURCE"
     [[ -n "$BITWARDEN_DOCTOR" && -x "$BITWARDEN_DOCTOR" ]] || die "missing Bitwarden doctor: $BITWARDEN_DOCTOR"
+    [[ -n "$BITWARDEN_ONBOARD" && -x "$BITWARDEN_ONBOARD" ]] || die "missing Bitwarden onboarding: $BITWARDEN_ONBOARD"
     "$BITWARDEN_SOURCE" --check
+    "$BITWARDEN_ONBOARD" --check
   fi
   printf 'bootstrap check: PASS profile=%s packages=%d bitwarden_packages=%d voice_packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
     "$PROFILE_ID" "$count" "$bitwarden_count" "$voice_count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
@@ -405,11 +419,10 @@ print_manifest() {
   printf '{"name":"vpn","enabled":%s,"title":"Connect AdGuard VPN","category":"network","needs_user_input":true},' "$vpn_enabled"
   printf '{"name":"display","enabled":%s,"title":"Apply tested display settings","category":"configuration","needs_user_input":false},' "$monitor_enabled"
   printf '{"name":"packages","enabled":%s,"title":"Install profile packages and native runtimes","category":"runtime","needs_user_input":false},' "$packages_enabled"
-  printf '{"name":"bitwarden","enabled":%s,"requires":["packages"],"title":"Install native Wayland Bitwarden launcher","category":"security","needs_user_input":false},' "$bitwarden_enabled"
-  printf '{"name":"diagnostics","title":"Install optional diagnostic packages","category":"optional","needs_user_input":false},'
   printf '{"name":"voice","enabled":%s,"requires":["packages"],"title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},' "$voice_enabled"
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
   printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
+  printf '{"name":"bitwarden","enabled":%s,"requires":["packages"],"title":"Install native Wayland Bitwarden launcher","category":"security","needs_user_input":true},' "$bitwarden_enabled"
   printf '{"name":"doctor","title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}'
   printf '\n'
 }
@@ -446,11 +459,16 @@ run_doctor() {
   fi
 
   if ((DO_BITWARDEN)) && [[ -n "$BITWARDEN_DOCTOR" ]]; then
-    if "$BITWARDEN_DOCTOR"; then
-      printf '%sOK%s native Bitwarden\n' "$C_GREEN" "$C_RESET"
+    if [[ -e "${HOME}/.local/bin/omarchy-bitwarden" ||
+          -e "${XDG_CONFIG_HOME:-${HOME}/.config}/rbw/config.json" ]]; then
+      if "$BITWARDEN_DOCTOR"; then
+        printf '%sOK%s native Bitwarden\n' "$C_GREEN" "$C_RESET"
+      else
+        printf '%sFAIL%s native Bitwarden\n' "$C_RED" "$C_RESET"
+        failures=$((failures + 1))
+      fi
     else
-      printf '%sFAIL%s native Bitwarden\n' "$C_RED" "$C_RESET"
-      failures=$((failures + 1))
+      printf 'WARN Bitwarden setup was deferred; run --stage bitwarden when ready\n'
     fi
   fi
 
@@ -570,6 +588,18 @@ stage_note() {
   printf '\n[%s] %s\n' "$1" "$2"
 }
 
+ask_bitwarden_install() {
+  ((NON_INTERACTIVE == 0)) || return 1
+  [[ -r /dev/tty ]] || return 1
+  printf '\nBitwarden: install the native Wayland launcher and start the guided setup now? [y/N] '
+  local answer
+  IFS= read -r answer </dev/tty || return 1
+  case "$answer" in
+    y|Y|yes|YES|д|Д|да|ДА) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
 run_stage() {
   case "$STAGE" in
     all)
@@ -582,17 +612,19 @@ run_stage() {
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
       stage_note '3/7' 'Packages: profile and native runtimes'
       if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
-      stage_note '4/7' 'Bitwarden: native Wayland launcher'
-      if ((DO_BITWARDEN)); then install_bitwarden; else printf 'bootstrap: Bitwarden stage skipped\n'; fi
-      stage_note '5/7' 'Voice: native Voxtype + NPU inference'
+      stage_note '4/7' 'Voice: native Voxtype + NPU inference'
       if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
-      stage_note '6/7' 'Terminal: user settings'
+      stage_note '5/7' 'Terminal: user settings'
       apply_terminal
       if ((DO_SYSTEM_UPDATE)); then
-        stage_note '7/8' 'System: supported Omarchy update'
+        stage_note '6/8' 'System: supported Omarchy update'
         apply_update
+        stage_note '7/8' 'Bitwarden: optional native Wayland setup'
+        if ((DO_BITWARDEN)) && ask_bitwarden_install; then install_bitwarden; else DO_BITWARDEN=0; printf 'bootstrap: Bitwarden setup deferred\n'; fi
         stage_note '8/8' 'Doctor: verify the installed profile'
       else
+        stage_note '6/7' 'Bitwarden: optional native Wayland setup'
+        if ((DO_BITWARDEN)) && ask_bitwarden_install; then install_bitwarden; else DO_BITWARDEN=0; printf 'bootstrap: Bitwarden setup deferred\n'; fi
         stage_note '7/7' 'Doctor: verify the installed profile'
       fi
       run_doctor
@@ -623,7 +655,6 @@ run_stage() {
       ((DO_BITWARDEN)) || die 'Bitwarden stage is disabled by --no-bitwarden or this profile'
       ((DO_PACKAGES)) || die 'Bitwarden requires packages; remove --no-packages'
       ensure_vpn_for_network_stage
-      install_bitwarden_packages
       install_bitwarden
       ;;
     diagnostics)

@@ -18,13 +18,13 @@ The installer clones or updates the repository, selects the profile from DMI
 and runs the supported stages in this order:
 
 ```text
-VPN → display → NPU packages → native Bitwarden → native Voxtype → Lemonade model → terminal → doctor
+VPN → display → NPU packages → native Voxtype → Lemonade model → terminal → optional Bitwarden onboarding → doctor
 ```
 
-On the first run, the only expected questions are the official AdGuard login
-and Omarchy's native Voxtype confirmation. The installer reconnects safely on
-reruns, refuses to update a locally modified checkout and does not run a
-system update implicitly.
+On the first run, expect the official AdGuard login, Omarchy's native Voxtype
+confirmation and (at the very end) one optional Bitwarden question. The
+installer reconnects safely on reruns, refuses to update a locally modified
+checkout and does not run a system update implicitly.
 
 ## Verify without changing anything
 
@@ -89,7 +89,7 @@ an incomplete installation.
 |---|---|
 | `--check` | Validate repository assets without changing the system |
 | `--manifest` | Print the stage manifest as JSON |
-| `--non-interactive` | Stop before VPN login or first-run Voxtype confirmation |
+| `--non-interactive` | Stop before interactive VPN/Voxtype/Bitwarden onboarding |
 | `--no-vpn` | Do not connect AdGuard VPN for this run |
 | `--no-voice` | Skip native Voxtype and its Zenbook policy |
 | `--no-bitwarden` | Skip native Wayland Bitwarden setup |
@@ -120,12 +120,16 @@ Bitwarden desktop client or X11 typing/clipboard tools. The profile creates
 `~/.local/bin/omarchy-bitwarden` and replaces the default password-manager
 binding `Super + Shift + /` with that launcher.
 
-The first-time `rbw register`/login still requires the user to enter their
-Bitwarden credentials and API key; no credential is accepted by the installer
-or stored in this repository. Browser autofill and Android autofill remain the
-responsibility of the official Bitwarden clients. Edit vault items in the
-Bitwarden web vault. The user configuration is backed up before the profile
-changes pinentry, a 10-minute lock timeout and hourly sync.
+The full restore asks before entering this stage. If accepted, the guided
+onboarding asks for the Bitwarden email, runs the first-time `rbw register`,
+login and sync, opens the official browser-extension store, waits for the user
+to install and log in to the extension, and finishes with a hotkey test. The
+first-time `rbw register` still requires the user to enter their API key; no
+credential is accepted by the installer or stored in this repository. Browser
+autofill and Android autofill remain the responsibility of the official
+Bitwarden clients. Edit vault items in the Bitwarden web vault. The user
+configuration is backed up before the profile changes pinentry, a 10-minute
+lock timeout and hourly sync.
 
 Run the read-only live check with:
 

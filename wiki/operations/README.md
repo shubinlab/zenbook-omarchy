@@ -47,6 +47,7 @@
 - physical PipeWire microphone and available output sink;
 - terminal, Foot Sixel, ble.sh/fzf and managed shortcut;
 - native Bitwarden packages, launcher, rbw policy and managed password hotkey;
+- Bitwarden onboarding completion when the optional final stage was accepted;
 - Hyprland configuration errors;
 - AdGuard VPN status when the selected profile enables it.
 

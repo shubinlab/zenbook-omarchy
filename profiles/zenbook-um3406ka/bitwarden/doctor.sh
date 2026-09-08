@@ -22,6 +22,7 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
 LAUNCHER="${HOME}/.local/bin/omarchy-bitwarden"
 BINDINGS="${CONFIG_HOME}/hypr/bindings.lua"
 RBW_CONFIG="${CONFIG_HOME}/rbw/config.json"
+ONBOARDING_STATE="${XDG_STATE_HOME:-${HOME}/.local/state}/omarchy-profiles/bitwarden/onboarding-complete"
 
 printf '%s\n' 'Bitwarden Omarchy doctor (read-only)'
 printf '%s\n' '=================================='
@@ -59,6 +60,12 @@ if grep -Fq -- 'zenbook-omarchy Bitwarden (managed)' "${BINDINGS}" 2>/dev/null &
   ok 'Hyprland password hotkey is managed by the native launcher'
 else
   bad 'Hyprland password hotkey is not configured'
+fi
+
+if [[ -r ${ONBOARDING_STATE} ]]; then
+  ok 'guided Bitwarden onboarding was completed'
+else
+  warning 'guided onboarding is not marked complete; browser extension setup may remain'
 fi
 
 if [[ ${XDG_SESSION_TYPE:-} == wayland || -n ${WAYLAND_DISPLAY:-} ]]; then

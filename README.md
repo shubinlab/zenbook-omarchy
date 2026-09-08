@@ -30,12 +30,13 @@ The installer runs these stages in order:
 | 1 | **Network** | Install/login/connect AdGuard VPN when the Zenbook profile requires it |
 | 2 | **Display** | Apply the tested monitor layout with a backup |
 | 3 | **Packages** | Install the small local Lemonade/FLM NPU runtime through Omarchy's package helper |
-| 4 | **Bitwarden** | Install the native Wayland `rbw`/Fuzzel launcher and one Hyprland password hotkey |
-| 5 | **Voice** | Run native `omarchy voxtype install`, then route its inference to Lemonade on the AMD NPU |
-| 6 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
+| 4 | **Voice** | Run native `omarchy voxtype install`, then route its inference to Lemonade on the AMD NPU |
+| 5 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
+| 6 | **Bitwarden** | Ask before installing the native Wayland launcher and guide the complete first setup |
 | 7 | **Doctor** | Verify the resulting native/user configuration |
 
-On a first run, answer the native VPN and Voxtype prompts when they appear.
+On a first run, answer the native VPN and Voxtype prompts when they appear. At
+the end, the installer asks whether to start the optional Bitwarden onboarding.
 The clean flow does not run a system update automatically. Verify everything
 with:
 
@@ -60,7 +61,7 @@ The raw URL must include the branch name (`main`).
 |---|---|
 | **Omarchy** | Native commands and defaults remain the source of truth |
 | **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
-| **Bitwarden** | Native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
+| **Bitwarden** | Optional final stage with guided onboarding; native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
 | **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; OSD, start/stop sounds and `language=auto` |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
@@ -113,7 +114,7 @@ Useful safety switches:
 
 ```text
 --check              validate without changing the system
---non-interactive    stop before VPN login or first-run Voxtype confirmation
+--non-interactive    stop before interactive VPN/Voxtype/Bitwarden onboarding
 --no-vpn             do not connect VPN for this run
 --no-voice           skip native Voxtype, Lemonade and the NPU voice policy
 --no-bitwarden       skip native Wayland Bitwarden setup
@@ -160,7 +161,7 @@ scripts/install-*.sh               standalone stage wrappers
 scripts/doctor.sh                  read-only health check
 profiles/                          executable host profiles
 profiles/zenbook-um3406ka/voice/   native Voxtype policy and doctor
-profiles/zenbook-um3406ka/bitwarden/ native Wayland Bitwarden policy and doctor
+profiles/zenbook-um3406ka/bitwarden/ native Wayland policy, launcher and onboarding
 profiles/zenbook-um3406ka/terminal/ terminal policy and rollback
 scripts/repair-voice-legacy.sh     opt-in migration for older voice setups
 wiki/                              guides, inventories and evidence
