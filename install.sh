@@ -5,6 +5,7 @@ set -euo pipefail
 repo_url="https://github.com/shubinlab/zenbook-omarchy.git"
 repo_dir="${ZENBOOK_OMARCHY_DIR:-$HOME/zenbook-omarchy}"
 adguard_installer_url="https://raw.githubusercontent.com/AdguardTeam/AdGuardVPNCLI/HEAD/scripts/release/install.sh"
+adguard_installed_now=0
 
 command -v git >/dev/null 2>&1 || {
   printf '%s\n' 'zenbook-omarchy: git is required' >&2
@@ -23,6 +24,14 @@ if ! command -v adguardvpn-cli >/dev/null 2>&1 && [[ ! -x /opt/adguardvpn_cli/ad
   sh "$installer" -v
   rm -f "$installer"
   trap - EXIT
+  adguard_installed_now=1
+fi
+
+if ((adguard_installed_now)); then
+  adguard_cli="$(command -v adguardvpn-cli 2>/dev/null || true)"
+  [[ -n "$adguard_cli" ]] || adguard_cli="/opt/adguardvpn_cli/adguardvpn-cli"
+  printf '%s\n' 'zenbook-omarchy: complete the one-time AdGuard login'
+  "$adguard_cli" login
 fi
 
 if [[ -d "$repo_dir/.git" ]]; then
