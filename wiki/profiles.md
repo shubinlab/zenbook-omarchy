@@ -17,7 +17,8 @@ configuration, tests and user-facing extensions such as `voice/` or `terminal/`.
 To add another machine, create a directory with:
 
 - `profile.env` describing package manifests and optional capabilities;
-- `packages/*.txt` for package names, split by purpose;
+- `packages/*.txt` for package names, split by purpose; voice-scoped manifests
+  are installed only when the profile's voice capability is enabled;
 - a monitor file only when the profile owns a tested monitor layout;
 - service and extension files under the profile directory;
 - a matching section under `wiki/` for its inventory, configuration and evidence.

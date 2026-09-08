@@ -109,7 +109,7 @@ Useful safety switches:
 --check              validate without changing the system
 --non-interactive    stop before VPN login or first-run Voxtype confirmation
 --no-vpn             do not connect VPN for this run
---no-voice           skip native Voxtype and its profile policy
+--no-voice           skip native Voxtype, Lemonade and the NPU voice policy
 --no-terminal        skip terminal settings
 --no-monitor         skip the display override
 --stage diagnostics  install optional diagnostic packages

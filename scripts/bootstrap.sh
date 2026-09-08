@@ -17,8 +17,10 @@ PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
 PROFILE_PACKAGE_MANIFESTS=""
+PROFILE_VOICE_PACKAGE_MANIFESTS=""
 PROFILE_DIAGNOSTIC_MANIFESTS=""
 PACKAGE_SOURCES=()
+VOICE_PACKAGE_SOURCES=()
 DIAGNOSTIC_SOURCES=()
 MONITOR_SOURCE=""
 TERMINAL_SOURCE=""
@@ -110,6 +112,10 @@ detect_profile() {
   local manifest
   for manifest in $PROFILE_PACKAGE_MANIFESTS; do
     PACKAGE_SOURCES+=("$PROFILE_DIR/$manifest")
+  done
+  VOICE_PACKAGE_SOURCES=()
+  for manifest in $PROFILE_VOICE_PACKAGE_MANIFESTS; do
+    VOICE_PACKAGE_SOURCES+=("$PROFILE_DIR/$manifest")
   done
   DIAGNOSTIC_SOURCES=()
   for manifest in $PROFILE_DIAGNOSTIC_MANIFESTS; do
@@ -210,7 +216,14 @@ install_package_set() {
 }
 
 install_packages() {
-  install_package_set profile "${PACKAGE_SOURCES[@]}"
+  if ((${#PACKAGE_SOURCES[@]})); then
+    install_package_set profile "${PACKAGE_SOURCES[@]}"
+  fi
+  if ((DO_VOICE)); then
+    install_package_set voice "${VOICE_PACKAGE_SOURCES[@]}"
+  else
+    printf 'bootstrap: voice package set skipped (--no-voice)\n'
+  fi
 }
 
 install_diagnostics() {
@@ -277,7 +290,7 @@ update_vpn_cli() {
 
 check_profile() {
   [[ -f "$PROFILE_DIR/profile.env" ]] || die "missing profile metadata"
-  local manifest count=0 diagnostic_count=0 package
+  local manifest count=0 voice_count=0 diagnostic_count=0 package
   for manifest in "${PACKAGE_SOURCES[@]}"; do
     [[ -f "$manifest" ]] || die "missing package manifest: $manifest"
     while IFS= read -r package; do
@@ -285,6 +298,16 @@ check_profile() {
         ((count += 1))
       fi
     done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+  done
+  for manifest in "${VOICE_PACKAGE_SOURCES[@]}"; do
+    [[ -f "$manifest" ]] || die "missing voice package manifest: $manifest"
+    if ((DO_VOICE)); then
+      while IFS= read -r package; do
+        if [[ -n "$package" ]]; then
+          ((voice_count += 1))
+        fi
+      done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+    fi
   done
   for manifest in "${DIAGNOSTIC_SOURCES[@]}"; do
     [[ -f "$manifest" ]] || die "missing diagnostic manifest: $manifest"
@@ -307,8 +330,8 @@ check_profile() {
     [[ -x "/usr/share/omarchy/bin/omarchy-voxtype-install" ]] || die 'native Omarchy Voxtype installer is missing'
     [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
   fi
-  printf 'bootstrap check: PASS profile=%s packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
-    "$PROFILE_ID" "$count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
+  printf 'bootstrap check: PASS profile=%s packages=%d voice_packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
+    "$PROFILE_ID" "$count" "$voice_count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
 
 print_manifest() {
@@ -485,7 +508,7 @@ run_stage() {
     packages)
       stage_note '1/1' 'Packages: Lemonade/FLM NPU runtime'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
-      if ((${#PACKAGE_SOURCES[@]})); then
+      if ((${#PACKAGE_SOURCES[@]})) || { ((DO_VOICE)) && ((${#VOICE_PACKAGE_SOURCES[@]})); }; then
         ensure_vpn_for_network_stage
       fi
       install_packages

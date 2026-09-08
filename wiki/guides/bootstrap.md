@@ -94,6 +94,8 @@ are optional and are not part of the clean flow.
 `zenbook-um3406ka` is selected when DMI reports `UM3406KA`. It enables the
 official AdGuard VPN CLI, tested display configuration, the two-package local
 Lemonade/FLM NPU voice backend, native Voxtype policy and terminal extension.
+The NPU package set is voice-scoped: `--no-voice` skips both native Voxtype and
+Lemonade/FLM installation.
 Other hosts use `generic`, which makes no automatic changes. Run the diagnostic
 stage explicitly only when that is intended.
 
