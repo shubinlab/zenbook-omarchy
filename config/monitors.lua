@@ -3,12 +3,11 @@
 
 local omarchy_gdk_scale = 2
 local omarchy_monitor_scale = 1.6
-
 hl.env("GDK_SCALE", tostring(omarchy_gdk_scale))
-hl.monitor({ output = "", mode = "preferred", position = "auto", scale = omarchy_monitor_scale })
+hl.monitor({ output = "eDP-1", mode = "preferred", position = "auto", scale = 2 })
 
 -- Stable external display mode through the JSAUX dock.
-hl.monitor({ output = "DP-1", mode = "2560x1440@143.99", position = "0x0", scale = 1.6, bitdepth = 10, cm = "auto", vrr = 1 })
+hl.monitor({ output = "DP-1", mode = "2560x1440@239.97", position = "0x0", scale = omarchy_monitor_scale, bitdepth = 10, cm = "srgb", vrr = 1 })
 
 -- Configure a specific monitor.
 -- hl.monitor({ output = "DP-2", mode = "2560x1440@144", position = "0x0", scale = 1 })

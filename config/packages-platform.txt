@@ -1,0 +1,18 @@
+# Hardware-facing runtime stack observed on the Zenbook and its dock path.
+# These are normally already present in Omarchy; keeping them here makes a
+# clean rebuild explicit without adding proprietary vendor or DKMS drivers.
+linux
+amd-ucode
+linux-firmware
+linux-firmware-amdgpu
+linux-firmware-mediatek
+linux-firmware-realtek
+mesa
+vulkan-radeon
+pipewire
+wireplumber
+sof-firmware
+networkmanager
+bluez
+bluez-utils
+power-profiles-daemon

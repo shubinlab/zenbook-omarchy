@@ -20,6 +20,7 @@ from pathlib import Path
 DEFAULT_OUT = Path(__file__).resolve().parents[1] / "runs" / (dt.date.today().isoformat() + "-vrr-red-team.json")
 IDLE_MARKER = Path.home() / ".local/state/omarchy/indicators/stay-awake"
 OUTPUT = "DP-1"
+FINAL_MODE = "2560x1440@239.97"
 MODES = {
     "1080p120-10b": ("1920x1080@120.00", 10),
     "1440p120-10b": ("2560x1440@120.00", 10),
@@ -54,7 +55,7 @@ def set_output(mode: str, bitdepth: int, vrr: int) -> dict[str, str]:
     monitor_result = eval_lua(
         "hl.monitor({ output = \"DP-1\", "
         f"mode = \"{mode}\", position = \"0x0\", scale = 1.6, "
-        f"bitdepth = {bitdepth}, cm = \"auto\", vrr = {vrr} }})"
+        f"bitdepth = {bitdepth}, cm = \"srgb\", vrr = {vrr} }})"
     )
     time.sleep(2)
     return {"global": global_result, "monitor": monitor_result}
@@ -297,7 +298,7 @@ def main() -> None:
                 phases.append(run_phase(name, mode, bitdepth, args.seconds, fullscreen, all_samples))
 
         stress = {"mode_cycles": [], "dpms_cycle": [], "kernel_events": []}
-        set_output("2560x1440@143.99", 10, 1)
+        set_output(FINAL_MODE, 10, 1)
         for i in range(3):
             for label, mode in (("144", "2560x1440@143.99"), ("120", "2560x1440@120.00"), ("240", "2560x1440@239.97")):
                 setup = set_output(mode, 10, 1)
@@ -314,7 +315,7 @@ def main() -> None:
         stress["dpms_cycle"] = {"off_command": off_result, "off_sample": off_sample,
                                  "on_command": on_result, "on_sample": on_sample}
         stress["kernel_events"] = kernel_lines(dpms_start.isoformat(timespec="seconds"))[-100:]
-        set_output("2560x1440@143.99", 10, 1)
+        set_output(FINAL_MODE, 10, 1)
         result = {
             "date": run_started.date().isoformat(),
             "started": run_started.isoformat(),
@@ -330,7 +331,7 @@ def main() -> None:
         print(json.dumps({"json": str(args.output), "markdown": str(args.output.with_suffix('.md')), "phases": phases, "red_team": stress}, ensure_ascii=False), flush=True)
     finally:
         try:
-            set_output("2560x1440@143.99", 10, 1)
+            set_output(FINAL_MODE, 10, 1)
         except Exception:
             pass
         if not previous_marker:

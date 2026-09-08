@@ -1,0 +1,21 @@
+# Packages used by the Zenbook/Omarchy hardware audit and display workflow.
+# Keep this list limited to packages that are safe to re-install on a clean
+# Omarchy system. The kernel and firmware stack remain Omarchy/Arch managed.
+usbutils
+ethtool
+nvme-cli
+smartmontools
+fwupd
+fio
+stress-ng
+drm-info
+vulkan-tools
+mesa-utils
+inxi
+ddcutil
+i2c-tools
+libinput
+lm_sensors
+mpv
+edid-decode
+wayland-utils

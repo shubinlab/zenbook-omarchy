@@ -2,3 +2,8 @@ __pycache__/
 *.pyc
 .env
 telemetry-private/
+runs/*.json
+runs/*.md
+!.gitkeep
+*.log
+*.zip
