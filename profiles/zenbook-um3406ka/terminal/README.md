@@ -27,7 +27,9 @@ Run from the repository root:
 terminal-doctor
 ```
 
-Rollback restores the latest backed-up user files:
+Rollback restores the latest backed-up user files. If that backup installed
+ble.sh into an otherwise absent directory, rollback removes that exact
+user-owned directory as well:
 
 ```bash
 ./profiles/zenbook-um3406ka/terminal/apply.sh --rollback

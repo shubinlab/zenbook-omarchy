@@ -104,6 +104,8 @@ install_ble() {
     printf 'terminal-omarchy: keeping existing ble.sh at %s\n' "${BLE_DIR}"
     return 0
   fi
+  backup_once
+  : >"${BACKUP_ROOT}/${BACKUP_ID}/blesh.absent"
   need curl
   need sha256sum
   need tar
@@ -129,9 +131,11 @@ if [[ $- == *i* && -r "$HOME/.local/share/zenbook-omarchy/bashrc" ]]; then
   source -- "$HOME/.local/share/zenbook-omarchy/bashrc"
 fi
 ## <<< zenbook-omarchy terminal (managed) <<<'
+  if grep -q 'zenbook-omarchy terminal (managed)' "${target}" 2>/dev/null; then
+    return 0
+  fi
   backup_once
-  if ! grep -q 'zenbook-omarchy terminal (managed)' "${target}" 2>/dev/null &&
-     grep -q '^# Optional interactive enhancements\.' "${target}" 2>/dev/null; then
+  if grep -q '^# Optional interactive enhancements\.' "${target}" 2>/dev/null; then
     local temporary
     temporary="$(mktemp "${target}.tmp.XXXXXX")"
     awk '
@@ -151,9 +155,11 @@ _ble_contrib_fzf_base=/usr/share/fzf
 ble-import -d integration/fzf-completion
 ble-import -d integration/fzf-key-bindings
 ## <<< zenbook-omarchy fzf (managed) <<<'
+  if grep -q 'zenbook-omarchy fzf (managed)' "${target}" 2>/dev/null; then
+    return 0
+  fi
   backup_once
-  if ! grep -q 'zenbook-omarchy fzf (managed)' "${target}" 2>/dev/null &&
-     grep -q '^# ble\.sh settings for the Omarchy Bash environment\.' "${target}" 2>/dev/null; then
+  if grep -q '^# ble\.sh settings for the Omarchy Bash environment\.' "${target}" 2>/dev/null; then
     local temporary
     temporary="$(mktemp "${target}.tmp.XXXXXX")"
     awk '
@@ -185,10 +191,10 @@ hl.unbind("SUPER + SHIFT + ALT + A")
 o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })
 -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<'
   mkdir -p "$(dirname -- "${target}")"
-  backup_once
   if grep -q 'https://chatgpt.com' "${target}" 2>/dev/null; then
     return 0
   fi
+  backup_once
   append_block "${target}" "${block}" 'zenbook-omarchy ChatGPT shortcut (managed)'
 }
 
@@ -236,6 +242,9 @@ rollback_profile() {
   restore_target "${CONFIG_HOME}/hypr/bindings.lua" bindings.lua
   restore_target "${HOME}/.local/bin/omarchy-fzf-preview" fzf-preview
   restore_target "${HOME}/.local/bin/terminal-doctor" terminal-doctor
+  if [[ -e ${BACKUP_ROOT}/${BACKUP_ID}/blesh.absent ]]; then
+    rm -rf -- "${BLE_DIR}"
+  fi
   printf 'terminal-omarchy: restored backup %s\n' "${BACKUP_ID}"
 }
 
