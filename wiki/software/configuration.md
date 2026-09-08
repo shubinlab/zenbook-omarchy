@@ -5,7 +5,7 @@ Omarchy has a deliberate two-layer model:
 ```text
 /usr/share/omarchy                 stock package-owned defaults (read-only)
         ↓ loaded first
-~/.config/hypr, ~/.config/foot     user overrides and profile settings
+~/.config/hypr, ~/.config/voxtype  user overrides and profile settings
         ↓ captured and restored by
 profiles/zenbook-um3406ka          versioned source of truth in this repository
 ```
@@ -22,8 +22,8 @@ updates.
 | `~/.config/foot/foot.ini` | Stock Foot settings | `sixel=yes` appended; other Foot settings retained |
 | `~/.config/omarchy/shell.json` | Stock bar and clock defaults | Clock format is `ddd d MMM HH:mm`; idle 150/300 seconds retained |
 | `~/.config/omarchy/defaults/agent` | Omarchy default agent | `codex` |
-| `~/.config/voxtype/config.toml` | `base.en`, English, default source | `large-v3-turbo`, auto language, VAD, user default source |
-| `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile echo-cancel drop-in | WebRTC echo cancellation/noise suppression for voice |
+| `~/.config/voxtype/config.toml` | Native default model/language and audio path | `large-v3-turbo`, auto language, native OSD and audio feedback |
+| `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile drop-in | Absent; native PipeWire routing is retained |
 | `~/.bashrc` / `~/.blerc` | Omarchy Bash and fzf setup | Managed profile blocks source ble.sh and fzf integration |
 | `~/.config/systemd/user/omarchy-monitor-telemetry.service` | No user monitor collector | Five-second local display/dock telemetry |
 

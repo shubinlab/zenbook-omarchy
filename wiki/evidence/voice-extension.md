@@ -1,24 +1,20 @@
 # Native Omarchy voice profile
 
-This profile adapts the tested audio part of `zenbook-voice` to Omarchy's
-user-configuration model. It is deliberately separate from the Ubuntu,
-GNOME, Lemonade and AMD-XDNA2 installer in that repository.
+This profile is a small post-install policy layer on top of Omarchy's native
+Voxtype installation. It does not port the Ubuntu/GNOME/Lemonade/AMD-XDNA2
+installer from `zenbook-voice` and does not create a competing audio pipeline.
 
-The generated PipeWire-Pulse drop-in loads WebRTC echo cancellation,
-noise suppression, voice detection, transient suppression and a high-pass
-filter. The physical source and sink are discovered when the profile is
-applied. Voxtype 1.0.1 uses the supported PipeWire host `default`; the
-user-session default source is pointed at the filtered virtual microphone and
-the previous source is backed up. The physical sink and other Omarchy routing
-stay unchanged.
+The stock Omarchy command `omarchy-voxtype-install` installs `voxtype-bin`,
+`wtype`, the Whisper model, the user service and the compositor bindings. The
+profile then keeps only these Zenbook-specific choices:
 
-The profile uses `language = "auto"`, a multilingual Whisper model, Voxtype
-Whisper VAD and Voxtype's native keyboard typing output. This deliberately
-preserves Omarchy's normal text-entry path and does not route dictation
-through the clipboard manager. The native Omarchy bindings remain the source
-of truth for starting/stopping dictation.
+- multilingual `large-v3-turbo` model;
+- `language = "auto"` and `translate = false`;
+- native `type` output through `wtype`;
+- a 300 ms native pre-type focus delay to avoid first-character loss;
+- native Voxtype OSD and start/stop audio feedback enabled.
 
-Apply from the repository root:
+Apply from the repository root after the stock installer has completed:
 
 ```bash
 ./profiles/zenbook-um3406ka/voice/apply.sh --check
@@ -26,19 +22,13 @@ Apply from the repository root:
 ./profiles/zenbook-um3406ka/voice/doctor.sh
 ```
 
-The apply path creates a timestamped backup under
-`~/.local/state/zenbook-omarchy/backups/voice/`. Restore the latest voice
-configuration with:
+The operation creates a timestamped user-state backup. Restore it with:
 
 ```bash
 ./profiles/zenbook-um3406ka/voice/apply.sh --rollback
 ```
 
-Run apply again after changing between the built-in speakers, HDMI, USB audio
-or a headset: PipeWire's echo-cancel module keeps the physical master names
-resolved at load time.
-
-The profile never changes `/usr/share/omarchy`, `~/.config/hypr/bindings.lua`,
-or the Omarchy monitor profile. Its only global audio change is the
-user-session default microphone, which is rollbackable; the physical sink is
-left unchanged.
+There is no profile PipeWire drop-in and no changed global sink. The default
+source is restored to a physical ALSA source if an older profile left a
+virtual source selected. The native Omarchy files under `/usr/share/omarchy`
+remain read-only inputs.

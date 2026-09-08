@@ -2,28 +2,20 @@
 
 ## Installed release
 
-The host reports:
-
-```text
-Omarchy: 4.0.3rc1-2
-Build ID: 4.0.3rc1
-Kernel: 7.2.3-arch1-3
-Branch family: quattro
-```
-
-Omarchy supplies a stock configuration tree at `/usr/share/omarchy`, default
-files under `/usr/share/omarchy/default`, commands under `/usr/bin`, package
-manifests under `/usr/share/omarchy/install`, and user configuration under
-`~/.config`.
+The host currently reports Omarchy `4.0.2-1` with the `quattro` settings
+package. Omarchy supplies stock files under `/usr/share/omarchy`, commands
+under `/usr/bin`, package manifests under `/usr/share/omarchy/install`, and
+user configuration under `~/.config`.
 
 ## Default behavior retained
 
 - Hyprland loads Omarchy defaults before user override files.
-- `eDP-1` uses the preferred mode with high-density GDK scale 2.
-- Foot is the default terminal; tmux is managed by Omarchy.
+- Foot is the default terminal and tmux remains managed by Omarchy.
 - Fcitx5 is the keyboard input framework.
-- Voxtype is present with default `base.en`/English settings.
-- PipeWire and WirePlumber are the stock audio session.
+- Omarchy's Voxtype installer owns packages, model download, user service and
+  native Hyprland bindings.
+- Voxtype's native OSD and output path remain in use.
+- PipeWire and WirePlumber remain the stock audio session.
 - `omarchy-pkg-add` is the package transaction helper.
 - `omarchy update` owns full system updates and migrations.
 
@@ -35,7 +27,7 @@ manifests under `/usr/share/omarchy/install`, and user configuration under
 - default agent set to `codex`;
 - ChatGPT replaces the stock web-app shortcut at `Super+Shift+Alt+A`;
 - Foot Sixel, ble.sh/fzf and image preview helpers;
-- voice echo cancellation and multilingual Voxtype model;
+- multilingual native Voxtype policy (`large-v3-turbo`, `language=auto`);
 - local monitor telemetry service;
 - diagnostic packages listed in the profile.
 

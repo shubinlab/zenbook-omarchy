@@ -118,10 +118,10 @@ Profile-declared names not currently installed: `wayland-utils`.
 | `obsidian` | `1.13.7-2` | stock catalog | Explicitly installed |
 | `omacalc` | `0.2.2-1` | stock catalog | Explicitly installed |
 | `omacut` | `0.4.0-1` | stock catalog | Explicitly installed |
-| `omarchy` | `4.0.3rc1-2` | explicit local addition | Explicitly installed |
+| `omarchy` | `4.0.2-1` | explicit local addition | Explicitly installed |
 | `omarchy-keyring` | `20251027-1` | explicit local addition | Explicitly installed |
 | `omarchy-nvim` | `2026.8.13-1` | stock catalog | Explicitly installed |
-| `omarchy-settings` | `4.0.3rc1-2` | explicit local addition | Explicitly installed |
+| `omarchy-settings` | `4.0.2-1` | explicit local addition | Explicitly installed |
 | `omawrite` | `0.5.0-1` | stock catalog | Explicitly installed |
 | `pacman-contrib` | `1.13.1-1` | stock catalog | Explicitly installed |
 | `pamixer` | `1.6-4` | stock catalog | Explicitly installed |

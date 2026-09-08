@@ -8,7 +8,7 @@ from the Omarchy defaults.
 
 ```mermaid
 flowchart TD
-  A[Omarchy 4.0.3rc1] --> B[Arch kernel and firmware]
+  A[Omarchy 4.0.2] --> B[Arch kernel and firmware]
   B --> C[Zenbook hardware]
   C --> D[USB-C / USB4 dock]
   D --> E[LG DP-1 display]
@@ -51,7 +51,7 @@ Detailed experiment reports live in the [evidence index](evidence/README.md), wh
 
 ## Current boundary
 
-The machine is running Omarchy `4.0.3rc1-2` with the `quattro` generation of
+The machine is running Omarchy `4.0.2-1` with the `quattro` generation of
 the Omarchy layout. Omarchy's stock files live under `/usr/share/omarchy`;
 the maintained user layer lives under `~/.config`, as described in the
 [Omarchy dotfiles manual](https://github.com/omacom/omarchy/blob/quattro/manual/31-dotfiles.md).
