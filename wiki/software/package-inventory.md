@@ -9,7 +9,9 @@ uses `/usr/share/omarchy/install/omarchy-base.packages` and
 `omarchy-other.packages`; the second file is a hardware/ISO availability
 catalog, so it is not proof that every name is installed by default.
 
-Explicit packages: **177**. Stock catalog names: **206**.
+The count is a historical snapshot and must be regenerated after package or
+Omarchy updates; the live host currently reports **179** explicit packages.
+Stock catalog names: **206**.
 Profile-declared names not currently installed: none.
 
 | Package | Version | Classification | Install reason |

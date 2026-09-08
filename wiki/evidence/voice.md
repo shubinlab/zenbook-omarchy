@@ -84,6 +84,11 @@ it moves only `ggml-base.bin`, `ggml-base.en.bin` and
 `ggml-silero-vad.bin` into a timestamped user-state backup. It never touches
 the active `large-v3-turbo` artifact or Lemonade's NPU model.
 
+On a truly fresh native install, cleanup can leave no local Voxtype fallback
+model. Remote NPU transcription still works, but native offline fallback and
+native model checks may not. Keep cleanup explicit and retain its recoverable
+backup; it is not part of the clean-install baseline.
+
 Restore the latest saved voice state with:
 
 ```bash

@@ -123,7 +123,9 @@ ensure_lemonade_server() {
   need lemonade
   need curl
   need jq
-  if lemonade_health >/dev/null 2>&1; then
+  if lemonade_health >/dev/null 2>&1 &&
+     systemctl is-enabled --quiet lemond.service 2>/dev/null &&
+     systemctl is-active --quiet lemond.service 2>/dev/null; then
     return 0
   fi
   need systemctl
@@ -143,14 +145,16 @@ ensure_lemonade_server() {
 ensure_lemonade_npu() {
   ensure_lemonade_server
 
-  # Keep the package-owned service local and quiet: the voice client uses the
-  # loopback HTTP endpoint, so LAN discovery is unnecessary.
-  lemonade config set no_broadcast=true >/dev/null ||
-    die 'could not disable Lemonade LAN broadcast discovery'
-
   if ! lemonade_health | jq -e '.telemetry.enabled == false' >/dev/null; then
     printf 'voice-omarchy: Lemonade telemetry is enabled; refusing to use it for voice\n' >&2
     die 'disable Lemonade telemetry before enabling NPU voice'
+  fi
+
+  # Keep the package-owned service local and quiet. Lemonade 11.8 uses the
+  # positive `broadcast` key; older Arch packages use `no_broadcast`.
+  if ! lemonade config set broadcast=false >/dev/null 2>&1; then
+    lemonade config set no_broadcast=true >/dev/null ||
+      die 'could not disable Lemonade LAN broadcast discovery'
   fi
 
   if ! curl --fail --silent --show-error --max-time 10 \
@@ -290,6 +294,27 @@ check_state() {
   else
     printf 'FAIL default sink is unavailable\n'
     CHECK_FAILURES=$((CHECK_FAILURES + 1))
+  fi
+  local source_volume sink_volume source_mute sink_mute source_percent sink_percent
+  source_volume="$(pactl get-source-volume "${default_source}" 2>/dev/null || true)"
+  sink_volume="$(pactl get-sink-volume "${default_sink}" 2>/dev/null || true)"
+  source_mute="$(pactl get-source-mute "${default_source}" 2>/dev/null || true)"
+  sink_mute="$(pactl get-sink-mute "${default_sink}" 2>/dev/null || true)"
+  source_percent="$(grep -oE '[0-9]+%' <<<"${source_volume}" | head -n 1 | tr -d '%' || true)"
+  sink_percent="$(grep -oE '[0-9]+%' <<<"${sink_volume}" | head -n 1 | tr -d '%' || true)"
+  printf 'INFO microphone volume=%s%% mute=%s\n' "${source_percent:-unknown}" "${source_mute:-unknown}"
+  printf 'INFO feedback sink=%s volume=%s%% mute=%s\n' \
+    "${default_sink:-unavailable}" "${sink_percent:-unknown}" "${sink_mute:-unknown}"
+  if [[ "${source_mute}" == yes ]]; then
+    printf 'WARN microphone is muted; transcription cannot be reliable\n'
+  elif [[ -n "${source_percent}" && "${source_percent}" -lt 20 ]]; then
+    printf 'WARN microphone input is very quiet (%s%%); check gain before changing ASR settings\n' "${source_percent}"
+  fi
+  if [[ "${sink_mute}" == yes ]]; then
+    printf 'WARN feedback sink is muted; start/stop sounds cannot be heard\n'
+  fi
+  if [[ "$(voxtype config get output.fallback_to_clipboard 2>/dev/null || true)" == true ]]; then
+    printf 'WARN output fallback_to_clipboard=true; failed wtype insertion may invoke clipboard fallback\n'
   fi
   if lemonade_npu_loaded; then
     printf 'PASS Lemonade FLM voice model device=npu\n'

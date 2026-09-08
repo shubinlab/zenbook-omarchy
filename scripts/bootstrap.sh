@@ -28,7 +28,7 @@ VOICE_SOURCE=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
-ADGUARD_INSTALLER_URL="https://raw.githubusercontent.com/AdguardTeam/AdGuardVPNCLI/HEAD/scripts/release/install.sh"
+ADGUARD_INSTALLER_URL="https://raw.githubusercontent.com/AdguardTeam/AdGuardCLI/release/install.sh"
 DO_PACKAGES=1
 DO_MONITOR=1
 DO_VPN=0
@@ -180,7 +180,8 @@ connect_vpn() {
   printf 'bootstrap: checking AdGuard VPN CLI status\n'
   local status
   status="$($VPN_CLI status 2>/dev/null || true)"
-  if grep -Eiq '(^|[^[:alpha:]])connected([^[:alpha:]]|$)|protected' <<<"$status"; then
+  # Do not match the substring in "unprotected".
+  if grep -Eiq '(^|[^[:alpha:]])connected([^[:alpha:]]|$)' <<<"$status"; then
     printf 'bootstrap: AdGuard VPN is already connected\n'
     return 0
   fi
@@ -219,6 +220,10 @@ install_packages() {
   if ((${#PACKAGE_SOURCES[@]})); then
     install_package_set profile "${PACKAGE_SOURCES[@]}"
   fi
+  install_voice_packages
+}
+
+install_voice_packages() {
   if ((DO_VOICE)); then
     install_package_set voice "${VOICE_PACKAGE_SOURCES[@]}"
   else
@@ -335,12 +340,17 @@ check_profile() {
 }
 
 print_manifest() {
+  local vpn_enabled=false monitor_enabled=false packages_enabled=false voice_enabled=false
+  ((DO_VPN)) && vpn_enabled=true
+  ((DO_MONITOR)) && monitor_enabled=true
+  ((DO_PACKAGES)) && packages_enabled=true
+  ((DO_VOICE)) && voice_enabled=true
   printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
-  printf '{"name":"vpn","title":"Connect AdGuard VPN","category":"network","needs_user_input":true},'
-  printf '{"name":"display","title":"Apply tested display settings","category":"configuration","needs_user_input":false},'
-  printf '{"name":"packages","title":"Install required NPU voice runtime","category":"runtime","needs_user_input":false},'
+  printf '{"name":"vpn","enabled":%s,"title":"Connect AdGuard VPN","category":"network","needs_user_input":true},' "$vpn_enabled"
+  printf '{"name":"display","enabled":%s,"title":"Apply tested display settings","category":"configuration","needs_user_input":false},' "$monitor_enabled"
+  printf '{"name":"packages","enabled":%s,"title":"Install required NPU voice runtime","category":"runtime","needs_user_input":false},' "$packages_enabled"
   printf '{"name":"diagnostics","title":"Install optional diagnostic packages","category":"optional","needs_user_input":false},'
-  printf '{"name":"voice","title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},'
+  printf '{"name":"voice","enabled":%s,"requires":["packages"],"title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},' "$voice_enabled"
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
   printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
   printf '{"name":"doctor","title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}'
@@ -437,6 +447,10 @@ done
 [[ -d "$HOME" ]] || die "HOME is not available"
 detect_profile
 
+if ((DO_VOICE && !DO_PACKAGES)); then
+  die 'voice requires the package stage; remove --no-packages or add --no-voice'
+fi
+
 if ((MANIFEST)); then
   print_manifest
   exit 0
@@ -458,6 +472,23 @@ apply_update() {
   printf 'bootstrap: running the supported full Omarchy update\n'
   omarchy update
 }
+
+preflight_non_interactive() {
+  ((NON_INTERACTIVE)) || return 0
+  if ((DO_VPN)) && ! find_vpn_cli; then
+    die '--non-interactive cannot install/login AdGuard VPN; run from a terminal first'
+  fi
+  if ((DO_VOICE)); then
+    if [[ ! -f "$HOME/.config/voxtype/config.toml" ||
+          ! -f "$HOME/.config/systemd/user/voxtype.service" ]] ||
+       ! command -v voxtype >/dev/null 2>&1 ||
+       ! command -v wtype >/dev/null 2>&1; then
+      die '--non-interactive needs an existing native Voxtype setup; run once from a terminal'
+    fi
+  fi
+}
+
+preflight_non_interactive
 
 ensure_vpn_for_network_stage() {
   if ((DO_VPN)); then
@@ -520,7 +551,9 @@ run_stage() {
     voice)
       stage_note '1/1' 'Voice: native Voxtype + NPU inference'
       ((DO_VOICE)) || die 'voice stage is disabled by --no-voice or this profile'
+      ((DO_PACKAGES)) || die 'voice requires packages; remove --no-packages'
       ensure_vpn_for_network_stage
+      install_voice_packages
       install_voice
       ;;
     terminal)

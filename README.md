@@ -75,7 +75,7 @@ wrappers:
 # Full restore
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 
-# One stage from the same URL
+# One stage from the same URL; voice also installs its two NPU packages
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
 
 # Machine-readable stage list

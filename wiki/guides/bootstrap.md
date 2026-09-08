@@ -76,6 +76,11 @@ Network-dependent standalone stages automatically ensure the profile VPN unless
 you pass `--no-vpn`. The display stage has no network dependency. Diagnostics
 are optional and are not part of the clean flow.
 
+The standalone voice stage is self-contained: it installs the voice-scoped
+Lemonade/FLM packages first, then runs native Voxtype and applies the NPU
+policy. `--no-packages` cannot be combined with voice because that would create
+an incomplete installation.
+
 ## Safe switches
 
 | Switch | Effect |

@@ -6,7 +6,7 @@ Last verified: 2026-09-08
 
 The audit used Omarchy's user configuration model and the installed `omarchy-debug --no-sudo --print` diagnostic path. It combined read-only inventory, a protected short load test, camera and microphone capture discarded to `/dev/null`, a temporary 512 MiB Btrfs write/read/delete test, Ethernet gateway pings, and a reversible display-scale A/B check.
 
-The protected phases used `systemd-inhibit` for idle, sleep and lid-switch actions. Omarchy Stay Awake was already enabled. No kernel parameters, firmware, packages, system services or stock files under `/usr/share/omarchy` were changed.
+The protected phases used `systemd-inhibit` for idle, sleep and lid-switch actions. Omarchy Stay Awake was already enabled. No kernel parameters, firmware or stock files under `/usr/share/omarchy` were changed by the component tests. The later voice profile separately installed the declared Lemonade packages and enabled `lemond.service`; this page should not be read as a current package/service inventory.
 
 ## Results
 
