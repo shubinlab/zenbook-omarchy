@@ -18,12 +18,13 @@ The installer clones or updates the repository, selects the profile from DMI
 and runs the supported stages in this order:
 
 ```text
-VPN → display → packages → native Voxtype → terminal → omarchy update
+VPN → display → package check → native Voxtype → terminal → doctor
 ```
 
 On the first run, the only expected questions are the official AdGuard login
 and Omarchy's native Voxtype confirmation. The installer reconnects safely on
-reruns and refuses to update a locally modified checkout.
+reruns, refuses to update a locally modified checkout and does not run a
+system update implicitly.
 
 ## Verify without changing anything
 
@@ -52,6 +53,7 @@ Use the same raw entry point when you want one action only:
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage vpn
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage display
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage packages
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage diagnostics
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage terminal
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
@@ -63,6 +65,7 @@ From an existing checkout, the equivalent short commands are:
 ./scripts/install-vpn.sh
 ./scripts/install-display.sh
 ./scripts/install-packages.sh
+./scripts/install-diagnostics.sh
 ./scripts/install-voice.sh
 ./scripts/install-terminal.sh
 ./scripts/install-update.sh
@@ -70,7 +73,8 @@ From an existing checkout, the equivalent short commands are:
 ```
 
 Network-dependent standalone stages automatically ensure the profile VPN unless
-you pass `--no-vpn`. The display stage has no network dependency.
+you pass `--no-vpn`. The display stage has no network dependency. Diagnostics
+are optional and are not part of the clean flow.
 
 ## Safe switches
 
@@ -89,8 +93,8 @@ you pass `--no-vpn`. The display stage has no network dependency.
 
 `zenbook-um3406ka` is selected when DMI reports `UM3406KA`. It enables the
 official AdGuard VPN CLI, tested display configuration, native voice policy and
-terminal extension. Other hosts use `generic`, which installs only common
-diagnostic packages and leaves their display and user policy alone.
+terminal extension. Other hosts use `generic`, which makes no automatic
+changes. Run the diagnostic stage explicitly only when that is intended.
 
 The installer never edits `/usr/share/omarchy`. It uses native Omarchy commands,
 keeps user changes under `~/.config`, and stores recoverable backups under
@@ -98,6 +102,19 @@ keeps user changes under `~/.config`, and stores recoverable backups under
 
 ## Full update policy
 
-The complete command ends with `omarchy update`, not raw `pacman -Syu`. Omarchy
-owns snapshots and migrations around that operation. Use `--stage update` when
-you want to run that final operation separately.
+The clean restore does not update the operating system automatically. Use
+`--stage update` only when you explicitly want Omarchy to own the snapshot,
+migrations and package update. Apply the profile again after an update if a
+stock migration changes a user-facing default.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
+```
+
+Older Zenbook installs can use the opt-in legacy repair command. It is never
+called by a clean install:
+
+```bash
+./scripts/repair-voice-legacy.sh --check
+./scripts/repair-voice-legacy.sh --apply
+```

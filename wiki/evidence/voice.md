@@ -20,8 +20,8 @@ physical PipeWire default microphone
 Native Voxtype OSD remains enabled, and start/stop audio feedback is enabled.
 The profile does not switch to clipboard paste, install a second typing tool,
 change the default sink, or add a global echo-cancel filter. Optional VAD and
-the former virtual microphone are intentionally not part of the baseline;
-their model file may remain as harmless local rollback/storage data.
+the former virtual microphone are intentionally not part of the clean baseline.
+Legacy cleanup is available only through the explicit voice-repair command.
 
 The packaged Omarchy bindings remain the source of truth: `Super+Ctrl+X`
 toggles dictation and `F9` is push-to-talk. No file under `/usr/share/omarchy`

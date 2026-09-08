@@ -28,6 +28,6 @@ user configuration under `~/.config`.
 - ChatGPT replaces the stock web-app shortcut at `Super+Shift+Alt+A`;
 - Foot Sixel, ble.sh/fzf and image preview helpers;
 - multilingual native Voxtype policy (`large-v3-turbo`, `language=auto`);
-- diagnostic packages listed in the profile.
+- optional diagnostic packages listed in the profile.
 
 The [configuration comparison](configuration.md) shows each changed user file.

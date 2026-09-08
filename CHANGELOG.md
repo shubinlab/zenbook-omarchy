@@ -3,7 +3,10 @@
 ## Unreleased
 
 - Simplified clean installation into ordered VPN, display, package, native
-  Voxtype, terminal and update stages; each stage is available independently.
+  Voxtype, terminal and doctor stages; diagnostics and update are explicit
+  optional stages.
+- Moved legacy PipeWire/VAD cleanup into an opt-in voice repair command.
+- Removed duplicate package ownership and consolidated the native voice check.
 - Removed the obsolete local monitor collector, service, files and docs.
 - Added a canonical Zenbook hardware and peripheral inventory.
 - Added a per-file restore map and guided recovery commands.

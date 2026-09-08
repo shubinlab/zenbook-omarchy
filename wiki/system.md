@@ -22,15 +22,15 @@ refreshed after an Omarchy update.
 3. UWSM starts Hyprland and Omarchy's default Lua/QML configuration.
 4. Hyprland loads Omarchy defaults first, then `~/.config/hypr/*.lua`.
 5. The Zenbook profile supplies the monitor override and optional user services.
-6. PipeWire and Voxtype use user-session configuration; package installation
-   is handled by `omarchy-pkg-add` and updates by `omarchy update`.
+6. PipeWire and Voxtype use user-session configuration; optional package
+   installation is handled by `omarchy-pkg-add` and updates by `omarchy update`.
 
 ## Stock versus this host
 
 Stock Omarchy provides the default Hyprland, Foot, Fcitx5, Voxtype, PipeWire,
 tmux, fzf and application stack. This host adds a tested external-display
 rule, a multilingual native Voxtype policy, a terminal
-extension, diagnostic packages and a ChatGPT binding. It retains Omarchy's stock
+extension, optional diagnostic packages and a ChatGPT binding. It retains Omarchy's stock
 Hyprland loader, default bindings, input defaults, theme system, tmux setup and
 package helper.
 

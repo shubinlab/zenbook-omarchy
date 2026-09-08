@@ -1,8 +1,8 @@
 # Generic profile
 
 This is the portable fallback for an Omarchy host without a matching tested
-hardware profile. It installs only the diagnostic packages in
-`packages/diagnostics.txt` and leaves monitor, VPN and other user state alone.
+hardware profile. It makes no automatic changes; run the optional diagnostics
+stage explicitly when an audit is intended.
 
 Check it without changing the system:
 

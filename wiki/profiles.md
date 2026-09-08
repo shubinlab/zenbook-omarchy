@@ -1,8 +1,9 @@
 # Profiles
 
 The repository is a reusable Omarchy bootstrap engine with optional host
-profiles. The `generic` profile is the safe fallback: it installs only common
-observability tools and leaves display, VPN and other user policy unchanged.
+profiles. The `generic` profile is the safe fallback: it makes no automatic
+changes and leaves display, VPN and other user policy unchanged. Common
+observability tools are available only through the explicit diagnostics stage.
 
 The `zenbook-um3406ka` profile contains the tested ASUS/LG/dock configuration,
 package manifests and the voice extension. It is

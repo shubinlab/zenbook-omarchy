@@ -17,7 +17,9 @@ PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
 PROFILE_PACKAGE_MANIFESTS=""
+PROFILE_DIAGNOSTIC_MANIFESTS=""
 PACKAGE_SOURCES=()
+DIAGNOSTIC_SOURCES=()
 MONITOR_SOURCE=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
@@ -64,9 +66,9 @@ Options:
   --no-vpn              Do not use VPN, even when the profile enables it.
   --vpn-location NAME   Use an AdGuard location or ISO code for this run.
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
-  --update-system       Run `omarchy update` after applying the profile.
+  --update-system       Run `omarchy update` after applying the profile (opt-in).
   --stage NAME          Run one stage: all, vpn, display, packages, voice,
-                        terminal, update or doctor. Default: all.
+                        diagnostics, terminal, update or doctor. Default: all.
   --manifest            Print the stage manifest as JSON and exit.
   --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
@@ -108,6 +110,10 @@ detect_profile() {
   local manifest
   for manifest in $PROFILE_PACKAGE_MANIFESTS; do
     PACKAGE_SOURCES+=("$PROFILE_DIR/$manifest")
+  done
+  DIAGNOSTIC_SOURCES=()
+  for manifest in $PROFILE_DIAGNOSTIC_MANIFESTS; do
+    DIAGNOSTIC_SOURCES+=("$PROFILE_DIR/$manifest")
   done
   if [[ -n "$PROFILE_MONITOR_CONFIG" ]]; then
     MONITOR_SOURCE="$PROFILE_DIR/$PROFILE_MONITOR_CONFIG"
@@ -182,23 +188,36 @@ connect_vpn() {
   "$VPN_CLI" "${args[@]}"
 }
 
-install_packages() {
-  need_command omarchy-pkg-add
+install_package_set() {
+  local label="$1"
+  shift
   local manifest package
   local -a packages=()
-  for manifest in "${PACKAGE_SOURCES[@]}"; do
+  for manifest in "$@"; do
     [[ -f "$manifest" ]] || die "missing package manifest: $manifest"
     while IFS= read -r package; do
       packages+=("$package")
     done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
   done
   if ((${#packages[@]} == 0)); then
-    printf 'bootstrap: profile %s has no package entries\n' "$PROFILE_ID"
+    printf 'bootstrap: profile %s has no %s package entries\n' "$PROFILE_ID" "$label"
     return 0
   fi
-  printf 'bootstrap: installing/verifying %d package entries for %s\n' \
-    "${#packages[@]}" "$PROFILE_ID"
+  need_command omarchy-pkg-add
+  printf 'bootstrap: installing/verifying %d %s package entries for %s\n' \
+    "${#packages[@]}" "$label" "$PROFILE_ID"
   omarchy-pkg-add "${packages[@]}"
+}
+
+install_packages() {
+  install_package_set profile "${PACKAGE_SOURCES[@]}"
+}
+
+install_diagnostics() {
+  if ((${#DIAGNOSTIC_SOURCES[@]})); then
+    ensure_vpn_for_network_stage
+  fi
+  install_package_set diagnostic "${DIAGNOSTIC_SOURCES[@]}"
 }
 
 install_voice() {
@@ -258,11 +277,21 @@ update_vpn_cli() {
 
 check_profile() {
   [[ -f "$PROFILE_DIR/profile.env" ]] || die "missing profile metadata"
-  local manifest count=0 package
+  local manifest count=0 diagnostic_count=0 package
   for manifest in "${PACKAGE_SOURCES[@]}"; do
     [[ -f "$manifest" ]] || die "missing package manifest: $manifest"
     while IFS= read -r package; do
-      [[ -n "$package" ]] && ((count += 1))
+      if [[ -n "$package" ]]; then
+        ((count += 1))
+      fi
+    done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+  done
+  for manifest in "${DIAGNOSTIC_SOURCES[@]}"; do
+    [[ -f "$manifest" ]] || die "missing diagnostic manifest: $manifest"
+    while IFS= read -r package; do
+      if [[ -n "$package" ]]; then
+        ((diagnostic_count += 1))
+      fi
     done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
   done
   if [[ -n "$MONITOR_SOURCE" ]]; then
@@ -278,8 +307,8 @@ check_profile() {
     [[ -x "/usr/share/omarchy/bin/omarchy-voxtype-install" ]] || die 'native Omarchy Voxtype installer is missing'
     [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
   fi
-  printf 'bootstrap check: PASS profile=%s packages=%d monitor=%s vpn=%s (no system changes made)\n' \
-    "$PROFILE_ID" "$count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
+  printf 'bootstrap check: PASS profile=%s packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
+    "$PROFILE_ID" "$count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
 
 print_manifest() {
@@ -287,6 +316,7 @@ print_manifest() {
   printf '{"name":"vpn","title":"Connect AdGuard VPN","category":"network","needs_user_input":true},'
   printf '{"name":"display","title":"Apply tested display settings","category":"configuration","needs_user_input":false},'
   printf '{"name":"packages","title":"Install profile packages","category":"runtime","needs_user_input":false},'
+  printf '{"name":"diagnostics","title":"Install optional diagnostic packages","category":"optional","needs_user_input":false},'
   printf '{"name":"voice","title":"Install native Omarchy Voxtype","category":"runtime","needs_user_input":true},'
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
   printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
@@ -307,7 +337,7 @@ run_doctor() {
     failures=$((failures + 1))
   fi
 
-  if [[ -n "$VOICE_SOURCE" ]]; then
+  if ((DO_VOICE)) && [[ -n "$VOICE_SOURCE" ]]; then
     if "$VOICE_SOURCE" --check; then
       printf '%sOK%s native voice\n' "$C_GREEN" "$C_RESET"
     else
@@ -316,7 +346,7 @@ run_doctor() {
     fi
   fi
 
-  if [[ -n "$TERMINAL_SOURCE" ]] && command -v terminal-doctor >/dev/null 2>&1; then
+  if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]] && command -v terminal-doctor >/dev/null 2>&1; then
     if terminal-doctor; then
       printf '%sOK%s terminal\n' "$C_GREEN" "$C_RESET"
     else
@@ -432,8 +462,14 @@ run_stage() {
       if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
       stage_note '5/6' 'Terminal: user settings'
       apply_terminal
-      stage_note '6/6' 'System: supported Omarchy update'
-      if ((DO_SYSTEM_UPDATE)); then apply_update; else printf 'bootstrap: system update skipped\n'; fi
+      if ((DO_SYSTEM_UPDATE)); then
+        stage_note '6/7' 'System: supported Omarchy update'
+        apply_update
+        stage_note '7/7' 'Doctor: verify the installed profile'
+      else
+        stage_note '6/6' 'Doctor: verify the installed profile'
+      fi
+      run_doctor
       ;;
     vpn)
       stage_note '1/1' 'Network: AdGuard VPN'
@@ -449,8 +485,14 @@ run_stage() {
     packages)
       stage_note '1/1' 'Packages: profile requirements'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
-      ensure_vpn_for_network_stage
+      if ((${#PACKAGE_SOURCES[@]})); then
+        ensure_vpn_for_network_stage
+      fi
       install_packages
+      ;;
+    diagnostics)
+      stage_note '1/1' 'Optional diagnostics: package tools'
+      install_diagnostics
       ;;
     voice)
       stage_note '1/1' 'Voice: native Omarchy Voxtype'
@@ -474,7 +516,7 @@ run_stage() {
       run_doctor
       ;;
     *)
-      die "unknown stage: $STAGE (use all, vpn, display, packages, voice, terminal, update or doctor)"
+      die "unknown stage: $STAGE (use all, vpn, display, packages, diagnostics, voice, terminal, update or doctor)"
       ;;
   esac
 }

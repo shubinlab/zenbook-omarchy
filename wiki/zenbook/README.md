@@ -20,8 +20,9 @@ The profile is selected automatically by DMI. To select it explicitly:
 ./scripts/bootstrap.sh --profile zenbook-um3406ka
 ```
 
-The same clean-install flow applies VPN, display, packages, native Voxtype,
-terminal settings and the supported Omarchy update. Check it first with:
+The same clean-install flow applies VPN, display, native Voxtype, terminal
+settings and doctor. Diagnostics and the supported Omarchy update remain
+explicit optional stages. Check it first with:
 
 ```bash
 ./scripts/bootstrap.sh --profile zenbook-um3406ka --check

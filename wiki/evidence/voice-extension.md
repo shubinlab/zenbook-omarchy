@@ -34,7 +34,13 @@ The operation creates a timestamped user-state backup. Restore it with:
 ./profiles/zenbook-um3406ka/voice/apply.sh --rollback
 ```
 
-There is no profile PipeWire drop-in and no changed global sink. The default
-source is restored to a physical ALSA source if an older profile left a
-virtual source selected. The native Omarchy files under `/usr/share/omarchy`
-remain read-only inputs.
+There is no profile PipeWire drop-in and no changed global sink. The clean
+profile does not inspect or remove legacy PipeWire/VAD state. Older installs
+can use the explicit migration command:
+
+```bash
+./scripts/repair-voice-legacy.sh --check
+./scripts/repair-voice-legacy.sh --apply
+```
+
+The native Omarchy files under `/usr/share/omarchy` remain read-only inputs.

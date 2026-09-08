@@ -1,2 +1,0 @@
-# User-facing terminal additions. Foot, tmux and fzf remain Omarchy-managed.
-chafa

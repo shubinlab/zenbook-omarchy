@@ -6,7 +6,7 @@ Last verified: 2026-09-08
 
 Packages were installed through the native Omarchy command `omarchy-pkg-add`. The Omarchy wrapper delegates the actual transaction to `sudo pacman -S --needed`; no direct manual pacman command was used.
 
-Installed diagnostic set:
+Optional diagnostic set (installed only for a deliberate audit):
 
 ```text
 usbutils 019-1

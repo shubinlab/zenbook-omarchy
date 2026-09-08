@@ -23,7 +23,7 @@ updates.
 | `~/.config/omarchy/shell.json` | Stock bar and clock defaults | Clock format is `ddd d MMM HH:mm`; idle 150/300 seconds retained |
 | `~/.config/omarchy/defaults/agent` | Omarchy default agent | `codex` |
 | `~/.config/voxtype/config.toml` | Native default model/language and audio path | `large-v3-turbo`, auto language, native OSD and audio feedback |
-| `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile drop-in | Absent; native PipeWire routing is retained |
+| `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile drop-in | Not created by clean install; legacy repair handles older installs explicitly |
 | `~/.bashrc` / `~/.blerc` | Omarchy Bash and fzf setup | Managed profile blocks source ble.sh and fzf integration |
 
 The profile source, apply command and rollback location for each row are in

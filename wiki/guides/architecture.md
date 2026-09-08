@@ -8,15 +8,17 @@ install.sh                 short GitHub entry point
 scripts/bootstrap.sh       staged profile orchestrator and apply engine
 scripts/install-*.sh       standalone aliases for one safe stage
 scripts/doctor.sh           read-only installed-profile health check
+scripts/install-diagnostics.sh optional audit package stage
+scripts/repair-voice-legacy.sh  explicit migration for older voice setups
 profiles/<id>/              declarative packages, monitor rules and extensions
 tools/                      read-only checks and protected experiments
 wiki/                       all stable guides, inventories and evidence
 runs/                       local ignored evidence only
 ```
 
-`auto` selects a profile from a narrow DMI rule and falls back to `generic`.
-An explicit `--profile` always wins. The generic profile installs only common
-observability tools and does not enable a VPN or monitor override.
+`auto` selects a profile from a narrow DMI rule and falls back to a no-op
+`generic` profile. An explicit `--profile` always wins. Diagnostics are
+installed only through the explicit optional stage.
 Hardware-specific behavior must be opt-in through a profile.
 
 The design review rejected five failure modes:
@@ -32,10 +34,11 @@ The design review rejected five failure modes:
    the public-repository check.
 
 The default clean-install sequence is deliberately linear: connect the VPN,
-apply the simple tested display override, install declared packages, invoke
-Omarchy's native Voxtype path, apply the terminal extension and only then run
-`omarchy update`. Each stage can be invoked independently through the main
-installer's `--stage` option or its thin local wrapper.
+apply the simple tested display override, verify required packages, invoke
+Omarchy's native Voxtype path, apply the terminal extension and run doctor.
+Diagnostics and `omarchy update` are explicit optional stages. Each stage can
+be invoked independently through the main installer's `--stage` option or its
+thin local wrapper.
 
 Profiles are allowed to contain tested configuration and sanitized conclusions.
 They must not contain credentials, serial numbers, EDID hashes, raw journals,

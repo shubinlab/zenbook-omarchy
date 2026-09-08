@@ -29,13 +29,14 @@ The installer runs these stages in order:
 |---:|---|---|
 | 1 | **Network** | Install/login/connect AdGuard VPN when the Zenbook profile requires it |
 | 2 | **Display** | Apply the tested monitor layout with a backup |
-| 3 | **Packages** | Install the declared platform, diagnostic and terminal packages |
+| 3 | **Packages** | Verify the profile package set; stock Omarchy remains authoritative |
 | 4 | **Voice** | Run native `omarchy voxtype install`, then apply the multilingual policy |
 | 5 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
-| 6 | **Update** | Run the supported `omarchy update` command |
+| 6 | **Doctor** | Verify the resulting native/user configuration |
 
 On a first run, answer the native VPN and Voxtype prompts when they appear.
-After installation, verify everything with:
+The clean flow does not run a system update automatically. Verify everything
+with:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
@@ -61,6 +62,7 @@ The raw URL must include the branch name (`main`).
 | **Voice** | Native Voxtype, Whisper `large-v3-turbo`, `language=auto`, OSD, start/stop sounds and native Wayland typing |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
+| **Diagnostics** | Optional hardware tools, installed only with `--stage diagnostics` |
 | **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |
 | **Privacy** | No background collector or data-logging path is installed |
 
@@ -78,6 +80,12 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 
 # Machine-readable stage list
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --manifest
+
+# Optional diagnostics
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage diagnostics
+
+# Explicit Omarchy update (kept separate from the clean restore)
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
 ```
 
 From an existing checkout:
@@ -89,6 +97,8 @@ From an existing checkout:
 ./scripts/install-voice.sh --profile zenbook-um3406ka
 ./scripts/install-terminal.sh --profile zenbook-um3406ka
 ./scripts/install-update.sh --profile zenbook-um3406ka
+./scripts/install-diagnostics.sh --profile zenbook-um3406ka
+./scripts/repair-voice-legacy.sh --check
 ./scripts/doctor.sh --profile zenbook-um3406ka
 ```
 
@@ -101,6 +111,7 @@ Useful safety switches:
 --no-voice           skip native Voxtype and its profile policy
 --no-terminal        skip terminal settings
 --no-monitor         skip the display override
+--stage diagnostics  install optional diagnostic packages
 ```
 
 ## Why this stays native
@@ -137,6 +148,7 @@ scripts/doctor.sh                  read-only health check
 profiles/                          executable host profiles
 profiles/zenbook-um3406ka/voice/   native Voxtype policy and doctor
 profiles/zenbook-um3406ka/terminal/ terminal policy and rollback
+scripts/repair-voice-legacy.sh     opt-in migration for older voice setups
 wiki/                              guides, inventories and evidence
 tools/                             CI and publication checks
 runs/                              local ignored experiment output
@@ -145,7 +157,8 @@ runs/                              local ignored experiment output
 ## Scope and recovery
 
 The automatic profile is selected by DMI: `zenbook-um3406ka` for this ASUS
-Zenbook, otherwise the conservative `generic` profile. Neither profile adds a
+Zenbook, otherwise the no-op `generic` profile. Diagnostics are explicit and
+are never part of the clean restore by accident. Neither profile adds a
 background collector or data-logging service.
 
 All supported changes are user-scoped. Monitor, voice and terminal operations

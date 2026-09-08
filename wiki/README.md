@@ -35,9 +35,9 @@ flowchart LR
   C --> D[Profile packages]
   D --> E[Native Voxtype]
   E --> F[Terminal settings]
-  F --> G[omarchy update]
-  G --> H[doctor]
-  H --> I[Backups and rollback]
+  F --> G[doctor]
+  G --> H[Backups and rollback]
+  G -.-> I[optional: diagnostics or update]
 ```
 
 The important boundary is simple:
@@ -53,7 +53,7 @@ Recovery state                 ~/.local/state/...       timestamped backup
 
 The machine profile is [ASUS Zenbook 14 UM3406KA](zenbook/README.md): an ASUS
 Zenbook with an LG DisplayPort monitor and JSAUX dock. DMI selects it
-automatically; other machines fall back to the conservative `generic` profile.
+automatically; other machines fall back to a no-op `generic` profile.
 
 The tested voice path is native Omarchy Voxtype with Whisper
 `large-v3-turbo`, `language=auto`, native Wayland typing, OSD and audio

@@ -50,7 +50,7 @@ The MediaTek MT7922 is bound to `mt7921e` and the Bluetooth controller to `btusb
 
 The webcam uses `uvcvideo`; the microphone and HDMI audio use the kernel ALSA/PipeWire stack. The LG display needs no Linux vendor driver: DRM/KMS, EDID and DDC/CI are sufficient for the tested functions.
 
-The WD_BLACK SN850X is directly attached as NVMe and reports firmware 620361WD. The local Btrfs and temporary I/O checks passed. `nvme-cli`, `smartmontools` and `fwupd` are now recorded in the bootstrap package set as observability tools; they do not change the driver. WD's product material still describes the dashboard as Windows software, and no matching LVFS update was found in this review. [WD_BLACK SN850X data sheet](https://documents.westerndigital.com/content/dam/doc-library/th_th/assets/public/western-digital/product/internal-drives/wd-black-ssd/data-sheet-wd-black-sn850x-nvme-ssd.pdf), [WD community](https://community.wd.com/c/wd-software-mobile-apps/10)
+The WD_BLACK SN850X is directly attached as NVMe and reports firmware 620361WD. The local Btrfs and temporary I/O checks passed. `nvme-cli`, `smartmontools` and `fwupd` are recorded in the optional diagnostics manifest as observability tools; they do not change the driver. WD's product material still describes the dashboard as Windows software, and no matching LVFS update was found in this review. [WD_BLACK SN850X data sheet](https://documents.westerndigital.com/content/dam/doc-library/th_th/assets/public/western-digital/product/internal-drives/wd-black-ssd/data-sheet-wd-black-sn850x-nvme-ssd.pdf), [WD community](https://community.wd.com/c/wd-software-mobile-apps/10)
 
 ## Package plan
 
@@ -60,7 +60,7 @@ Safe observability additions, when a maintenance window is available:
 usbutils ethtool nvme-cli smartmontools fwupd fio stress-ng
 ```
 
-These packages improve evidence for USB descriptors, Ethernet counters, NVMe SMART/firmware inventory, firmware metadata, storage I/O and controlled stress. They are now installed through `omarchy-pkg-add`; the package database check is clean. They are not display drivers. Do not install vendor Windows packages, AMDGPU-PRO, `r8152-dkms`, random DKMS display modules or duplicate power managers without a reproduced failure.
+These packages improve evidence for USB descriptors, Ethernet counters, NVMe SMART/firmware inventory, firmware metadata, storage I/O and controlled stress. When requested, they are installed through `omarchy-pkg-add`; the package database check is clean. They are not display drivers. Do not install vendor Windows packages, AMDGPU-PRO, `r8152-dkms`, random DKMS display modules or duplicate power managers without a reproduced failure.
 
 The boot warnings for `asus_armoury`, `asus_wmi`, the audio machine driver and `boltd` remain candidates for separate investigations. None was connected to the display-mode drift by the local evidence.
 

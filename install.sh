@@ -21,8 +21,9 @@ Usage:
 Useful options:
   --check                 Verify the published repository without changes.
   --stage NAME            Run one stage: vpn, display, packages, voice,
-                          terminal, update or doctor.
+                          diagnostics, terminal, update or doctor.
   --manifest              Print the stage manifest as JSON.
+  --update-system         Run `omarchy update` explicitly after the profile.
   --non-interactive       Stop before stages that need terminal input.
   --no-vpn                Skip VPN connection for this run.
   --no-voice              Skip native Voxtype setup.
@@ -75,4 +76,4 @@ else
   fi
 fi
 
-exec "$repo_dir/scripts/bootstrap.sh" --profile auto --update-system "$@"
+exec "$repo_dir/scripts/bootstrap.sh" --profile auto "$@"

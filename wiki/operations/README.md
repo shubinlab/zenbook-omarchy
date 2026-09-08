@@ -28,8 +28,10 @@
 | Rebuild everything | `./scripts/bootstrap.sh --profile zenbook-um3406ka` |
 | Connect VPN only | `./scripts/install-vpn.sh --profile zenbook-um3406ka` |
 | Restore display only | `./scripts/install-display.sh --profile zenbook-um3406ka` |
-| Install profile packages | `./scripts/install-packages.sh --profile zenbook-um3406ka` |
+| Verify required package set | `./scripts/install-packages.sh --profile zenbook-um3406ka` |
+| Install optional diagnostics | `./scripts/install-diagnostics.sh --profile zenbook-um3406ka` |
 | Repair/check native voice | `./scripts/install-voice.sh --profile zenbook-um3406ka` or `voice/doctor.sh` |
+| Repair an older voice setup | `./scripts/repair-voice-legacy.sh --check` then `--apply` |
 | Restore terminal settings | `./scripts/install-terminal.sh --profile zenbook-um3406ka` |
 | Run Omarchy update | `./scripts/install-update.sh --profile zenbook-um3406ka` |
 | Test monitor/VRR safely | [Protected experiment](experiments.md) |
@@ -40,7 +42,7 @@
 
 - Omarchy version and command availability;
 - native Voxtype model, language, output, OSD, feedback and service;
-- physical PipeWire microphone and preserved output sink;
+- physical PipeWire microphone and available output sink;
 - terminal, Foot Sixel, ble.sh/fzf and managed shortcut;
 - Hyprland configuration errors;
 - AdGuard VPN status when the selected profile enables it.

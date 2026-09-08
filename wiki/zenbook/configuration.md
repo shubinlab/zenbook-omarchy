@@ -6,8 +6,8 @@ the source of truth, how it is applied, and where recovery starts.
 | Area | Source of truth | Apply | Verify | Recovery |
 |---|---|---|---|---|
 | Monitor | [monitors.lua](../../profiles/zenbook-um3406ka/monitors.lua) | `scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn --no-terminal` | [display tests](../evidence/display-tests.md) and `hyprctl monitors all` | Latest `~/.local/state/omarchy-profiles/zenbook-um3406ka/backups/*/monitors.lua` |
-| Packages | [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt), [diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt), [terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt) | Bootstrap or `omarchy-pkg-add` | [diagnostics](../evidence/diagnostics.md), `pacman -Q` | Packages are additive; remove only after a dependency review |
-| Voice | Native Omarchy installer plus `voice/apply.sh` | Bootstrap, or `voice/apply.sh --apply` for an existing native install | `voice/apply.sh --check`, `voice/doctor.sh` | `voice/apply.sh --rollback` |
+| Packages | Native Omarchy package set; optional [diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt) | `scripts/install-diagnostics.sh` when needed | [diagnostics](../evidence/diagnostics.md), `pacman -Q` | Packages are additive; remove only after a dependency review |
+| Voice | Native Omarchy installer plus `voice/apply.sh` | Bootstrap, or `voice/apply.sh --apply` for an existing native install | `voice/apply.sh --check`, `voice/doctor.sh` | `voice/apply.sh --rollback`; legacy migration is separate |
 | Terminal | `terminal/apply.sh` and `terminal/*` | `terminal/apply.sh --apply` or bootstrap | `terminal-doctor` | `terminal/apply.sh --rollback` |
 | Display experiments | `tools/run_vrr_redteam_safe.sh` and Python runners | Run from the graphical session | Local JSON/Markdown under ignored `runs/` | The safe wrapper restores the selected final mode |
 

@@ -13,9 +13,13 @@ The installed Omarchy tree exposes the stock package catalogs at:
 
 These catalogs are the comparison baseline, not a claim that every conditional
 hardware package is installed on every machine. Omarchy's package helper uses
-`pacman -S --needed`, so profile additions are idempotent.
+`pacman -S --needed`, so optional additions are idempotent.
 
 ## Profile-declared platform stack
+
+The platform manifest is retained as a hardware reference, not part of the
+default clean install. Omarchy already owns the kernel, firmware, Mesa,
+PipeWire, networking and Bluetooth runtime on this host.
 
 | Group | Packages | Current state |
 |---|---|---|
@@ -24,7 +28,15 @@ hardware package is installed on every machine. Omarchy's package helper uses
 | Audio | `pipewire`, `wireplumber`, `sof-firmware` | Installed |
 | Connectivity | `networkmanager`, `bluez`, `bluez-utils`, `power-profiles-daemon` | Installed |
 
-## Profile-declared diagnostics
+## Optional diagnostics
+
+These tools are useful for a deliberate hardware audit, but they are not
+needed for normal Omarchy, Voxtype, display or terminal operation. Install
+them only when needed:
+
+```bash
+./scripts/install-diagnostics.sh --profile zenbook-um3406ka
+```
 
 | Package | Current version | Install reason | Purpose |
 |---|---:|---|---|
@@ -44,7 +56,6 @@ hardware package is installed on every machine. Omarchy's package helper uses
 | `libinput` | `1.31.3-1` | dependency | Input diagnostics |
 | `lm_sensors` | `3.6.2-1` | dependency | Sensor readings |
 | `mpv` | `0.41.0-6` | explicit | Controlled media/display checks |
-| `wayland-utils` | — | declared, missing | Wayland compositor queries; available in repository but not installed |
 
 ## User-facing additions
 
@@ -65,9 +76,10 @@ profile's additions; the package manifests, Omarchy's native Voxtype
 installer and `pacman -Qi` install reason are the authority. Do not remove a
 package solely because it is absent from the two stock catalog files.
 
-The source manifests are [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt),
-[diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt) and
-[terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt).
+The source manifests are [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt)
+for reference and [diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt)
+for the optional stage. Terminal preview owns its `chafa` dependency in
+`profiles/zenbook-um3406ka/terminal/apply.sh`.
 `voxtype-bin` and `wtype` are intentionally not duplicated in a repository
 manifest: the clean-install flow lets Omarchy's native Voxtype installer own
 their package transaction.
