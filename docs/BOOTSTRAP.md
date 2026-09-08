@@ -25,8 +25,9 @@ the repository and apply the profile in one line:
 repo="$HOME/zenbook-omarchy"; if [ -d "$repo/.git" ]; then git -C "$repo" pull --ff-only; else git clone https://github.com/shubinlab/zenbook-omarchy.git "$repo"; fi && "$repo/install/bootstrap.sh" --vpn --update-system
 ```
 
-To select a particular AdGuard location without saving it in Git, prefix the
-same command with `ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY`.
+To select a particular AdGuard location without saving it in Git, add
+`export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY;` before the `repo=...` part of
+the same one-liner.
 
 On a clean system without the CLI, install the official release first in the
 same shell, complete the one-time login interactively, then run the bootstrap:
