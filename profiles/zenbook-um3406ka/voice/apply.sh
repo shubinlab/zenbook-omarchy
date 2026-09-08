@@ -12,6 +12,7 @@ PROFILE_FILE="${VOICE_PROFILE_FILE:-${PROFILE_DIR}/voice/voxtype-omarchy.env.exa
 TEMPLATE="${VOICE_TEMPLATE:-${PROFILE_DIR}/voice/pipewire-echo-cancel.conf.tmpl}"
 VOXTYPE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/voxtype/config.toml"
 PIPEWIRE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf"
+LEGACY_PIPEWIRE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/pipewire/pipewire-pulse.conf.d/90-zenbook-omarchy-voice.conf"
 BACKUP_ROOT="${XDG_STATE_HOME:-${HOME}/.local/state}/omarchy-profiles/backups/voice"
 
 ACTION=check
@@ -130,6 +131,7 @@ restore_backup() {
   [[ -n "${BACKUP_ID}" ]] || die 'backup id is not selected'
   restore_one "${VOXTYPE_TARGET}" voxtype.config.toml
   restore_one "${PIPEWIRE_TARGET}" pipewire.conf
+  restore_one "${LEGACY_PIPEWIRE_TARGET}" legacy.pipewire.conf
   systemctl --user restart pipewire-pulse.service
   local restore_source
   restore_source="$(sed -n 's/^default_source=//p' "${BACKUP_ROOT}/${BACKUP_ID}/metadata" 2>/dev/null || true)"
@@ -219,6 +221,12 @@ check_state() {
     printf 'FAIL PipeWire drop-in missing\n'
     CHECK_FAILURES=$((CHECK_FAILURES + 1))
   fi
+  if [[ ! -e "${LEGACY_PIPEWIRE_TARGET}" && ! -L "${LEGACY_PIPEWIRE_TARGET}" ]]; then
+    printf 'PASS legacy PipeWire drop-in absent\n'
+  else
+    printf 'FAIL legacy PipeWire drop-in is still present\n'
+    CHECK_FAILURES=$((CHECK_FAILURES + 1))
+  fi
   printf 'result=%s\n' "$([[ ${CHECK_FAILURES} -eq 0 ]] && printf PASS || printf FAIL)"
   return "${CHECK_FAILURES}"
 }
@@ -237,11 +245,15 @@ apply_profile() {
   mkdir -p "${BACKUP_ROOT}/${BACKUP_ID}"
   backup_target "${VOXTYPE_TARGET}" voxtype.config.toml
   backup_target "${PIPEWIRE_TARGET}" pipewire.conf
+  backup_target "${LEGACY_PIPEWIRE_TARGET}" legacy.pipewire.conf
   printf 'default_source=%s\nsource_master=%s\nsink_master=%s\n' "${CURRENT_DEFAULT_SOURCE}" "${VOICE_PIPEWIRE_SOURCE_MASTER}" "${VOICE_PIPEWIRE_SINK_MASTER}" >"${BACKUP_ROOT}/${BACKUP_ID}/metadata"
   APPLY_STARTED=1
   trap rollback_on_error ERR
 
   render_pipewire
+  if [[ -e "${LEGACY_PIPEWIRE_TARGET}" || -L "${LEGACY_PIPEWIRE_TARGET}" ]]; then
+    rm -f -- "${LEGACY_PIPEWIRE_TARGET}"
+  fi
   voxtype config set audio.device "${VOICE_AUDIO_DEVICE}"
   voxtype config set whisper.model "${VOICE_MODEL}"
   voxtype config set whisper.language "${VOICE_LANGUAGE}"
