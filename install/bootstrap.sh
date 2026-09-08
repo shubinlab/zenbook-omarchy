@@ -19,6 +19,7 @@ DO_VPN=0
 DO_SYSTEM_UPDATE=0
 DO_TELEMETRY=0
 DO_VPN_CLI_UPDATE=0
+DO_CHECK=0
 
 usage() {
   cat <<'EOF'
@@ -33,6 +34,7 @@ Options:
   --update-vpn-cli      Ask the installed AdGuard VPN CLI to update itself.
   --update-system       Run `omarchy update` after applying the profile.
   --enable-telemetry    Install and enable the local user telemetry service.
+  --check               Validate files and commands without changing the system.
   --no-packages         Skip diagnostic package installation.
   --no-monitor          Skip the monitor configuration and mirror cleanup.
   -h, --help            Show this help.
@@ -140,6 +142,23 @@ update_vpn_cli() {
   "$VPN_CLI" update -y
 }
 
+check_profile() {
+  need_command omarchy
+  need_command omarchy-pkg-add
+  [[ -f "$CONFIG_SOURCE" ]] || die "missing monitor profile: $CONFIG_SOURCE"
+  local manifest count=0 package
+  for manifest in "${PACKAGE_SOURCES[@]}"; do
+    [[ -f "$manifest" ]] || die "missing package manifest: $manifest"
+    while IFS= read -r package; do
+      [[ -n "$package" ]] && ((count += 1))
+    done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+  done
+  ((count > 0)) || die "package manifests are empty"
+  grep -q 'output = "DP-1"' "$CONFIG_SOURCE" || die "DP-1 rule is missing"
+  grep -q '239.97' "$CONFIG_SOURCE" || die "240 Hz rule is missing"
+  printf 'bootstrap check: PASS (%d package entries; no system changes made)\n' "$count"
+}
+
 while (($#)); do
   case "$1" in
     --vpn) DO_VPN=1 ;;
@@ -147,6 +166,7 @@ while (($#)); do
     --update-vpn-cli) DO_VPN_CLI_UPDATE=1; DO_VPN=1 ;;
     --update-system) DO_SYSTEM_UPDATE=1 ;;
     --enable-telemetry) DO_TELEMETRY=1 ;;
+    --check) DO_CHECK=1 ;;
     --no-packages) DO_PACKAGES=0 ;;
     --no-monitor) DO_MONITOR=0 ;;
     -h|--help) usage; exit 0 ;;
@@ -157,6 +177,11 @@ done
 
 [[ "$EUID" -ne 0 ]] || die "run as the normal user; Omarchy helpers request privilege when needed"
 [[ -d "$HOME" ]] || die "HOME is not available"
+
+if ((DO_CHECK)); then
+  check_profile
+  exit 0
+fi
 
 if ((DO_VPN)); then connect_vpn; fi
 if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi

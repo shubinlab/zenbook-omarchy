@@ -32,6 +32,14 @@ particular AdGuard location without saving it in Git, add
 `export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY;` before the `repo=...` part of
 the same one-liner.
 
+The safe remote verification command downloads the published repository,
+checks Bash and profile files, and performs no installation or configuration
+changes:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
+```
+
 The installer URL is the one published by AdGuard. The repository invokes the
 CLI's documented `status`, `connect` and optional `update` commands. The login
 step remains interactive and no account data belongs in this repository.

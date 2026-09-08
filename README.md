@@ -22,6 +22,12 @@ To choose a VPN location for this run:
 export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY; curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
+To verify the current GitHub command without installing or changing anything:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
+```
+
 The current tested profile is 2560×1440 at 240 Hz, 10-bit, scale 1.6, `cm=srgb` and per-output VRR=1. The external scale is kept in the Omarchy-managed `omarchy_monitor_scale` variable so the normal scaling command remains usable.
 
 ## Run the protected experiment

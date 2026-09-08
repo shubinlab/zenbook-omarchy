@@ -6,11 +6,33 @@ repo_url="https://github.com/shubinlab/zenbook-omarchy.git"
 repo_dir="${ZENBOOK_OMARCHY_DIR:-$HOME/zenbook-omarchy}"
 adguard_installer_url="https://raw.githubusercontent.com/AdguardTeam/AdGuardVPNCLI/HEAD/scripts/release/install.sh"
 adguard_installed_now=0
+check_only=0
+
+for arg in "$@"; do
+  [[ "$arg" == "--check" ]] && check_only=1
+done
 
 command -v git >/dev/null 2>&1 || {
   printf '%s\n' 'zenbook-omarchy: git is required' >&2
   exit 1
 }
+
+if ((check_only)); then
+  command -v curl >/dev/null 2>&1 || {
+    printf '%s\n' 'zenbook-omarchy check: curl is required' >&2
+    exit 1
+  }
+  check_dir="$(mktemp -d)"
+  trap 'rm -rf "$check_dir"' EXIT
+  printf '%s\n' 'zenbook-omarchy check: checking the AdGuard installer URL'
+  curl -fsSL "$adguard_installer_url" -o "$check_dir/adguard-installer.sh"
+  printf '%s\n' 'zenbook-omarchy check: cloning the published repository'
+  git clone --depth=1 "$repo_url" "$check_dir/repo" >/dev/null
+  bash -n "$check_dir/repo/install.sh" "$check_dir/repo/install/bootstrap.sh"
+  "$check_dir/repo/install/bootstrap.sh" --check
+  printf '%s\n' 'zenbook-omarchy check: PASS (no system changes made)'
+  exit 0
+fi
 
 if ! command -v adguardvpn-cli >/dev/null 2>&1 && [[ ! -x /opt/adguardvpn_cli/adguardvpn-cli ]]; then
   command -v curl >/dev/null 2>&1 || {
