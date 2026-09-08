@@ -1,60 +1,103 @@
+<div align="center">
+
 # Bootstrap
 
-The repository has one small engine and optional profiles. `generic` is the
-portable fallback: it installs common diagnostic tools and leaves monitor, VPN
-and unrelated user policy unchanged. A known machine can supply a profile with
-tested monitor, package, service and extension files.
+**One command for a clean Omarchy restore. One stage when you need control.**
 
-The shortest command clones or updates the repository, selects a profile from
-DMI when possible, and runs the stages in safe order:
+[Quick install](../../README.md#quick-install) · [Doctor](../operations/README.md) · [Recovery](recovery.md)
+
+</div>
+
+## Recommended
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
-The default order is VPN, simple display settings, profile packages, native
-Voxtype, terminal settings and finally the supported `omarchy update`. Native
-Voxtype's first-run confirmation remains the only expected interactive prompt.
-The same raw entry point can run one stage with `--stage vpn|display|packages|voice|terminal|update`,
-or run the read-only health check with `--stage doctor`.
-`--manifest` exposes the same stage list as JSON for launchers; `--non-interactive`
-stops safely before login or first-run Voxtype confirmation.
+The installer clones or updates the repository, selects the profile from DMI
+and runs the supported stages in this order:
 
-Use this first to validate the published repository without changing the
-system:
+```text
+VPN → display → packages → native Voxtype → terminal → omarchy update
+```
+
+On the first run, the only expected questions are the official AdGuard login
+and Omarchy's native Voxtype confirmation. The installer reconnects safely on
+reruns and refuses to update a locally modified checkout.
+
+## Verify without changing anything
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
 ```
 
-Useful explicit choices after the repository has been cloned are:
+The check clones the published repository into a temporary directory, validates
+the profile and exits without installing packages or changing user files.
+
+## Check the live system
 
 ```bash
-~/zenbook-omarchy/scripts/bootstrap.sh --profile generic --check
-~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn --no-monitor
-~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --update-vpn-cli
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
 ```
 
-Equivalent standalone stage wrappers are in `scripts/install-*.sh`, with
-`scripts/doctor.sh` for health checks. They are
-thin aliases over the same engine, so there is one implementation and one
-rollback/checking policy.
+`doctor` is read-only. It checks Omarchy, native voice, terminal settings,
+Hyprland configuration and VPN status when those components belong to the
+selected profile.
 
-VPN is profile-controlled and opt-in for generic machines. The Zenbook profile
-can install the official AdGuard CLI and connect it before an update, but it
-never stores account data in Git. Set `ADGUARD_VPN_LOCATION` for one run when
-needed. `--no-vpn` always wins over a profile default.
+## Run one stage
 
-The bootstrap applies user configuration under `~/.config`, creates a backup
-under `~/.local/state/omarchy-profiles/` before replacing a monitor file, and
-does not edit `/usr/share/omarchy`.
+Use the same raw entry point when you want one action only:
 
-On the matching Zenbook profile, the bootstrap also runs Omarchy's native
-Voxtype installer when first-run user setup is absent, then applies the
-user-scoped Zenbook voice policy and terminal extension. This is one
-clean-install flow; no separate native voice command is required. Skip voice
-with `--no-voice` or the terminal extension with `--no-terminal`; apply or
-rollback either policy directly with the commands in its profile README.
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage vpn
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage display
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage packages
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage terminal
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
+```
 
-The full operating-system update is intentionally `omarchy update`, not a raw
-`pacman -Syu`: Omarchy owns snapshots and migrations around that operation.
+From an existing checkout, the equivalent short commands are:
+
+```bash
+./scripts/install-vpn.sh
+./scripts/install-display.sh
+./scripts/install-packages.sh
+./scripts/install-voice.sh
+./scripts/install-terminal.sh
+./scripts/install-update.sh
+./scripts/doctor.sh
+```
+
+Network-dependent standalone stages automatically ensure the profile VPN unless
+you pass `--no-vpn`. The display stage has no network dependency.
+
+## Safe switches
+
+| Switch | Effect |
+|---|---|
+| `--check` | Validate repository assets without changing the system |
+| `--manifest` | Print the stage manifest as JSON |
+| `--non-interactive` | Stop before VPN login or first-run Voxtype confirmation |
+| `--no-vpn` | Do not connect AdGuard VPN for this run |
+| `--no-voice` | Skip native Voxtype and its Zenbook policy |
+| `--no-terminal` | Skip terminal settings |
+| `--no-monitor` | Skip the tested display override |
+| `--profile ID` | Select a profile instead of DMI detection |
+
+## Profile behavior
+
+`zenbook-um3406ka` is selected when DMI reports `UM3406KA`. It enables the
+official AdGuard VPN CLI, tested display configuration, native voice policy and
+terminal extension. Other hosts use `generic`, which installs only common
+diagnostic packages and leaves their display and user policy alone.
+
+The installer never edits `/usr/share/omarchy`. It uses native Omarchy commands,
+keeps user changes under `~/.config`, and stores recoverable backups under
+`~/.local/state/omarchy-profiles/`.
+
+## Full update policy
+
+The complete command ends with `omarchy update`, not raw `pacman -Syu`. Omarchy
+owns snapshots and migrations around that operation. Use `--stage update` when
+you want to run that final operation separately.

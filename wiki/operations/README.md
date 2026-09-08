@@ -1,13 +1,59 @@
+<div align="center">
+
 # Operations
 
-| Task | Procedure |
-|---|---|
-| Rebuild | [Recovery guide](../guides/recovery.md) |
-| Check profile without changes | `./scripts/bootstrap.sh --profile zenbook-um3406ka --check` |
-| Test monitor/VRR | [Protected experiment](experiments.md) |
-| Check voice | `./profiles/zenbook-um3406ka/voice/doctor.sh` |
-| Check terminal | `terminal-doctor` |
-| Read the conclusion | [Audit](../evidence/audit.md) |
+**Check first. Change one thing. Keep a way back.**
 
-Every experiment must record the active profile, power-management guards,
-requested mode, observed mode, result and rollback state. Raw logs stay local.
+[Bootstrap](../guides/bootstrap.md) · [Doctor](../../scripts/doctor.sh) · [Recovery](../guides/recovery.md)
+
+</div>
+
+## The three commands to remember
+
+```bash
+# Is the repository/install definition valid?
+./scripts/bootstrap.sh --profile zenbook-um3406ka --check
+
+# Is the live system healthy?
+./scripts/doctor.sh --profile zenbook-um3406ka
+
+# Restore the tested profile
+./scripts/bootstrap.sh --profile zenbook-um3406ka
+```
+
+## Choose the smallest action
+
+| I need to… | Run |
+|---|---|
+| Rebuild everything | `./scripts/bootstrap.sh --profile zenbook-um3406ka` |
+| Connect VPN only | `./scripts/install-vpn.sh --profile zenbook-um3406ka` |
+| Restore display only | `./scripts/install-display.sh --profile zenbook-um3406ka` |
+| Install profile packages | `./scripts/install-packages.sh --profile zenbook-um3406ka` |
+| Repair/check native voice | `./scripts/install-voice.sh --profile zenbook-um3406ka` or `voice/doctor.sh` |
+| Restore terminal settings | `./scripts/install-terminal.sh --profile zenbook-um3406ka` |
+| Run Omarchy update | `./scripts/install-update.sh --profile zenbook-um3406ka` |
+| Test monitor/VRR safely | [Protected experiment](experiments.md) |
+
+## What doctor checks
+
+`doctor` is read-only and reports a final `RESULT PASS` or `RESULT FAIL`:
+
+- Omarchy version and command availability;
+- native Voxtype model, language, output, OSD, feedback and service;
+- physical PipeWire microphone and preserved output sink;
+- terminal, Foot Sixel, ble.sh/fzf and managed shortcut;
+- Hyprland configuration errors;
+- AdGuard VPN status when the selected profile enables it.
+
+## Recovery rule
+
+Do not reset all of Omarchy to fix one profile setting. The repository changes
+only user-level files and creates backups under:
+
+```text
+~/.local/state/omarchy-profiles/
+```
+
+Use the [recovery guide](../guides/recovery.md) to restore the latest voice,
+terminal or monitor backup. Never edit `/usr/share/omarchy`; it is the stock
+package-owned layer.

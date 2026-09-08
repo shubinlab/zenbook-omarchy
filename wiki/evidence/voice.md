@@ -5,7 +5,7 @@ Last verified: 2026-09-08
 ## Decision
 
 The Ubuntu/GNOME/Lemonade/NPU installer from `zenbook-voice` is not used on
-this Arch/Omarchy/Hyprland host. Omarchy's own `omarchy-voxtype-install`
+this Arch/Omarchy/Hyprland host. Omarchy's own `omarchy voxtype install`
 remains authoritative for package installation, model download, the user
 service and Hyprland bindings. This profile adds only the host's useful
 multilingual policy:

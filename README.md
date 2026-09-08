@@ -1,49 +1,86 @@
-# zenbook-omarchy
+<div align="center">
 
-Rebuild, inspect and safely evolve an Omarchy system with a tested ASUS
-Zenbook 14 UM3406KA, LG DisplayPort monitor and JSAUX dock profile.
+# Zenbook Omarchy
 
-The repository has one documentation home: the **[system wiki](wiki/README.md)**.
-It connects hardware, drivers, Omarchy defaults, user overrides, package
-manifests, experiments and recovery procedures. The executable profile under
-`profiles/` contains only the files the bootstrap engine applies.
+**A reliable, native-first restore for ASUS Zenbook 14 UM3406KA on Omarchy.**
 
-## Quick start
+Display · VPN · packages · native Voxtype · terminal · safe recovery
 
-Check the published installer without changing the system:
+[![Quality checks](https://github.com/shubinlab/zenbook-omarchy/actions/workflows/quality.yml/badge.svg)](https://github.com/shubinlab/zenbook-omarchy/actions/workflows/quality.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
-```
+</div>
 
-Restore the detected profile:
+This repository turns a fresh Omarchy 4 installation into the tested Zenbook
+setup with one command. It keeps Omarchy's defaults authoritative, writes only
+user-level overrides, and makes every applied change inspectable and reversible.
+
+## Quick install
+
+Recommended — one command, full restore:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
-That one command is the complete orchestrator: VPN, simple display settings,
-packages, native Voxtype, terminal settings and the supported Omarchy update.
-On a first run, accept the native Voxtype prompt. To run one stage from the
-same raw entry point, pass `--stage vpn`, `--stage display`, `--stage packages`,
-`--stage voice`, `--stage terminal` or `--stage update`.
-Use `--stage doctor` any time for a read-only health check.
-`--manifest` prints the stages for external launchers; `--non-interactive`
-stops safely before a step that requires a terminal prompt.
+The installer runs these stages in order:
 
-With an existing checkout, check or apply explicitly:
+| | Stage | What happens |
+|---:|---|---|
+| 1 | **Network** | Install/login/connect AdGuard VPN when the Zenbook profile requires it |
+| 2 | **Display** | Apply the tested monitor layout with a backup |
+| 3 | **Packages** | Install the declared platform, diagnostic and terminal packages |
+| 4 | **Voice** | Run native `omarchy voxtype install`, then apply the multilingual policy |
+| 5 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
+| 6 | **Update** | Run the supported `omarchy update` command |
+
+On a first run, answer the native VPN and Voxtype prompts when they appear.
+After installation, verify everything with:
 
 ```bash
-./scripts/bootstrap.sh --profile zenbook-um3406ka --check
-./scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn --no-terminal
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
 ```
 
-On the matching Zenbook, the normal bootstrap runs Omarchy's native Voxtype
-installer automatically and then applies the repository's tested voice policy;
-there is no separate voice-install step. Confirm the native prompt on a fresh
-system. Use `--no-voice` only to opt out.
+## Check first
 
-The individual stage wrappers are also available from an existing checkout:
+The check mode downloads the published repository into a temporary directory,
+validates the scripts and changes nothing on the system:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
+```
+
+The raw URL must include the branch name (`main`).
+
+## What you get
+
+| Area | Result |
+|---|---|
+| **Omarchy** | Native commands and defaults remain the source of truth |
+| **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
+| **Voice** | Native Voxtype, Whisper `large-v3-turbo`, `language=auto`, OSD, start/stop sounds and native Wayland typing |
+| **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
+| **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
+| **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |
+| **Privacy** | No background collector or data-logging path is installed |
+
+## One command, or one stage
+
+The main raw entry point accepts the same small set of stages as the local
+wrappers:
+
+```bash
+# Full restore
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+
+# One stage from the same URL
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
+
+# Machine-readable stage list
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --manifest
+```
+
+From an existing checkout:
 
 ```bash
 ./scripts/install-vpn.sh --profile zenbook-um3406ka
@@ -55,53 +92,66 @@ The individual stage wrappers are also available from an existing checkout:
 ./scripts/doctor.sh --profile zenbook-um3406ka
 ```
 
-For a raw one-liner, use the main URL with a stage, for example:
+Useful safety switches:
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
+```text
+--check              validate without changing the system
+--non-interactive    stop before VPN login or first-run Voxtype confirmation
+--no-vpn             do not connect VPN for this run
+--no-voice           skip native Voxtype and its profile policy
+--no-terminal        skip terminal settings
+--no-monitor         skip the display override
 ```
 
-The raw URL must include the branch (`main`); `/zenbook-omarchy/install.sh`
-alone is not a valid GitHub raw path.
+## Why this stays native
 
-Run a protected display test from the graphical session:
+The profile never edits `/usr/share/omarchy`. The stock Omarchy command
+`omarchy voxtype install` owns Voxtype packages, model setup, the user service
+and compositor bindings; this repository only adds the tested Zenbook policy.
+The same rule applies to the shell, Hyprland defaults and package helpers:
+use Omarchy's supported command first, then add the smallest user override.
 
-```bash
-./profiles/zenbook-um3406ka/tools/run_vrr_redteam_safe.sh --seconds 30
-```
+## Documentation
 
-The installer selects `zenbook-um3406ka` from DMI and falls back to `generic`
-on other Omarchy hardware. Applies create backups under
-`~/.local/state/omarchy-profiles/` before changing user files.
+The [system wiki](wiki/README.md) is the documentation home. Start with the
+page that matches the question:
 
-## Wiki navigation
-
-| Need | Page |
+| Need | Read |
 |---|---|
+| Install, update or verify | [Bootstrap guide](wiki/guides/bootstrap.md) |
+| Check the current machine | [Doctor and operations](wiki/operations/README.md) |
 | Understand the whole system | [Wiki home](wiki/README.md) |
-| Find every laptop and peripheral | [Hardware record](wiki/zenbook/hardware.md) |
-| See what differs from stock Omarchy | [Configuration layers](wiki/software/configuration.md) |
-| Check packages and clean-install requirements | [Package guide](wiki/software/packages.md) · [Live inventory](wiki/software/package-inventory.md) |
-| Restore or roll back | [Recovery guide](wiki/guides/recovery.md) |
-| Review evidence and research | [Evidence index](wiki/evidence/README.md) |
-| Add another computer | [Profiles guide](wiki/profiles.md) |
+| See the tested hardware | [Zenbook hardware](wiki/zenbook/hardware.md) |
+| See every user override | [Configuration map](wiki/software/configuration.md) |
+| Tune or diagnose voice | [Native voice evidence](wiki/evidence/voice.md) |
+| Restore a previous state | [Recovery guide](wiki/guides/recovery.md) |
+| Add another host | [Profiles guide](wiki/profiles.md) |
 
-## Repository layout
+## Repository map
 
 ```text
 install.sh                         one-line GitHub entry point
-scripts/bootstrap.sh               profile-aware staged restore engine
+scripts/bootstrap.sh               staged profile orchestrator
+scripts/install-*.sh               standalone stage wrappers
 scripts/doctor.sh                  read-only health check
-profiles/                          executable profiles and apply assets
-profiles/zenbook-um3406ka/tools/  display and hardware tests
-profiles/zenbook-um3406ka/voice/  voice extension
-profiles/zenbook-um3406ka/terminal/ terminal extension
-wiki/                              all narrative documentation and evidence
-tools/                             repository, inventory and publication checks
+profiles/                          executable host profiles
+profiles/zenbook-um3406ka/voice/   native Voxtype policy and doctor
+profiles/zenbook-um3406ka/terminal/ terminal policy and rollback
+wiki/                              guides, inventories and evidence
+tools/                             CI and publication checks
 runs/                              local ignored experiment output
 ```
 
-The profile never edits `/usr/share/omarchy`; it applies user configuration in
-`~/.config` and keeps rollback data in `~/.local/state/omarchy-profiles/`.
-Contribution and public-data rules are in [CONTRIBUTING.md](CONTRIBUTING.md)
-and [SECURITY.md](SECURITY.md).
+## Scope and recovery
+
+The automatic profile is selected by DMI: `zenbook-um3406ka` for this ASUS
+Zenbook, otherwise the conservative `generic` profile. Neither profile adds a
+background collector or data-logging service.
+
+All supported changes are user-scoped. Monitor, voice and terminal operations
+create recoverable state under `~/.local/state/omarchy-profiles/`; the native
+Omarchy package files remain untouched and can be updated normally.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

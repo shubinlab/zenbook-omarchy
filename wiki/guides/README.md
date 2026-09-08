@@ -1,20 +1,22 @@
-# Documentation map
+<div align="center">
 
-The stable documentation layer explains how the repository works. Hardware
-inventories, measurements and incident records are connected under the wiki;
-executable files remain under the profile that applies them.
+# Guides
 
-| Need | Read |
+**Short instructions for installing, understanding and recovering the profile.**
+
+[Bootstrap](bootstrap.md) · [Architecture](architecture.md) · [Recovery](recovery.md) · [Profiles](../profiles.md)
+
+</div>
+
+| I want to… | Read |
 |---|---|
-| Install, update or verify | [Bootstrap](bootstrap.md) |
-| Recover a working system | [recovery.md](recovery.md) |
-| Understand the architecture | [architecture.md](architecture.md) |
-| Design protected experiments | [Methodology](methodology.md) |
+| Install or update safely | [Bootstrap](bootstrap.md) |
+| See how the pieces fit | [Architecture](architecture.md) |
+| Recover one changed component | [Recovery](recovery.md) |
+| Run protected display tests | [Methodology](methodology.md) |
 | Choose or add a host profile | [Profiles](../profiles.md) |
-| Public-data and vulnerability policy | [Security policy](../../SECURITY.md) |
+| Understand public-data rules | [Security policy](../../SECURITY.md) |
 
-The [Zenbook section](../zenbook/README.md) contains the
-canonical hardware inventory, configuration map, display results, vendor
-research, incident record, voice extension and terminal extension. Its
-filenames describe their subject, so they remain useful after the evidence is
-refreshed.
+The [Zenbook section](../zenbook/README.md) contains the tested hardware,
+configuration, display, voice and terminal pages. The [evidence index](../evidence/README.md)
+contains measurements, research and incident records.

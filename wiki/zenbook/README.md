@@ -1,44 +1,58 @@
-# ASUS Zenbook 14 UM3406KA profile
+<div align="center">
 
-This profile records the tested configuration for an ASUS Zenbook 14
-UM3406KA, an LG DisplayPort monitor and a JSAUX RGB docking station. It is an
-example of a hardware profile, not a requirement for other Omarchy hosts.
+# ASUS Zenbook 14 UM3406KA
 
-The two files to open first are [hardware.md](hardware.md), the canonical
-inventory of this laptop and its peripherals, and [configuration.md](configuration.md),
-the restore and development map.
+**The tested host profile for Omarchy 4.**
 
-The display rule keeps the tested external mode at 2560×1440, 240 Hz, 10-bit,
-sRGB, VRR enabled and the Omarchy-managed scale variable. The package lists
-cover the platform and diagnostics. The profile can use the official AdGuard
-VPN CLI before an update, but `--no-vpn` disables that behavior for a run.
+[Hardware](hardware.md) · [Configuration](configuration.md) · [Voice](../evidence/voice.md) · [Terminal](../evidence/terminal.md)
 
-The profile's `tools/` directory contains protected display/component runners.
-They are intentionally outside the common
-repository tools because their defaults describe this dock and monitor.
+</div>
 
-Apply it explicitly only on matching hardware:
+This profile describes one ASUS Zenbook, one LG DisplayPort monitor and one
+JSAUX RGB dock. It is a tested example, not a requirement for other Omarchy
+hosts.
+
+## Apply
+
+The profile is selected automatically by DMI. To select it explicitly:
+
+```bash
+./scripts/bootstrap.sh --profile zenbook-um3406ka
+```
+
+The same clean-install flow applies VPN, display, packages, native Voxtype,
+terminal settings and the supported Omarchy update. Check it first with:
 
 ```bash
 ./scripts/bootstrap.sh --profile zenbook-um3406ka --check
-./scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn
+./scripts/doctor.sh --profile zenbook-um3406ka
 ```
 
-Profile evidence:
+## Tested result
 
-- [hardware](hardware.md) — canonical laptop, display, dock and peripheral inventory;
-- [configuration](configuration.md) — source files, apply commands and rollback paths;
-- [audit](../evidence/audit.md) — system and connected-device baseline;
-- [components](../evidence/components.md) — component checks and limitations;
-- [diagnostics](../evidence/diagnostics.md) — package and staged validation;
-- [display tests](../evidence/display-tests.md) — protected red-team runs;
-- [display incident](../evidence/display-incident.md) — mode drift and recovery;
-- [HDR](../evidence/hdr.md) — color and HDR decision;
-- [vendor research](../evidence/vendor-research.md) and [sources](../evidence/research.md);
-- [repository map](../evidence/repository-map.md) — where related evidence lives;
-- [voice audit](../evidence/voice.md) and [voice extension](../evidence/voice-extension.md);
-- [terminal extension](../evidence/terminal.md) — Sixel, ble.sh, fzf and doctor.
+| Area | Known-good behavior |
+|---|---|
+| **External display** | LG DisplayPort at 2560×1440, 239.97/240 Hz, 10-bit, sRGB, VRR on, scale 1.6 |
+| **Internal display** | Managed by the profile and Omarchy display layer; no global Hyprland replacement |
+| **Voice** | Native Voxtype, Whisper `large-v3-turbo`, automatic language detection, native typing, OSD and feedback |
+| **Terminal** | Foot Sixel, ble.sh/fzf integration, image preview and managed ChatGPT shortcut |
+| **Network** | Official AdGuard VPN CLI before network-dependent install stages |
+| **Recovery** | Timestamped user backups before profile-owned replacements |
 
-Dates in these documents describe when evidence was collected. They are kept
-inside the records rather than in filenames so links remain stable when the
-profile is updated.
+## Source map
+
+| Question | Page |
+|---|---|
+| What hardware is connected? | [Hardware inventory](hardware.md) |
+| Which files change? | [Configuration map](configuration.md) |
+| Why these display values? | [Display tests](../evidence/display-tests.md) |
+| Why this voice path? | [Native voice evidence](../evidence/voice.md) |
+| How does the terminal extension work? | [Terminal evidence](../evidence/terminal.md) |
+| How do I recover? | [Recovery guide](../guides/recovery.md) |
+
+## Boundary
+
+Omarchy remains the authority for `/usr/share/omarchy`, default bindings,
+package helpers and native Voxtype installation. This profile only adds
+tested user-level policy. It does not install a background collector, replace
+the audio stack or copy a vendor-specific Ubuntu/GNOME installer onto Omarchy.
