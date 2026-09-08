@@ -55,6 +55,7 @@ VOICE_OPTION_SET=0
 BITWARDEN_OPTION_SET=0
 STAGE=all
 MANIFEST=0
+PLAN_ONLY=0
 NON_INTERACTIVE=0
 CURRENT_STAGE='startup'
 
@@ -90,6 +91,8 @@ Options:
   --components LIST     For --stage selected, comma-separated components;
                         dependencies are added automatically.
   --manifest            Print the stage manifest as JSON and exit.
+  --plan                Show the selected actions and native/user boundaries.
+  --verbose             Show detailed component output instead of the compact view.
   --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
   --no-voice            Skip the profile's native Omarchy Voxtype setup.
@@ -436,6 +439,82 @@ print_manifest() {
   printf '\n'
 }
 
+manifest_entry_count() {
+  local manifest package count=0
+  for manifest in "$@"; do
+    [[ -f "$manifest" ]] || continue
+    while IFS= read -r package; do
+      [[ -n "$package" ]] && count=$((count + 1))
+    done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+  done
+  printf '%s' "$count"
+}
+
+print_plan() {
+  local plan_title='full restore'
+  local show_monitor=$DO_MONITOR show_voice=$DO_VOICE show_terminal=$DO_TERMINAL
+  local show_bitwarden=$DO_BITWARDEN show_diagnostics=$DO_DIAGNOSTICS show_packages=0
+  local show_update=$DO_SYSTEM_UPDATE
+  [[ "$STAGE" == selected ]] && plan_title='selected components'
+  [[ "$STAGE" != all && "$STAGE" != selected ]] && plan_title="$STAGE stage"
+  if [[ "$STAGE" != all && "$STAGE" != selected ]]; then
+    show_monitor=0
+    show_voice=0
+    show_terminal=0
+    show_bitwarden=0
+    show_diagnostics=0
+    show_update=0
+    case "$STAGE" in
+      display) show_monitor=1 ;;
+      voice) show_voice=1 ;;
+      terminal) show_terminal=1 ;;
+      bitwarden) show_bitwarden=1 ;;
+      diagnostics) show_diagnostics=1 ;;
+      packages) show_packages=1 ;;
+      update) show_update=1 ;;
+      vpn) : ;;
+    esac
+  fi
+  printf '\nPlan: %s\n' "$plan_title"
+  printf '  Profile: %s\n' "$PROFILE_ID"
+  if ((DO_VPN)); then
+    printf '  Network: ensure AdGuard VPN is connected before downloads\n'
+  else
+    printf '  Network: VPN disabled for this run\n'
+  fi
+  ((show_monitor)) && printf '  Display: apply tested user monitor layout; back up existing file\n'
+  if ((show_packages)); then
+    if ((${#PACKAGE_SOURCES[@]})); then
+      printf "  Runtime: install %s base package entries through Omarchy's package helper\n" \
+        "$(manifest_entry_count "${PACKAGE_SOURCES[@]}")"
+    else
+      printf '  Runtime: no standalone package entries for this profile\n'
+    fi
+  fi
+  if ((show_voice)); then
+    printf '  Voice: keep native Omarchy Voxtype; add %s Lemonade/NPU package entries and user policy\n' \
+      "$(manifest_entry_count "${VOICE_PACKAGE_SOURCES[@]}")"
+  fi
+  ((show_terminal)) && printf '  Terminal: apply user-scoped Foot, Sixel, fzf and shell integration\n'
+  if ((show_bitwarden)); then
+    printf '  Bitwarden: native Wayland launcher and %s package entries; onboarding only when needed\n' \
+      "$(manifest_entry_count "${BITWARDEN_PACKAGE_SOURCES[@]}")"
+  fi
+  ((show_diagnostics)) && printf '  Diagnostics: install optional hardware tools\n'
+  if ((show_update)); then
+    printf '  Update: run supported `omarchy update` as an explicit standalone action\n'
+  else
+    printf '  Update: not included\n'
+  fi
+  printf '  Native boundary: no edits to /usr/share/omarchy; native installers/services/bindings stay authoritative\n'
+  printf '  Recovery: user-file backups go under %s\n' "$BACKUP_ROOT"
+  if [[ "$STAGE" == all || "$STAGE" == selected ]]; then
+    printf '  Verify: read-only doctor runs after a multi-stage install\n'
+  else
+    printf '  Verify: this standalone stage does not run doctor automatically\n'
+  fi
+}
+
 selected_component() {
   [[ ",${COMPONENTS_REQUEST}," == *",$1,"* ]]
 }
@@ -661,6 +740,8 @@ while (($#)); do
     --stage) shift; (($#)) || die "--stage needs a value"; STAGE="$1" ;;
     --components) shift; (($#)) || die "--components needs a value"; COMPONENTS_REQUEST="$1" ;;
     --manifest) MANIFEST=1 ;;
+    --plan) PLAN_ONLY=1 ;;
+    --verbose) export OMARCHY_VERBOSE=1 ;;
     --non-interactive) NON_INTERACTIVE=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
     --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
@@ -697,6 +778,11 @@ fi
 
 if ((MANIFEST)); then
   print_manifest
+  exit 0
+fi
+if ((PLAN_ONLY)); then
+  print_plan
+  printf '\nNo system changes made.\n'
   exit 0
 fi
 if ((DO_CHECK)); then

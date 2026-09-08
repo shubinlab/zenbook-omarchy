@@ -23,6 +23,8 @@
   no longer installs voice packages accidentally.
 - Added a compact installer progress view with a single final verification
   summary, warning/error context and an explicit `OMARCHY_VERBOSE=1` trace mode.
+- Added a no-change `--plan` preview, exact source commit reporting, safe
+  branch selection via `OMARCHY_REF`, and a direct `--verbose` shortcut.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

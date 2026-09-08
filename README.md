@@ -55,6 +55,16 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 
 The raw URL must include the branch name (`main`).
 
+For a no-change preview of the actions and the native/user boundary:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --plan
+```
+
+The installer prints the exact source branch and commit used for the run. A
+reviewed branch or tag can be selected with `OMARCHY_REF=NAME`; an existing
+checkout on another branch is refused instead of being silently rewritten.
+
 ## What you get
 
 | Area | Result |
@@ -91,6 +101,9 @@ zenbook-omarchy doctor
 
 # Optional detailed trace when troubleshooting
 OMARCHY_VERBOSE=1 zenbook-omarchy
+
+# The same trace switch can be placed before any short command
+zenbook-omarchy --verbose voice
 
 # One stage directly from GitHub is still available on a fresh system
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice

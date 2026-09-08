@@ -35,6 +35,17 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 The check clones the published repository into a temporary directory, validates
 the profile and exits without installing packages or changing user files.
 
+To preview the clean-install plan, including what remains native to Omarchy and
+what is added as a user-level profile override:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --plan
+```
+
+The normal installer reports the exact source branch and commit. Use
+`OMARCHY_REF=NAME` for a reviewed branch or tag; a modified or differently
+checked-out local repository is refused for safety.
+
 ## Check the live system
 
 ```bash

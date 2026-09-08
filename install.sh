@@ -4,13 +4,16 @@ set -euo pipefail
 # Short entry point. The generic engine selects a profile after cloning.
 repo_url="https://github.com/shubinlab/zenbook-omarchy.git"
 repo_dir="${OMARCHY_DIR:-$HOME/zenbook-omarchy}"
+repo_ref="${OMARCHY_REF:-main}"
 check_only=0
 manifest_only=0
+plan_only=0
 
 for arg in "$@"; do
   case "$arg" in
     --check) check_only=1 ;;
     --manifest) manifest_only=1 ;;
+    --plan) plan_only=1 ;;
     -h|--help)
       cat <<'HELP'
 Omarchy Zenbook installer
@@ -20,6 +23,7 @@ Usage:
 
 Useful options:
   --check                 Verify the published repository without changes.
+  --plan                  Show the selected plan and native/user boundaries.
   --stage NAME            Run one stage: vpn, display, packages, bitwarden,
                           voice, diagnostics, terminal, update or doctor.
   --manifest              Print the stage manifest as JSON.
@@ -30,6 +34,8 @@ Useful options:
   --no-bitwarden          Skip native Wayland Bitwarden setup.
   --no-terminal           Skip terminal settings.
   --profile ID            Select a profile explicitly.
+  --verbose               Show detailed component output instead of the compact view.
+  OMARCHY_REF=NAME        Use a reviewed Git branch or tag (default: main).
 HELP
       exit 0
       ;;
@@ -41,18 +47,29 @@ command -v git >/dev/null 2>&1 || {
   exit 1
 }
 
-if ((check_only)); then
+[[ "$repo_ref" =~ ^[A-Za-z0-9._/-]+$ ]] || {
+  printf '%s\n' "omarchy-profiles: invalid OMARCHY_REF: $repo_ref" >&2
+  exit 1
+}
+
+if ((check_only || plan_only)); then
   command -v curl >/dev/null 2>&1 || {
     printf '%s\n' 'omarchy-profiles check: curl is required' >&2
     exit 1
   }
   check_dir="$(mktemp -d)"
   trap 'rm -rf "$check_dir"' EXIT
-  printf '%s\n' 'omarchy-profiles check: cloning the published repository'
-  git clone --depth=1 "$repo_url" "$check_dir/repo" >/dev/null
+  printf 'omarchy-profiles: cloning published %s for %s\n' "$repo_ref" \
+    "$([[ $plan_only -eq 1 ]] && printf 'plan' || printf 'check')"
+  git clone --depth=1 --branch "$repo_ref" "$repo_url" "$check_dir/repo" >/dev/null
   bash -n "$check_dir/repo/install.sh" "$check_dir/repo/scripts/bootstrap.sh"
-  "$check_dir/repo/scripts/bootstrap.sh" --profile auto --check
-  printf '%s\n' 'omarchy-profiles check: PASS (no system changes made)'
+  if ((plan_only)); then
+    "$check_dir/repo/scripts/bootstrap.sh" --profile auto --plan
+    printf '%s\n' 'omarchy-profiles plan: PASS (no system changes made)'
+  else
+    "$check_dir/repo/scripts/bootstrap.sh" --profile auto --check
+    printf '%s\n' 'omarchy-profiles check: PASS (no system changes made)'
+  fi
   exit 0
 fi
 
@@ -62,21 +79,34 @@ if [[ -d "$repo_dir/.git" ]]; then
     printf '%s\n' 'omarchy-profiles: commit, stash or remove local changes, then retry' >&2
     exit 1
   fi
+  current_ref="$(git -C "$repo_dir" symbolic-ref --short -q HEAD || true)"
+  [[ -n "$current_ref" ]] || {
+    printf '%s\n' "omarchy-profiles: checkout is detached; expected ref $repo_ref" >&2
+    exit 1
+  }
+  [[ "$current_ref" == "$repo_ref" ]] || {
+    printf '%s\n' "omarchy-profiles: checkout uses $current_ref, expected $repo_ref" >&2
+    printf '%s\n' 'omarchy-profiles: set OMARCHY_REF to that branch or use a clean checkout' >&2
+    exit 1
+  }
   if ((manifest_only)); then
-    git -C "$repo_dir" pull --ff-only --quiet
+    git -C "$repo_dir" pull --ff-only --quiet origin "$repo_ref"
   else
     printf 'omarchy-profiles: checking updates... '
-    git -C "$repo_dir" pull --ff-only --quiet
+    git -C "$repo_dir" pull --ff-only --quiet origin "$repo_ref"
     printf '%s\n' 'up to date'
   fi
 else
   if ((manifest_only)); then
-    git clone --depth=1 --quiet "$repo_url" "$repo_dir"
+    git clone --depth=1 --branch "$repo_ref" --quiet "$repo_url" "$repo_dir"
   else
     printf 'omarchy-profiles: cloning into %s\n' "$repo_dir"
-    git clone --depth=1 "$repo_url" "$repo_dir"
+    git clone --depth=1 --branch "$repo_ref" "$repo_url" "$repo_dir"
   fi
 fi
+
+printf 'omarchy-profiles: source %s@%s\n' "$repo_ref" \
+  "$(git -C "$repo_dir" rev-parse --short=12 HEAD)"
 
 mkdir -p "$HOME/.local/bin"
 if [[ -e "$HOME/.local/bin/zenbook-omarchy" ]] &&

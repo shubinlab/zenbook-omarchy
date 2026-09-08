@@ -21,6 +21,7 @@ Usage: zenbook-omarchy [menu|all|vpn|display|voice|bitwarden|diagnostics|termina
 Short launcher for the local GitHub checkout. With no argument it opens a
 small numbered menu. Bitwarden onboarding opens in a visible Foot window.
 Extra options are passed to the selected stage.
+Use `zenbook-omarchy --verbose` before a stage or menu for detailed output.
 EOF
 }
 
@@ -114,6 +115,10 @@ run_bitwarden() {
   exec "${BOOTSTRAP}" --profile auto --stage bitwarden "$@"
 }
 
+if [[ "${1:-}" == --verbose ]]; then
+  export OMARCHY_VERBOSE=1
+  shift
+fi
 stage="${1:-menu}"
 if [[ "${stage}" == menu ]]; then
   open_menu_window
