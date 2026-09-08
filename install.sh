@@ -47,7 +47,7 @@ command -v git >/dev/null 2>&1 || {
   exit 1
 }
 
-[[ "$repo_ref" =~ ^[A-Za-z0-9._/-]+$ ]] || {
+git check-ref-format --branch "$repo_ref" >/dev/null 2>&1 || {
   printf '%s\n' "omarchy-profiles: invalid OMARCHY_REF: $repo_ref" >&2
   exit 1
 }
@@ -74,6 +74,12 @@ if ((check_only || plan_only)); then
 fi
 
 if [[ -d "$repo_dir/.git" ]]; then
+  actual_repo_url="$(git -C "$repo_dir" remote get-url origin 2>/dev/null || true)"
+  [[ "$actual_repo_url" == "$repo_url" ]] || {
+    printf '%s\n' "omarchy-profiles: refusing unexpected origin: ${actual_repo_url:-missing}" >&2
+    printf '%s\n' "omarchy-profiles: expected origin $repo_url" >&2
+    exit 1
+  }
   if [[ -n "$(git -C "$repo_dir" status --porcelain)" ]]; then
     printf '%s\n' "omarchy-profiles: refusing to update a modified checkout: $repo_dir" >&2
     printf '%s\n' 'omarchy-profiles: commit, stash or remove local changes, then retry' >&2

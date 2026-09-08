@@ -7,6 +7,7 @@ cd "$root"
 bash -n install.sh scripts/*.sh tools/*.sh profiles/*/voice/*.sh profiles/*/tools/*.sh profiles/*/terminal/*.sh profiles/*/terminal/omarchy-fzf-preview profiles/*/terminal/terminal-doctor profiles/*/bitwarden/*.sh profiles/*/bitwarden/launcher
 python -m py_compile profiles/*/tools/*.py tools/update-package-wiki.py
 ./tools/check-public-repo.sh
+./tools/red-team-check.sh
 git diff --check
 
 plan_output="$(./scripts/bootstrap.sh --profile zenbook-um3406ka --stage all \
