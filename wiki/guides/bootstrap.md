@@ -140,6 +140,17 @@ the official Bitwarden clients. Edit vault items in the Bitwarden web vault. The
 user configuration is backed up before the profile changes pinentry, a
 10-minute lock timeout and hourly sync.
 
+After the first GitHub installation, use the short local launcher instead of
+retyping the raw URL:
+
+```bash
+zenbook-omarchy
+```
+
+Choose **Bitwarden** from the numbered menu, or run `zenbook-omarchy bitwarden`.
+The latter opens onboarding in a visible Foot window so prompts are not hidden
+inside an automation terminal.
+
 Run the read-only live check with:
 
 ```bash

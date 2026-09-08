@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+# Short ADHD-friendly command installed by install.sh into ~/.local/bin.
+# Keep the repository as the single source of truth; this is only a launcher.
+
+REPO_DIR="${OMARCHY_DIR:-${HOME}/zenbook-omarchy}"
+BOOTSTRAP="${REPO_DIR}/scripts/bootstrap.sh"
+
+die() {
+  printf 'zenbook-omarchy: %s\n' "$*" >&2
+  exit 1
+}
+
+[[ -x "${BOOTSTRAP}" ]] || die "profile checkout is missing: ${REPO_DIR}; run the GitHub installer once"
+
+usage() {
+  cat <<'EOF'
+Usage: zenbook-omarchy [menu|all|vpn|display|packages|voice|bitwarden|diagnostics|terminal|update|doctor|check]
+
+Short launcher for the local GitHub checkout. With no argument it opens a
+small numbered menu. Bitwarden onboarding opens in a visible Foot window.
+Extra options are passed to the selected stage.
+EOF
+}
+
+choose_stage() {
+  [[ -t 0 && -t 1 ]] || die 'run without arguments from a visible terminal, or choose a stage explicitly'
+  printf '\nZenbook Omarchy\n\n'
+  printf '1) Full restore\n'
+  printf '2) Voice / NPU\n'
+  printf '3) Bitwarden\n'
+  printf '4) Terminal\n'
+  printf '5) Doctor\n'
+  printf '6) Update Omarchy\n'
+  printf 'q) Cancel\n\n'
+  printf 'Choose [1-6/q]: '
+  local choice
+  IFS= read -r choice
+  case "${choice}" in
+    1) printf '%s\n' all ;;
+    2) printf '%s\n' voice ;;
+    3) printf '%s\n' bitwarden ;;
+    4) printf '%s\n' terminal ;;
+    5) printf '%s\n' doctor ;;
+    6) printf '%s\n' update ;;
+    q|Q) printf 'Cancelled.\n'; exit 0 ;;
+    *) die 'choose one of 1, 2, 3, 4, 5, 6 or q' ;;
+  esac
+}
+
+run_bitwarden() {
+  if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v foot >/dev/null 2>&1 &&
+     [[ -z "${ZENBOOK_OMARCHY_NO_NEW_WINDOW:-}" ]]; then
+    exec foot --title 'Zenbook Bitwarden setup' bash "${BOOTSTRAP}" \
+      --profile auto --stage bitwarden "$@"
+  fi
+  exec "${BOOTSTRAP}" --profile auto --stage bitwarden "$@"
+}
+
+stage="${1:-menu}"
+if [[ "${stage}" == menu ]]; then
+  stage="$(choose_stage)"
+else
+  shift
+fi
+
+case "${stage}" in
+  all|vpn|display|packages|voice|diagnostics|terminal|update|doctor)
+    exec "${BOOTSTRAP}" --profile auto --stage "${stage}" "$@"
+    ;;
+  bitwarden)
+    run_bitwarden "$@"
+    ;;
+  check)
+    exec "${BOOTSTRAP}" --profile auto --check "$@"
+    ;;
+  -h|--help|help)
+    usage
+    ;;
+  *)
+    usage >&2
+    exit 2
+    ;;
+esac

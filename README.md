@@ -69,7 +69,7 @@ The raw URL must include the branch name (`main`).
 | **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |
 | **Privacy** | No background collector or data-logging path is installed |
 
-## One command, or one stage
+## One command, or one short stage
 
 The main raw entry point accepts the same small set of stages as the local
 wrappers:
@@ -78,7 +78,15 @@ wrappers:
 # Full restore
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 
-# One stage from the same URL; voice also installs its two NPU packages
+# After the first install, use the short local launcher; it opens a small menu
+zenbook-omarchy
+
+# Or run one named stage without the long URL
+zenbook-omarchy voice
+zenbook-omarchy bitwarden
+zenbook-omarchy doctor
+
+# One stage directly from GitHub is still available on a fresh system
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
 
 # Optional technical cleanup for the next recording (native capture remains unchanged)

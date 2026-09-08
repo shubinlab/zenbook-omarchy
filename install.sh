@@ -77,4 +77,8 @@ else
   fi
 fi
 
+mkdir -p "$HOME/.local/bin"
+install -m0755 "$repo_dir/scripts/zenbook-omarchy" "$HOME/.local/bin/zenbook-omarchy"
+printf '%s\n' 'omarchy-profiles: short launcher installed as zenbook-omarchy'
+
 exec "$repo_dir/scripts/bootstrap.sh" --profile auto "$@"
