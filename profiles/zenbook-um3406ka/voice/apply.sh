@@ -57,7 +57,9 @@ source "${PROFILE_FILE}"
 : "${VOICE_MODE:=remote}"
 : "${VOICE_REMOTE_ENDPOINT:=http://127.0.0.1:13305}"
 : "${VOICE_REMOTE_MODEL:=whisper-v3-turbo-FLM}"
+: "${VOICE_SOURCE_VOLUME_PERCENT:=60}"
 [[ "${VOICE_TYPE_DELAY_MS}" =~ ^[0-9]+$ ]] || die 'VOICE_TYPE_DELAY_MS must be an integer'
+[[ "${VOICE_SOURCE_VOLUME_PERCENT}" =~ ^([1-9][0-9]?|100)$ ]] || die 'VOICE_SOURCE_VOLUME_PERCENT must be 1..100'
 [[ "${VOICE_MODE}" == remote ]] || die 'this profile requires the Lemonade remote mode'
 [[ "${VOICE_REMOTE_ENDPOINT}" == http://127.0.0.1:* ]] || die 'Lemonade endpoint must stay on localhost'
 
@@ -255,6 +257,13 @@ check_state() {
   local default_source default_sink
   default_source="$(pactl get-default-source)"
   default_sink="$(pactl get-default-sink)"
+  local source_volume sink_volume source_mute sink_mute source_percent sink_percent
+  source_volume="$(pactl get-source-volume "${default_source}" 2>/dev/null || true)"
+  sink_volume="$(pactl get-sink-volume "${default_sink}" 2>/dev/null || true)"
+  source_mute="$(pactl get-source-mute "${default_source}" 2>/dev/null || true)"
+  sink_mute="$(pactl get-sink-mute "${default_sink}" 2>/dev/null || true)"
+  source_percent="$(grep -oE '[0-9]+%' <<<"${source_volume}" | head -n 1 | tr -d '%' || true)"
+  sink_percent="$(grep -oE '[0-9]+%' <<<"${sink_volume}" | head -n 1 | tr -d '%' || true)"
 
   printf 'voice-omarchy native check\n'
   check_value() {
@@ -273,6 +282,7 @@ check_state() {
   check_value whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}" "$(voxtype config get whisper.remote_endpoint 2>/dev/null || true)"
   check_value whisper.remote_model "${VOICE_REMOTE_MODEL}" "$(voxtype config get whisper.remote_model 2>/dev/null || true)"
   check_value output.mode type "$(voxtype config get output.mode 2>/dev/null || true)"
+  check_value output.fallback_to_clipboard false "$(voxtype config get output.fallback_to_clipboard 2>/dev/null || true)"
   check_value output.type_delay_ms "${VOICE_TYPE_DELAY_MS}" "$(output_config_value type_delay_ms)"
   check_value output.pre_type_delay_ms 300 "$(voxtype config get output.pre_type_delay_ms 2>/dev/null || true)"
   check_value audio.feedback.enabled true "$(voxtype config get audio.feedback.enabled 2>/dev/null || true)"
@@ -295,26 +305,19 @@ check_state() {
     printf 'FAIL default sink is unavailable\n'
     CHECK_FAILURES=$((CHECK_FAILURES + 1))
   fi
-  local source_volume sink_volume source_mute sink_mute source_percent sink_percent
-  source_volume="$(pactl get-source-volume "${default_source}" 2>/dev/null || true)"
-  sink_volume="$(pactl get-sink-volume "${default_sink}" 2>/dev/null || true)"
-  source_mute="$(pactl get-source-mute "${default_source}" 2>/dev/null || true)"
-  sink_mute="$(pactl get-sink-mute "${default_sink}" 2>/dev/null || true)"
-  source_percent="$(grep -oE '[0-9]+%' <<<"${source_volume}" | head -n 1 | tr -d '%' || true)"
-  sink_percent="$(grep -oE '[0-9]+%' <<<"${sink_volume}" | head -n 1 | tr -d '%' || true)"
   printf 'INFO microphone volume=%s%% mute=%s\n' "${source_percent:-unknown}" "${source_mute:-unknown}"
   printf 'INFO feedback sink=%s volume=%s%% mute=%s\n' \
     "${default_sink:-unavailable}" "${sink_percent:-unknown}" "${sink_mute:-unknown}"
   if [[ "${source_mute}" == yes ]]; then
     printf 'WARN microphone is muted; transcription cannot be reliable\n'
-  elif [[ -n "${source_percent}" && "${source_percent}" -lt 20 ]]; then
-    printf 'WARN microphone input is very quiet (%s%%); check gain before changing ASR settings\n' "${source_percent}"
+  elif [[ "${source_percent}" == "${VOICE_SOURCE_VOLUME_PERCENT}" ]]; then
+    printf 'PASS microphone volume policy=%s%%\n' "${VOICE_SOURCE_VOLUME_PERCENT}"
+  else
+    printf 'WARN microphone volume=%s%%; expected profile value=%s%%\n' \
+      "${source_percent:-unknown}" "${VOICE_SOURCE_VOLUME_PERCENT}"
   fi
   if [[ "${sink_mute}" == yes ]]; then
     printf 'WARN feedback sink is muted; start/stop sounds cannot be heard\n'
-  fi
-  if [[ "$(voxtype config get output.fallback_to_clipboard 2>/dev/null || true)" == true ]]; then
-    printf 'WARN output fallback_to_clipboard=true; failed wtype insertion may invoke clipboard fallback\n'
   fi
   if lemonade_npu_loaded; then
     printf 'PASS Lemonade FLM voice model device=npu\n'
@@ -359,9 +362,12 @@ apply_profile() {
   BACKUP_ID="$(date -u +%Y%m%dT%H%M%S%N)-${BASHPID}"
   mkdir -p "${BACKUP_ROOT}/${BACKUP_ID}"
   backup_target "${VOXTYPE_TARGET}" voxtype.config.toml
+  local source_volume_before
+  source_volume_before="$(pactl get-source-volume "${source}" 2>/dev/null | grep -oE '[0-9]+%' | head -n 1 | tr -d '%' || true)"
   printf 'default_source=%s\ndefault_sink=%s\nphysical_source=%s\n' \
     "$(pactl get-default-source)" "$(pactl get-default-sink)" "${source}" \
     >"${BACKUP_ROOT}/${BACKUP_ID}/metadata"
+  printf 'physical_source_volume_percent=%s\n' "${source_volume_before}" >>"${BACKUP_ROOT}/${BACKUP_ID}/metadata"
 
   # Keep the native output/audio path and apply only this host's useful
   # multilingual policy plus native feedback/OSD.
@@ -372,7 +378,7 @@ apply_profile() {
   voxtype config set whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}"
   voxtype config set whisper.remote_model "${VOICE_REMOTE_MODEL}"
   voxtype config set output.mode type
-  voxtype config set output.fallback_to_clipboard true
+  voxtype config set output.fallback_to_clipboard false
   set_type_delay
   voxtype config set output.pre_type_delay_ms 300
   voxtype config set audio.feedback.enabled true
@@ -381,6 +387,7 @@ apply_profile() {
   voxtype config set osd.enabled true
   voxtype config set osd.frontend gtk4
 
+  pactl set-source-volume "${source}" "${VOICE_SOURCE_VOLUME_PERCENT}%"
   pactl set-default-source "${source}"
   systemctl --user restart voxtype.service
   printf 'voice-omarchy: native profile applied; backup=%s source=%s\n' "${BACKUP_ID}" "${source}"
@@ -415,6 +422,13 @@ rollback_profile() {
   if [[ -n "${restore_sink}" ]] && pactl list short sinks | awk -v target="${restore_sink}" '$2 == target {found=1} END {exit !found}'; then
     safe_name "${restore_sink}"
     pactl set-default-sink "${restore_sink}"
+  fi
+  local restore_source_volume
+  restore_source_volume="$(sed -n 's/^physical_source_volume_percent=//p' "${BACKUP_ROOT}/${BACKUP_ID}/metadata" 2>/dev/null || true)"
+  if [[ -n "${restore_source_volume}" && -n "${restore_source}" ]] &&
+     pactl list short sources | awk -v target="${restore_source}" '$2 == target {found=1} END {exit !found}'; then
+    [[ "${restore_source_volume}" =~ ^[0-9]+$ ]] || die 'unsafe saved microphone volume'
+    pactl set-source-volume "${restore_source}" "${restore_source_volume}%"
   fi
   systemctl --user restart voxtype.service
   printf 'voice-omarchy: restored backup %s\n' "${BACKUP_ID}"

@@ -20,13 +20,14 @@ Usage:
 
 Useful options:
   --check                 Verify the published repository without changes.
-  --stage NAME            Run one stage: vpn, display, packages, voice,
-                          diagnostics, terminal, update or doctor.
+  --stage NAME            Run one stage: vpn, display, packages, bitwarden,
+                          voice, diagnostics, terminal, update or doctor.
   --manifest              Print the stage manifest as JSON.
   --update-system         Run `omarchy update` explicitly after the profile.
   --non-interactive       Stop before stages that need terminal input.
   --no-vpn                Skip VPN connection for this run.
   --no-voice              Skip native Voxtype setup.
+  --no-bitwarden          Skip native Wayland Bitwarden setup.
   --no-terminal           Skip terminal settings.
   --profile ID            Select a profile explicitly.
 HELP

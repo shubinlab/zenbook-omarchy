@@ -42,7 +42,11 @@ is modified.
   configured, Lemonade LAN broadcast discovery is disabled, and the profile
   refuses to proceed if Lemonade telemetry is on.
 - Native `type` output uses `wtype` under Hyprland and leaves the normal
-  clipboard path untouched.
+  clipboard path untouched. Clipboard fallback is disabled for this profile so
+  a failed native insertion cannot turn into a misleading clipboard error.
+- The physical microphone source is restored as the default and its tested
+  profile volume is applied with a backup; the global output sink is not
+  changed, so feedback follows the user's normal Omarchy audio route.
 - `output.pre_type_delay_ms = 300` gives the focused Wayland field time to
   attach before the first keystroke. `type_delay_ms = 10` is the smallest
   stable value measured on this Zenbook's GTK/wtype path; it only slows native

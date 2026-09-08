@@ -1,0 +1,8 @@
+# Native Wayland Bitwarden workflow for Omarchy.
+# No Electron desktop client, X11 selector or X11 typing tool is installed.
+rbw
+rofi-rbw
+fuzzel
+wl-clipboard
+wtype
+pinentry

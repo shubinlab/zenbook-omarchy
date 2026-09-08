@@ -16,15 +16,22 @@ PROFILE_MONITOR_CONFIG=""
 PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
+PROFILE_BITWARDEN_INSTALL=0
+PROFILE_BITWARDEN_EXTENSION=""
+PROFILE_BITWARDEN_DOCTOR=""
+PROFILE_BITWARDEN_PACKAGE_MANIFESTS=""
 PROFILE_PACKAGE_MANIFESTS=""
 PROFILE_VOICE_PACKAGE_MANIFESTS=""
 PROFILE_DIAGNOSTIC_MANIFESTS=""
 PACKAGE_SOURCES=()
 VOICE_PACKAGE_SOURCES=()
+BITWARDEN_PACKAGE_SOURCES=()
 DIAGNOSTIC_SOURCES=()
 MONITOR_SOURCE=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
+BITWARDEN_SOURCE=""
+BITWARDEN_DOCTOR=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
@@ -35,10 +42,12 @@ DO_VPN=0
 DO_SYSTEM_UPDATE=0
 DO_TERMINAL=1
 DO_VOICE=0
+DO_BITWARDEN=0
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
 VOICE_OPTION_SET=0
+BITWARDEN_OPTION_SET=0
 STAGE=all
 MANIFEST=0
 NON_INTERACTIVE=0
@@ -69,12 +78,14 @@ Options:
   --vpn-location NAME   Use an AdGuard location or ISO code for this run.
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` after applying the profile (opt-in).
-  --stage NAME          Run one stage: all, vpn, display, packages, voice,
-                        diagnostics, terminal, update or doctor. Default: all.
+  --stage NAME          Run one stage: all, vpn, display, packages, bitwarden,
+                        voice, diagnostics, terminal, update or doctor.
+                        Default: all.
   --manifest            Print the stage manifest as JSON and exit.
   --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
   --no-voice            Skip the profile's native Omarchy Voxtype setup.
+  --no-bitwarden        Skip the profile's native Wayland Bitwarden setup.
   --check               Validate profile files without changing the system.
   --no-packages         Skip package installation.
   --no-monitor          Skip the monitor configuration.
@@ -117,6 +128,10 @@ detect_profile() {
   for manifest in $PROFILE_VOICE_PACKAGE_MANIFESTS; do
     VOICE_PACKAGE_SOURCES+=("$PROFILE_DIR/$manifest")
   done
+  BITWARDEN_PACKAGE_SOURCES=()
+  for manifest in $PROFILE_BITWARDEN_PACKAGE_MANIFESTS; do
+    BITWARDEN_PACKAGE_SOURCES+=("$PROFILE_DIR/$manifest")
+  done
   DIAGNOSTIC_SOURCES=()
   for manifest in $PROFILE_DIAGNOSTIC_MANIFESTS; do
     DIAGNOSTIC_SOURCES+=("$PROFILE_DIR/$manifest")
@@ -130,11 +145,20 @@ detect_profile() {
   if [[ -n "$PROFILE_VOICE_EXTENSION" ]]; then
     VOICE_SOURCE="$PROFILE_DIR/$PROFILE_VOICE_EXTENSION"
   fi
+  if [[ -n "$PROFILE_BITWARDEN_EXTENSION" ]]; then
+    BITWARDEN_SOURCE="$PROFILE_DIR/$PROFILE_BITWARDEN_EXTENSION"
+  fi
+  if [[ -n "$PROFILE_BITWARDEN_DOCTOR" ]]; then
+    BITWARDEN_DOCTOR="$PROFILE_DIR/$PROFILE_BITWARDEN_DOCTOR"
+  fi
   if ((VPN_OPTION_SET == 0)); then
     DO_VPN="$PROFILE_ENABLE_VPN"
   fi
   if ((VOICE_OPTION_SET == 0)); then
     DO_VOICE="$PROFILE_VOICE_INSTALL"
+  fi
+  if ((BITWARDEN_OPTION_SET == 0)); then
+    DO_BITWARDEN="$PROFILE_BITWARDEN_INSTALL"
   fi
 }
 
@@ -220,7 +244,23 @@ install_packages() {
   if ((${#PACKAGE_SOURCES[@]})); then
     install_package_set profile "${PACKAGE_SOURCES[@]}"
   fi
+  install_bitwarden_packages
   install_voice_packages
+}
+
+install_bitwarden_packages() {
+  if ((DO_BITWARDEN)); then
+    install_package_set bitwarden "${BITWARDEN_PACKAGE_SOURCES[@]}"
+  else
+    printf 'bootstrap: Bitwarden package set skipped (--no-bitwarden)\n'
+  fi
+}
+
+install_bitwarden() {
+  [[ "$DO_BITWARDEN" -eq 1 ]] || return 0
+  [[ -n "$BITWARDEN_SOURCE" && -x "$BITWARDEN_SOURCE" ]] ||
+    die "missing Bitwarden extension: $BITWARDEN_SOURCE"
+  "$BITWARDEN_SOURCE" --apply
 }
 
 install_voice_packages() {
@@ -295,7 +335,7 @@ update_vpn_cli() {
 
 check_profile() {
   [[ -f "$PROFILE_DIR/profile.env" ]] || die "missing profile metadata"
-  local manifest count=0 voice_count=0 diagnostic_count=0 package
+  local manifest count=0 voice_count=0 bitwarden_count=0 diagnostic_count=0 package
   for manifest in "${PACKAGE_SOURCES[@]}"; do
     [[ -f "$manifest" ]] || die "missing package manifest: $manifest"
     while IFS= read -r package; do
@@ -303,6 +343,16 @@ check_profile() {
         ((count += 1))
       fi
     done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+  done
+  for manifest in "${BITWARDEN_PACKAGE_SOURCES[@]}"; do
+    [[ -f "$manifest" ]] || die "missing Bitwarden package manifest: $manifest"
+    if ((DO_BITWARDEN)); then
+      while IFS= read -r package; do
+        if [[ -n "$package" ]]; then
+          ((bitwarden_count += 1))
+        fi
+      done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
+    fi
   done
   for manifest in "${VOICE_PACKAGE_SOURCES[@]}"; do
     [[ -f "$manifest" ]] || die "missing voice package manifest: $manifest"
@@ -335,20 +385,27 @@ check_profile() {
     [[ -x "/usr/share/omarchy/bin/omarchy-voxtype-install" ]] || die 'native Omarchy Voxtype installer is missing'
     [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
   fi
-  printf 'bootstrap check: PASS profile=%s packages=%d voice_packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
-    "$PROFILE_ID" "$count" "$voice_count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
+  if ((DO_BITWARDEN)); then
+    [[ -n "$BITWARDEN_SOURCE" && -x "$BITWARDEN_SOURCE" ]] || die "missing Bitwarden extension: $BITWARDEN_SOURCE"
+    [[ -n "$BITWARDEN_DOCTOR" && -x "$BITWARDEN_DOCTOR" ]] || die "missing Bitwarden doctor: $BITWARDEN_DOCTOR"
+    "$BITWARDEN_SOURCE" --check
+  fi
+  printf 'bootstrap check: PASS profile=%s packages=%d bitwarden_packages=%d voice_packages=%d diagnostics=%d monitor=%s vpn=%s (no system changes made)\n' \
+    "$PROFILE_ID" "$count" "$bitwarden_count" "$voice_count" "$diagnostic_count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
 
 print_manifest() {
-  local vpn_enabled=false monitor_enabled=false packages_enabled=false voice_enabled=false
+  local vpn_enabled=false monitor_enabled=false packages_enabled=false bitwarden_enabled=false voice_enabled=false
   ((DO_VPN)) && vpn_enabled=true
   ((DO_MONITOR)) && monitor_enabled=true
   ((DO_PACKAGES)) && packages_enabled=true
+  ((DO_BITWARDEN)) && bitwarden_enabled=true
   ((DO_VOICE)) && voice_enabled=true
   printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
   printf '{"name":"vpn","enabled":%s,"title":"Connect AdGuard VPN","category":"network","needs_user_input":true},' "$vpn_enabled"
   printf '{"name":"display","enabled":%s,"title":"Apply tested display settings","category":"configuration","needs_user_input":false},' "$monitor_enabled"
-  printf '{"name":"packages","enabled":%s,"title":"Install required NPU voice runtime","category":"runtime","needs_user_input":false},' "$packages_enabled"
+  printf '{"name":"packages","enabled":%s,"title":"Install profile packages and native runtimes","category":"runtime","needs_user_input":false},' "$packages_enabled"
+  printf '{"name":"bitwarden","enabled":%s,"requires":["packages"],"title":"Install native Wayland Bitwarden launcher","category":"security","needs_user_input":false},' "$bitwarden_enabled"
   printf '{"name":"diagnostics","title":"Install optional diagnostic packages","category":"optional","needs_user_input":false},'
   printf '{"name":"voice","enabled":%s,"requires":["packages"],"title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},' "$voice_enabled"
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
@@ -384,6 +441,15 @@ run_doctor() {
       printf '%sOK%s terminal\n' "$C_GREEN" "$C_RESET"
     else
       printf '%sFAIL%s terminal\n' "$C_RED" "$C_RESET"
+      failures=$((failures + 1))
+    fi
+  fi
+
+  if ((DO_BITWARDEN)) && [[ -n "$BITWARDEN_DOCTOR" ]]; then
+    if "$BITWARDEN_DOCTOR"; then
+      printf '%sOK%s native Bitwarden\n' "$C_GREEN" "$C_RESET"
+    else
+      printf '%sFAIL%s native Bitwarden\n' "$C_RED" "$C_RESET"
       failures=$((failures + 1))
     fi
   fi
@@ -434,6 +500,7 @@ while (($#)); do
     --non-interactive) NON_INTERACTIVE=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
     --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
+    --no-bitwarden) DO_BITWARDEN=0; BITWARDEN_OPTION_SET=1 ;;
     --check) DO_CHECK=1 ;;
     --no-packages) DO_PACKAGES=0 ;;
     --no-monitor) DO_MONITOR=0 ;;
@@ -449,6 +516,9 @@ detect_profile
 
 if ((DO_VOICE && !DO_PACKAGES)); then
   die 'voice requires the package stage; remove --no-packages or add --no-voice'
+fi
+if ((DO_BITWARDEN && !DO_PACKAGES)); then
+  die 'Bitwarden requires the package stage; remove --no-packages or add --no-bitwarden'
 fi
 
 if ((MANIFEST)); then
@@ -505,23 +575,25 @@ run_stage() {
     all)
       # Keep the least surprising clean-install order: network first, then
       # simple tested user settings, then package/model/service work.
-      stage_note '1/6' 'Network: AdGuard VPN'
+      stage_note '1/7' 'Network: AdGuard VPN'
       if ((DO_VPN)); then connect_vpn; else printf 'bootstrap: VPN disabled\n'; fi
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
-      stage_note '2/6' 'Display: tested user settings'
+      stage_note '2/7' 'Display: tested user settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/6' 'Packages: Lemonade/FLM NPU runtime'
+      stage_note '3/7' 'Packages: profile and native runtimes'
       if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
-      stage_note '4/6' 'Voice: native Voxtype + NPU inference'
+      stage_note '4/7' 'Bitwarden: native Wayland launcher'
+      if ((DO_BITWARDEN)); then install_bitwarden; else printf 'bootstrap: Bitwarden stage skipped\n'; fi
+      stage_note '5/7' 'Voice: native Voxtype + NPU inference'
       if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
-      stage_note '5/6' 'Terminal: user settings'
+      stage_note '6/7' 'Terminal: user settings'
       apply_terminal
       if ((DO_SYSTEM_UPDATE)); then
-        stage_note '6/7' 'System: supported Omarchy update'
+        stage_note '7/8' 'System: supported Omarchy update'
         apply_update
-        stage_note '7/7' 'Doctor: verify the installed profile'
+        stage_note '8/8' 'Doctor: verify the installed profile'
       else
-        stage_note '6/6' 'Doctor: verify the installed profile'
+        stage_note '7/7' 'Doctor: verify the installed profile'
       fi
       run_doctor
       ;;
@@ -537,12 +609,22 @@ run_stage() {
       backup_and_install_monitor
       ;;
     packages)
-      stage_note '1/1' 'Packages: Lemonade/FLM NPU runtime'
+      stage_note '1/1' 'Packages: profile and native runtimes'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
-      if ((${#PACKAGE_SOURCES[@]})) || { ((DO_VOICE)) && ((${#VOICE_PACKAGE_SOURCES[@]})); }; then
+      if ((${#PACKAGE_SOURCES[@]})) ||
+         { ((DO_BITWARDEN)) && ((${#BITWARDEN_PACKAGE_SOURCES[@]})); } ||
+         { ((DO_VOICE)) && ((${#VOICE_PACKAGE_SOURCES[@]})); }; then
         ensure_vpn_for_network_stage
       fi
       install_packages
+      ;;
+    bitwarden)
+      stage_note '1/1' 'Bitwarden: native Wayland launcher'
+      ((DO_BITWARDEN)) || die 'Bitwarden stage is disabled by --no-bitwarden or this profile'
+      ((DO_PACKAGES)) || die 'Bitwarden requires packages; remove --no-packages'
+      ensure_vpn_for_network_stage
+      install_bitwarden_packages
+      install_bitwarden
       ;;
     diagnostics)
       stage_note '1/1' 'Optional diagnostics: package tools'

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# One user-facing action: search, then type or copy from the selected vault item.
+# All components are Wayland-native; no X11 fallback is intentional.
+exec rofi-rbw \
+  --selector fuzzel \
+  --clipboarder wl-copy \
+  --typer wtype \
+  --clear-after 30 \
+  --no-help \
+  "$@"
