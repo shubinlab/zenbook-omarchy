@@ -17,3 +17,5 @@ The wrapper blocks idle, suspend and the closed-lid action with `systemd-inhibit
 Results are written to `runs/` as JSON and Markdown. The local telemetry service writes its private JSONL log under `~/.local/state/omarchy/monitor-telemetry/` and is not copied into this repository automatically.
 
 The latest full audit is [docs/AUDIT-2026-09-08.md](docs/AUDIT-2026-09-08.md), with the protected display results in [docs/RESULTS-2026-09-08.md](docs/RESULTS-2026-09-08.md) and the system baseline in `runs/2026-09-08-steady-health.md`.
+
+The follow-up runtime mode drift and recovery are recorded in [docs/INCIDENT-2026-09-08-display-mode-drift.md](docs/INCIDENT-2026-09-08-display-mode-drift.md).
