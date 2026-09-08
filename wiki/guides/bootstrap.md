@@ -11,7 +11,7 @@
 ## Recommended
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash
 ```
 
 The installer clones or updates the repository, selects the profile from DMI
@@ -29,7 +29,7 @@ checkout and does not run a system update implicitly.
 ## Verify without changing anything
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --check
 ```
 
 The check clones the published repository into a temporary directory, validates
@@ -42,7 +42,7 @@ repository is refused for safety.
 ## Check the live system
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage doctor
 ```
 
 `doctor` is read-only. It checks Omarchy, native Voxtype capture/output,
@@ -54,14 +54,14 @@ status when those components belong to the selected profile.
 Use the same raw entry point when you want one action only:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage vpn
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage display
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage packages
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage bitwarden
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage diagnostics
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage terminal
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage vpn
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage display
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage packages
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage bitwarden
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage diagnostics
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage voice
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage terminal
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage update
 ```
 
 From an existing checkout, the equivalent short commands are:
@@ -185,7 +185,7 @@ migrations and package update. Run the profile again after the update so
 user-owned overrides are checked against the new Omarchy defaults.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage update
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage update
 ```
 
 Older Zenbook installs can use the opt-in legacy repair command. It is never

@@ -20,7 +20,7 @@ user-level overrides, and makes every applied change inspectable and reversible.
 Recommended — one command, full restore:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash
 ```
 
 The installer runs these stages in order:
@@ -41,7 +41,7 @@ The clean flow does not run a system update automatically. Verify everything
 with:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage doctor
 ```
 
 ## Check first
@@ -50,7 +50,7 @@ The check mode downloads the published repository into a temporary directory,
 validates the scripts and changes nothing on the system:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --check
 ```
 
 The installer prints the exact source branch and commit used for the run. A
@@ -166,7 +166,8 @@ page that matches the question:
 ## Repository map
 
 ```text
-install.sh                         one-line GitHub entry point
+sh.sh                               canonical one-line GitHub entry point
+install.sh                         backward-compatible entry point
 scripts/bootstrap.sh               staged profile orchestrator
 scripts/install-*.sh               standalone stage wrappers
 scripts/doctor.sh                  read-only health check
