@@ -28,6 +28,7 @@ open_menu_window() {
   if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v foot >/dev/null 2>&1 &&
      [[ -z "${ZENBOOK_OMARCHY_NO_NEW_WINDOW:-}" && -z "${ZENBOOK_OMARCHY_MENU_WINDOW:-}" ]]; then
     exec foot --title 'Zenbook Omarchy installer' bash -c '
+      export ZENBOOK_OMARCHY_MENU_WINDOW=1
       "$1" menu
       status=$?
       printf "\\nFinished (exit %s). Press Enter to close. " "$status"
