@@ -10,6 +10,8 @@ CHROME_STORE_URL="https://chromewebstore.google.com/detail/bitwarden-free-passwo
 FIREFOX_STORE_URL="https://addons.mozilla.org/firefox/addon/bitwarden-password-manager/"
 BITWARDEN_DOWNLOAD_URL="https://bitwarden.com/download/"
 VAULT_URL="https://vault.bitwarden.com/"
+CHROMIUM_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}/chromium"
+BITWARDEN_EXTENSION_ID="nngceckbapebfimnlniiiahkandclblb"
 
 ACTION=check
 
@@ -83,6 +85,12 @@ browser_store_url() {
   esac
 }
 
+chromium_bitwarden_path() {
+  [[ -d ${CHROMIUM_CONFIG_HOME} ]] || return 1
+  find "${CHROMIUM_CONFIG_HOME}" -mindepth 3 -maxdepth 3 -type d \
+    -name "${BITWARDEN_EXTENSION_ID}" -print -quit 2>/dev/null
+}
+
 run_onboarding() {
   [[ -r /dev/tty ]] || die 'guided setup must run from a terminal'
   for command_name in rbw rofi-rbw fuzzel wl-copy wtype; do
@@ -126,10 +134,16 @@ run_onboarding() {
   printf 'Vault синхронизирован.\n'
 
   printf '\nШаг 3/5. Расширение браузера\n'
-  local store_url
-  store_url="$(browser_store_url)"
-  open_url "$store_url"
-  pause 'В магазине нажмите Add/Установить для официального Bitwarden Password Manager'
+  local store_url chromium_extension_path
+  chromium_extension_path="$(chromium_bitwarden_path || true)"
+  if [[ -n ${chromium_extension_path} ]]; then
+    printf 'Официальное Bitwarden уже найдено в Chromium: %s\n' "$chromium_extension_path"
+    printf 'Проверьте, что расширение включено и закреплено на панели браузера.\n'
+  else
+    store_url="$(browser_store_url)"
+    open_url "$store_url"
+    pause 'В магазине нажмите Add/Установить для официального Bitwarden Password Manager'
+  fi
 
   printf '\nШаг 4/5. Первый запуск расширения\n'
   open_url "$VAULT_URL"
