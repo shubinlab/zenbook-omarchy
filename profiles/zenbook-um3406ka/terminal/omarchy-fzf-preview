@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+set -u
+
+target=${1:-}
+[[ -n $target && -e $target ]] || exit 0
+
+if [[ -d $target ]]; then
+  if command -v eza &>/dev/null; then
+    eza --color=always --long --group-directories-first -- "$target" 2>/dev/null
+  else
+    command ls -la --color=always -- "$target" 2>/dev/null
+  fi
+  exit 0
+fi
+
+mime=$(file --mime-type -Lb -- "$target" 2>/dev/null || true)
+case $mime in
+  image/*)
+    if command -v chafa &>/dev/null; then
+      cols=${FZF_PREVIEW_COLUMNS:-80}
+      lines=${FZF_PREVIEW_LINES:-24}
+      chafa --format symbols --colors 16 --size "${cols}x${lines}" -- "$target" 2>/dev/null ||
+        file --brief -- "$target"
+    else
+      file --brief -- "$target"
+    fi
+    ;;
+  *)
+    if command -v bat &>/dev/null; then
+      bat --style=numbers --color=always --line-range ":${FZF_PREVIEW_LINES:-200}" -- "$target" 2>/dev/null ||
+        sed -n '1,200p' -- "$target"
+    else
+      sed -n '1,200p' -- "$target"
+    fi
+    ;;
+esac

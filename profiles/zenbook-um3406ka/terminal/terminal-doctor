@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+
+# Read-only health check for the user-owned terminal enhancements.
+set -u
+
+pass=0
+warn=0
+fail=0
+
+ok() { printf 'PASS  %s\n' "$1"; ((pass += 1)); }
+warning() { printf 'WARN  %s\n' "$1"; ((warn += 1)); }
+bad() { printf 'FAIL  %s\n' "$1"; ((fail += 1)); }
+
+check_cmd() {
+  local name=$1
+  if command -v "$name" >/dev/null 2>&1; then
+    ok "$name: $(command -v "$name")"
+  else
+    bad "$name is not installed or not on PATH"
+  fi
+}
+
+printf '%s\n' 'Terminal doctor (read-only)'
+printf '%s\n' '=========================='
+
+check_cmd foot
+check_cmd fzf
+check_cmd chafa
+check_cmd tmux
+
+if foot --check-config >/dev/null 2>&1; then
+  ok 'Foot configuration is valid'
+else
+  bad 'Foot configuration check failed'
+fi
+
+if grep -Eq '^[[:space:]]*sixel[[:space:]]*=[[:space:]]*yes[[:space:]]*$' \
+    "$HOME/.config/foot/foot.ini" 2>/dev/null; then
+  ok 'Foot Sixel is explicitly enabled'
+else
+  bad 'Foot Sixel is not explicitly enabled'
+fi
+
+if [[ -r $HOME/.local/share/blesh/ble.sh ]]; then
+  version=$(grep -m1 '_ble_init_version=' "$HOME/.local/share/blesh/ble.sh" 2>/dev/null || true)
+  ok "ble.sh is present${version:+ ($version)}"
+else
+  bad 'ble.sh is missing from ~/.local/share/blesh'
+fi
+
+if grep -q 'integration/fzf-completion' "$HOME/.blerc" 2>/dev/null &&
+   grep -q 'integration/fzf-key-bindings' "$HOME/.blerc" 2>/dev/null; then
+  ok 'ble.sh/fzf integration is configured'
+else
+  bad 'ble.sh/fzf integration is not configured'
+fi
+
+if [[ -x $HOME/.local/bin/omarchy-fzf-preview ]]; then
+  ok 'fzf preview helper is executable'
+else
+  bad 'fzf preview helper is missing or not executable'
+fi
+
+if [[ -r $HOME/.bashrc ]] && grep -q 'zenbook-omarchy terminal' "$HOME/.bashrc" 2>/dev/null; then
+  ok 'Bash integration is sourced from ~/.bashrc'
+else
+  bad 'Bash integration marker is missing'
+fi
+
+if command -v omarchy-default-agent >/dev/null 2>&1; then
+  agent=$(omarchy-default-agent 2>/dev/null || true)
+  if [[ $agent == codex ]]; then
+    ok 'Omarchy default agent: codex'
+  elif [[ -n $agent ]]; then
+    warning "Omarchy default agent: $agent"
+  else
+    bad 'Omarchy default agent is not set'
+  fi
+else
+  bad 'omarchy-default-agent is unavailable'
+fi
+
+if ! grep -q '^hl\.unbind("SUPER + SHIFT + CTRL + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
+   grep -q '^hl\.unbind("SUPER + SHIFT + ALT + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
+   grep -q 'https://chatgpt.com' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
+  ok 'Agent default and ChatGPT shortcut overrides are correct'
+else
+  bad 'Agent default or ChatGPT shortcut override is incorrect'
+fi
+
+printf '\n%s\n' "Summary: $pass passed, $warn warnings, $fail failures"
+(( fail == 0 ))

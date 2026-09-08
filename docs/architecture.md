@@ -33,3 +33,7 @@ Profiles are allowed to contain tested configuration and sanitized conclusions.
 They must not contain credentials, serial numbers, EDID hashes, raw journals,
 absolute home paths or live telemetry. New profiles should reuse the engine and
 declare only capabilities they can justify with local evidence.
+
+Within a hardware profile, `hardware.md` is the canonical inventory and
+`configuration.md` is the user-facing restore map. Evidence files explain why
+a value is trusted; they do not replace the inventory or source configuration.

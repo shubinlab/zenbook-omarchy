@@ -1,0 +1,11 @@
+# User-scoped terminal enhancements for Omarchy Bash.
+# This file is sourced from ~/.bashrc after Omarchy's packaged rc.
+
+if [[ $- == *i* && -r "$HOME/.local/share/blesh/ble.sh" ]]; then
+  source -- "$HOME/.local/share/blesh/ble.sh" --attach=none
+  [[ ${BLE_VERSION-} ]] && ble-attach
+fi
+
+if command -v fzf &>/dev/null && command -v omarchy-fzf-preview &>/dev/null; then
+  alias ff='fzf --preview="omarchy-fzf-preview {}"'
+fi

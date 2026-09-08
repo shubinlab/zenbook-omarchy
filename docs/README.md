@@ -6,6 +6,7 @@ measurements and incident records live under the profile that produced them.
 | Need | Read |
 |---|---|
 | Install, update or verify | [BOOTSTRAP.md](BOOTSTRAP.md) |
+| Recover a working system | [recovery.md](recovery.md) |
 | Understand the architecture | [architecture.md](architecture.md) |
 | Design protected experiments | [METHODOLOGY.md](METHODOLOGY.md) |
 | Understand local telemetry | [telemetry.md](telemetry.md) |
@@ -13,6 +14,7 @@ measurements and incident records live under the profile that produced them.
 | Public-data and vulnerability policy | [../SECURITY.md](../SECURITY.md) |
 
 The [Zenbook profile](../profiles/zenbook-um3406ka/README.md) contains the
-hardware audit, display results, vendor research, incident record and voice
-extension. Its filenames describe their subject, so they remain useful after
-the evidence is refreshed.
+canonical hardware inventory, configuration map, display results, vendor
+research, incident record, voice extension and terminal extension. Its
+filenames describe their subject, so they remain useful after the evidence is
+refreshed.

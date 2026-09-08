@@ -9,6 +9,11 @@ package manifests, optional telemetry service and voice extension. It is
 selected automatically when DMI reports `UM3406KA`, or explicitly with
 `--profile zenbook-um3406ka`.
 
+Within a machine profile, keep `hardware.md` as the canonical device record
+and `configuration.md` as the restore map. Put experiments and source links in
+`docs/`, and keep user-facing extensions in their own directory such as
+`voice/` or `terminal/`.
+
 To add another machine, create a directory with:
 
 - `profile.env` describing package manifests and optional capabilities;

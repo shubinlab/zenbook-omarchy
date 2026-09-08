@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-- Keep the public repository structure and checks current as the Omarchy
-  configuration evolves.
+- Added a canonical Zenbook hardware and peripheral inventory.
+- Added a per-file restore map and guided recovery commands.
+- Reworked the main README around restoration, diagnostics and current known-good values.
+- Preserved the terminal extension with its package, doctor and rollback paths.
+- Kept hardware-specific runners and evidence inside the Zenbook profile.
 
 ## 2026-09-08
 

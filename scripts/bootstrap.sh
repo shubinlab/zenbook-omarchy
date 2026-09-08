@@ -15,11 +15,13 @@ PROFILE_LOGIN_AFTER_VPN_INSTALL=0
 PROFILE_MONITOR_CONFIG=""
 PROFILE_TELEMETRY_SERVICE=""
 PROFILE_TELEMETRY_COLLECTOR=""
+PROFILE_TERMINAL_EXTENSION=""
 PROFILE_PACKAGE_MANIFESTS=""
 PACKAGE_SOURCES=()
 MONITOR_SOURCE=""
 TELEMETRY_SERVICE_SOURCE=""
 TELEMETRY_COLLECTOR_SOURCE=""
+TERMINAL_SOURCE=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
 VPN_CLI="${ADGUARD_VPN_CLI:-}"
 VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
@@ -29,6 +31,7 @@ DO_MONITOR=1
 DO_VPN=0
 DO_SYSTEM_UPDATE=0
 DO_TELEMETRY=0
+DO_TERMINAL=1
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
@@ -48,6 +51,7 @@ Options:
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` after applying the profile.
   --enable-telemetry    Install and enable the profile telemetry service.
+  --no-terminal         Skip the profile's user-scoped terminal extension.
   --check               Validate profile files without changing the system.
   --no-packages         Skip package installation.
   --no-monitor          Skip the monitor configuration.
@@ -94,6 +98,9 @@ detect_profile() {
   fi
   if [[ -n "$PROFILE_TELEMETRY_COLLECTOR" ]]; then
     TELEMETRY_COLLECTOR_SOURCE="$PROFILE_DIR/$PROFILE_TELEMETRY_COLLECTOR"
+  fi
+  if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
+    TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
   fi
   if ((VPN_OPTION_SET == 0)); then
     DO_VPN="$PROFILE_ENABLE_VPN"
@@ -233,6 +240,10 @@ check_profile() {
   if [[ -n "$TELEMETRY_COLLECTOR_SOURCE" ]]; then
     [[ -f "$TELEMETRY_COLLECTOR_SOURCE" ]] || die "missing telemetry collector"
   fi
+  if [[ -n "$TERMINAL_SOURCE" ]]; then
+    [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
+    "$TERMINAL_SOURCE" --check
+  fi
   printf 'bootstrap check: PASS profile=%s packages=%d monitor=%s vpn=%s (no system changes made)\n' \
     "$PROFILE_ID" "$count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
@@ -246,6 +257,7 @@ while (($#)); do
     --update-vpn-cli) DO_VPN_CLI_UPDATE=1; DO_VPN=1; VPN_OPTION_SET=1 ;;
     --update-system) DO_SYSTEM_UPDATE=1 ;;
     --enable-telemetry) DO_TELEMETRY=1 ;;
+    --no-terminal) DO_TERMINAL=0 ;;
     --check) DO_CHECK=1 ;;
     --no-packages) DO_PACKAGES=0 ;;
     --no-monitor) DO_MONITOR=0 ;;
@@ -266,6 +278,9 @@ fi
 if ((DO_VPN)); then connect_vpn; fi
 if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
 if ((DO_PACKAGES)); then install_packages; fi
+if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
+  "$TERMINAL_SOURCE" --apply
+fi
 if ((DO_MONITOR)); then backup_and_install_monitor; fi
 if ((DO_TELEMETRY)); then install_telemetry; fi
 if ((DO_SYSTEM_UPDATE)); then

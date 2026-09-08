@@ -4,7 +4,7 @@ set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
 
-bash -n install.sh scripts/*.sh tools/*.sh profiles/*/voice/*.sh profiles/*/tools/*.sh
+bash -n install.sh scripts/*.sh tools/*.sh profiles/*/voice/*.sh profiles/*/tools/*.sh profiles/*/terminal/*.sh profiles/*/terminal/omarchy-fzf-preview profiles/*/terminal/terminal-doctor
 python -m py_compile profiles/*/tools/*.py
 ./tools/check-public-repo.sh
 git diff --check
