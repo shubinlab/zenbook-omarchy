@@ -37,8 +37,9 @@ is modified.
 - Native `type` output uses `wtype` under Hyprland and leaves the normal
   clipboard path untouched.
 - `output.pre_type_delay_ms = 300` gives the focused Wayland field time to
-  attach before the first keystroke; `type_delay_ms` remains at Omarchy's
-  native value.
+  attach before the first keystroke. `type_delay_ms = 10` is the smallest
+  stable value measured on this Zenbook's GTK/wtype path; it only slows native
+  keystroke delivery and does not introduce a second output mechanism.
 - The profile is user-scoped and creates a timestamped backup before changing
   Voxtype or audio defaults. No raw audio, credentials or model weights are
   stored in Git.

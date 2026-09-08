@@ -53,6 +53,8 @@ done
 source "${PROFILE_FILE}"
 : "${VOICE_MODEL:=large-v3-turbo}"
 : "${VOICE_LANGUAGE:=auto}"
+: "${VOICE_TYPE_DELAY_MS:=10}"
+[[ "${VOICE_TYPE_DELAY_MS}" =~ ^[0-9]+$ ]] || die 'VOICE_TYPE_DELAY_MS must be an integer'
 
 safe_name() {
   [[ "$1" =~ ^[A-Za-z0-9_.:-]+$ ]] || die "unsafe PipeWire node name: $1"
@@ -76,6 +78,43 @@ physical_sink() {
     return
   fi
   pactl list short sinks | awk '$2 ~ /^alsa_output\./ && $2 !~ /\.monitor$/ {print $2; exit}'
+}
+
+output_config_value() {
+  local key="$1"
+  awk -v key="${key}" '
+    BEGIN { in_output = 0 }
+    /^\[output\][[:space:]]*$/ { in_output = 1; next }
+    /^\[/ { in_output = 0 }
+    in_output && $0 ~ "^[[:space:]]*" key "[[:space:]]*=" {
+      sub(/^[^=]*=[[:space:]]*/, "")
+      gsub(/[[:space:]]+#.*$/, "")
+      gsub(/"/, "")
+      print
+      exit
+    }
+  ' "${VOXTYPE_TARGET}"
+}
+
+set_type_delay() {
+  local temporary
+  temporary="$(mktemp "${VOXTYPE_TARGET}.tmp.XXXXXX")"
+  if ! awk -v delay="${VOICE_TYPE_DELAY_MS}" '
+      BEGIN { in_output = 0; found = 0 }
+      /^\[output\][[:space:]]*$/ { in_output = 1 }
+      /^\[/ && $0 !~ /^\[output\][[:space:]]*$/ { in_output = 0 }
+      in_output && /^[[:space:]]*type_delay_ms[[:space:]]*=/ {
+        sub(/=.*/, "= " delay)
+        found = 1
+      }
+      { print }
+      END { exit(found ? 0 : 1) }
+    ' "${VOXTYPE_TARGET}" >"${temporary}"; then
+    rm -f -- "${temporary}"
+    die 'native Voxtype config has no output.type_delay_ms entry'
+  fi
+  install -m 0644 "${temporary}" "${VOXTYPE_TARGET}"
+  rm -f -- "${temporary}"
 }
 
 backup_target() {
@@ -136,6 +175,7 @@ check_state() {
   check_value whisper.language "${VOICE_LANGUAGE}" "$(voxtype config get whisper.language 2>/dev/null || true)"
   check_value whisper.translate false "$(voxtype config get whisper.translate 2>/dev/null || true)"
   check_value output.mode type "$(voxtype config get output.mode 2>/dev/null || true)"
+  check_value output.type_delay_ms "${VOICE_TYPE_DELAY_MS}" "$(output_config_value type_delay_ms)"
   check_value output.pre_type_delay_ms 300 "$(voxtype config get output.pre_type_delay_ms 2>/dev/null || true)"
   check_value audio.feedback.enabled true "$(voxtype config get audio.feedback.enabled 2>/dev/null || true)"
   check_value osd.enabled true "$(voxtype config get osd.enabled 2>/dev/null || true)"
@@ -219,6 +259,7 @@ apply_profile() {
   voxtype config set whisper.translate false
   voxtype config set output.mode type
   voxtype config set output.fallback_to_clipboard true
+  set_type_delay
   voxtype config set output.pre_type_delay_ms 300
   voxtype config set audio.feedback.enabled true
   voxtype config set audio.feedback.theme default
