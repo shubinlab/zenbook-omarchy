@@ -1,4 +1,6 @@
-# Display mode drift — 2026-09-08
+# Display mode incident and recovery
+
+Last verified: 2026-09-08
 
 ## Observation
 

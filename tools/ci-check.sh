@@ -4,8 +4,8 @@ set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
 
-bash -n install.sh install/bootstrap.sh tools/*.sh
-python -m py_compile tools/*.py
+bash -n install.sh scripts/*.sh tools/*.sh profiles/*/voice/*.sh profiles/*/tools/*.sh
+python -m py_compile profiles/*/tools/*.py
 ./tools/check-public-repo.sh
 git diff --check
 

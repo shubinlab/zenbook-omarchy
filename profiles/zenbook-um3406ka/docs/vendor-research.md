@@ -1,6 +1,6 @@
-# Vendor and community research — 2026-09-08
+# Vendor and community research
 
-Research window: 2026-07-08 through 2026-09-08, with older primary documentation retained where it defines the driver model. Local tests were run on the ASUS Zenbook 14 UM3406KA with an AMD Ryzen AI 7 350, Radeon 840M/860M, MediaTek MT7922, WD_BLACK SN850X and a JSAUX RGB docking station feeding an LG display through DisplayPort.
+Research window: 2026-07-08 through 2026-09-08. Older primary documentation is retained where it defines the driver model. Local tests were run on the ASUS Zenbook 14 UM3406KA with an AMD Ryzen AI 7 350, Radeon 840M/860M, MediaTek MT7922, WD_BLACK SN850X and a JSAUX RGB docking station feeding an LG display through DisplayPort.
 
 ## Decisions
 

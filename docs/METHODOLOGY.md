@@ -1,21 +1,24 @@
 # Test methodology
 
-The first test series was contaminated by power management. Omarchy was configured with a 150-second screensaver and a 300-second lock timeout. The stay-awake marker cancels Omarchy's idle cycle, but it does not by itself block systemd-logind sleep or the closed-lid action.
+Power management is part of the experiment. A stay-awake setting alone does
+not necessarily block systemd-logind sleep, screen locking or a closed-lid
+action, so a display run must guard the whole test window.
 
-The corrected harness uses both controls:
+The protected harness uses:
 
-1. `omarchy-shell idle disable` and the Omarchy stay-awake state file.
-2. `systemd-inhibit --what=idle:sleep:handle-lid-switch --mode=block` around the entire runner.
+1. the desktop environment's idle disable mechanism and its stay-awake state;
+2. `systemd-inhibit --what=idle:sleep:handle-lid-switch --mode=block` around
+   the entire runner;
+3. a sample gate that invalidates results when the session locks, the inhibitor
+   disappears, the connector disconnects or the display changes state outside
+   the requested phase.
 
-Every 2-second sample records and validates:
+Each sample should record the compositor mode, refresh, format, VRR, DPMS and
+disabled state; the DRM VRR flag; the active connector; session idle/lock
+state; and relevant kernel events. A profile supplies the connector and mode
+matrix for its hardware.
 
-- Hyprland mode, refresh, format, VRR, DPMS and disabled state;
-- DRM `VRR_ENABLED` values;
-- DP-1 connector status;
-- `loginctl` `IdleHint`, `LockedHint` and session state;
-- Omarchy lock state;
-- presence of the test systemd inhibitor.
-
-A phase is invalid when the session is idle, locked, the inhibitor disappears, the connector is disconnected, or DPMS changes unexpectedly. The DPMS phase intentionally turns DPMS off and therefore records the off interval separately.
-
-Software telemetry cannot prove that a human-visible flicker never occurred. The runner detects link loss, DPMS, mode changes, DRM VRR state and kernel events; optical confirmation would require a camera or photodiode.
+An intentional DPMS phase must be labelled separately from an unexpected DPMS
+transition. Software telemetry can detect link loss, modesets, DRM VRR state
+and kernel events, but cannot prove that a human-visible flicker never
+occurred. Optical confirmation requires a camera or photodiode.

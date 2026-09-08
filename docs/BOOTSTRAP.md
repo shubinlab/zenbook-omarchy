@@ -1,53 +1,42 @@
-# Clean-install bootstrap
+# Bootstrap
 
-The public repository contains the reproducible parts of this Zenbook profile:
+The repository has one small engine and optional profiles. `generic` is the
+portable fallback: it installs common diagnostic tools and leaves monitor, VPN
+and telemetry policy unchanged. A known machine can supply a profile with
+tested monitor, package, service and extension files.
 
-- `config/monitors.lua` keeps the LG display at 2560×1440, 240 Hz, 10-bit,
-  sRGB, VRR enabled and the user-selected scale `1.6` while preserving the
-  Omarchy scaling variable;
-- `config/packages-platform.txt` records the kernel, firmware, graphics,
-  network, Bluetooth and audio stack expected by this hardware;
-- `config/packages-diagnostics.txt` lists the diagnostic and display tools used
-  during the audit;
-- `install/bootstrap.sh` installs those packages through `omarchy-pkg-add`,
-  applies the monitor rule with a timestamped backup, optionally enables local
-  telemetry, connects an existing AdGuard VPN session, and optionally runs
-  `omarchy update`.
-- `install.sh` is the short GitHub entry point that clones or updates the
-  repository and invokes the full bootstrap.
-
-The short entry point installs the official AdGuard VPN CLI when it is missing.
-The script does not contain or copy AdGuard credentials, VPN databases, tokens,
-private keys, serial numbers or raw machine telemetry. It also does not edit
-`/usr/share/omarchy`; user configuration belongs under `~/.config`.
-
-The shortest command installs or updates the profile in one line:
+The shortest command clones or updates the repository, selects a profile from
+DMI when possible, and runs the supported Omarchy update:
 
 ```bash
-repo="$HOME/zenbook-omarchy"; if [ -d "$repo/.git" ]; then git -C "$repo" pull --ff-only; else git clone https://github.com/shubinlab/zenbook-omarchy.git "$repo"; fi && "$repo/install/bootstrap.sh" --vpn --update-system
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
-The first run may pause for the one-time interactive AdGuard login. To select a
-particular AdGuard location without saving it in Git, add
-`export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY;` before the `repo=...` part of
-the same one-liner.
-
-The safe remote verification command downloads the published repository,
-checks Bash and profile files, and performs no installation or configuration
-changes:
+Use this first to validate the published repository without changing the
+system:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --check
 ```
 
-The installer URL is the one published by AdGuard. The repository invokes the
-CLI's documented `status`, `connect` and optional `update` commands. The login
-step remains interactive and no account data belongs in this repository.
+Useful explicit choices after the repository has been cloned are:
 
-Use `--update-vpn-cli` when you explicitly want the installed AdGuard CLI to
-update itself. Use `--enable-telemetry` only when local five-second monitor
-telemetry is wanted; its JSONL data remains under
-`~/.local/state/omarchy/monitor-telemetry/` and is ignored by Git.
+```bash
+~/zenbook-omarchy/scripts/bootstrap.sh --profile generic --check
+~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --no-vpn --no-monitor
+~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --enable-telemetry
+~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --update-vpn-cli
+```
+
+VPN is profile-controlled and opt-in for generic machines. The Zenbook profile
+can install the official AdGuard CLI and connect it before an update, but it
+never stores account data in Git. Set `ADGUARD_VPN_LOCATION` for one run when
+needed. `--no-vpn` always wins over a profile default.
+
+The bootstrap applies user configuration under `~/.config`, creates a backup
+under `~/.local/state/omarchy-profiles/` before replacing a monitor file, and
+does not edit `/usr/share/omarchy`. Telemetry is opt-in; its local JSONL data
+stays under `~/.local/state/omarchy/monitor-telemetry/` and is ignored by Git.
 
 The full operating-system update is intentionally `omarchy update`, not a raw
 `pacman -Syu`: Omarchy owns snapshots and migrations around that operation.

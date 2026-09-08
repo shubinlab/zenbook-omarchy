@@ -1,6 +1,6 @@
 # Local telemetry
 
-The collector in `tools/omarchy-monitor-telemetry.py` is installed locally as a user systemd service. It samples every five seconds and records:
+The collector in `profiles/zenbook-um3406ka/tools/omarchy-monitor-telemetry.py` is installed locally as a user systemd service. It samples every five seconds and records:
 
 - lid state;
 - DP-1 connector and EDID hash;

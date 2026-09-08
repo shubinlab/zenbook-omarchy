@@ -1,4 +1,6 @@
-# Full laptop and external-device audit — 2026-09-08
+# Laptop and external-device audit
+
+Last verified: 2026-09-08
 
 ## Current verdict
 
@@ -41,7 +43,7 @@ The later 32-second post-fix control run held 143.991 Hz, scale 1.0, VRR on, DPM
 
 ## Files
 
-- Full hardware and component review: `docs/COMPONENT-AUDIT-2026-09-08.md`
+- Full hardware and component review: `profiles/zenbook-um3406ka/docs/components.md`
 - Raw steady-state data remains local under the Git-ignored `runs/` directory.
-- Display red-team methodology: `docs/METHODOLOGY.md`
-- Sanitized telemetry collector: `tools/omarchy-monitor-telemetry.py`
+- Display red-team methodology: `../../../docs/METHODOLOGY.md`
+- Sanitized telemetry collector: `profiles/zenbook-um3406ka/tools/omarchy-monitor-telemetry.py`

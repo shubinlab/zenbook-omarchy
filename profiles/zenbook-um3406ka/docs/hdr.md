@@ -1,4 +1,6 @@
-# HDR investigation — 2026-09-08
+# HDR investigation
+
+Last verified: 2026-09-08
 
 ## Question
 

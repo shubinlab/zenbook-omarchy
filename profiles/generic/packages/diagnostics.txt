@@ -1,0 +1,8 @@
+# Cross-hardware observability tools. No vendor driver or desktop policy is
+# installed by the generic profile.
+usbutils
+ethtool
+fwupd
+inxi
+smartmontools
+stress-ng

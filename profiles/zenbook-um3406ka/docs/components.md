@@ -1,4 +1,6 @@
-# Full component audit — 2026-09-08
+# Component audit
+
+Last verified: 2026-09-08
 
 ## Scope and method
 
@@ -56,7 +58,7 @@ The CPU phase produced valid thermal samples and SHA-256 results, then the runne
 ## Evidence files
 
 - Raw component and steady-state runs remain local under the Git-ignored `runs/` directory.
-- `docs/AUDIT-2026-09-08.md`
-- `docs/INCIDENT-2026-09-08-display-mode-drift.md`
-- `docs/REPOSITORY-MAP.md`
-- `docs/VENDOR-COMMUNITY-RESEARCH-2026-09-08.md`
+- `profiles/zenbook-um3406ka/docs/audit.md`
+- `profiles/zenbook-um3406ka/docs/display-incident.md`
+- `profiles/zenbook-um3406ka/docs/repository-map.md`
+- `profiles/zenbook-um3406ka/docs/vendor-research.md`

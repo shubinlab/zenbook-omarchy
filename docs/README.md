@@ -1,23 +1,18 @@
 # Documentation map
 
-Start with these files:
+The stable documentation layer explains how the repository works. Hardware
+measurements and incident records live under the profile that produced them.
 
 | Need | Read |
 |---|---|
-| Install or rebuild the system | [BOOTSTRAP.md](BOOTSTRAP.md) |
-| Current tested hardware and software | [ENVIRONMENT.md](ENVIRONMENT.md) |
-| Executive audit result | [AUDIT-2026-09-08.md](AUDIT-2026-09-08.md) |
-| Full component evidence | [COMPONENT-AUDIT-2026-09-08.md](COMPONENT-AUDIT-2026-09-08.md) |
-| Package and staged test results | [DIAGNOSTICS-2026-09-08.md](DIAGNOSTICS-2026-09-08.md) |
-| Display red-team result | [RESULTS-2026-09-08.md](RESULTS-2026-09-08.md) |
-| How the protected tests work | [METHODOLOGY.md](METHODOLOGY.md) |
-| Display mode incident and recovery | [INCIDENT-2026-09-08-display-mode-drift.md](INCIDENT-2026-09-08-display-mode-drift.md) |
-| HDR decision | [HDR-2026-09-08.md](HDR-2026-09-08.md) |
-| Local telemetry | [TELEMETRY.md](TELEMETRY.md) |
-| Vendor and community evidence | [VENDOR-COMMUNITY-RESEARCH-2026-09-08.md](VENDOR-COMMUNITY-RESEARCH-2026-09-08.md) |
-| External source list | [RESEARCH.md](RESEARCH.md) |
-| Cross-repository search map | [REPOSITORY-MAP.md](REPOSITORY-MAP.md) |
+| Install, update or verify | [BOOTSTRAP.md](BOOTSTRAP.md) |
+| Understand the architecture | [architecture.md](architecture.md) |
+| Design protected experiments | [METHODOLOGY.md](METHODOLOGY.md) |
+| Understand local telemetry | [telemetry.md](telemetry.md) |
+| Choose or add a host profile | [../profiles/README.md](../profiles/README.md) |
 | Public-data and vulnerability policy | [../SECURITY.md](../SECURITY.md) |
 
-The dated reports are evidence records. The root README, bootstrap guide and
-this map are the stable navigation layer.
+The [Zenbook profile](../profiles/zenbook-um3406ka/README.md) contains the
+hardware audit, display results, vendor research, incident record and voice
+extension. Its filenames describe their subject, so they remain useful after
+the evidence is refreshed.

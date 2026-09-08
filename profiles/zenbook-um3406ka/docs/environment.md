@@ -1,5 +1,7 @@
 # Tested environment
 
+Last verified: 2026-09-08
+
 - Laptop: ASUS Zenbook 14 UM3406KA, internal panel closed during the test.
 - GPU: AMD Krackan/Radeon 840M/860M, `amdgpu`.
 - External output: `DP-1`, LG UltraGear, 2560×1440.
