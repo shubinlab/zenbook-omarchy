@@ -16,7 +16,7 @@ The protected phases used `systemd-inhibit` for idle, sleep and lid-switch actio
 | CPU thermal behavior | 8-way SHA-256 workload; peak Tctl about 85.4 °C, fan about 2600 RPM; returned to about 60.5 °C | Passed short load; no throttling or crash evidence |
 | Memory/zram | 1 GiB allocate, page-touch and SHA-256; 30 GiB RAM available, zram and swap unused | Passed |
 | GPU | Radeon 840M/860M, `amdgpu`, power state D0; GPU peak about 64 °C during CPU/memory run | Healthy in tested workload |
-| NPU | AMD XDNA device and driver enumerated | Enumerated; no workload test installed |
+| NPU | AMD XDNA device and driver; Lemonade FLM Whisper fixture requests | Passed; health reported `recipe=flm`, `device=npu`, ready model, and NPU utilization during requests |
 | Display path | DP-1 connected through JSAUX; current profile is 1440p/240 Hz/10-bit/VRR/DPMS with `cm=srgb`, plus an 8-sample 144 Hz post-fix control run | Passed |
 | Display scale | DP-1 uses the Omarchy-managed `omarchy_monitor_scale` variable; scale 1.6 survives the official scaling command and reload | Current user profile |
 | NVMe/Btrfs | WD_BLACK SN850X; temporary 512 MiB write with `fdatasync`, read and delete; Btrfs device stats all zero | Passed; diagnostic tools are installed, but direct SMART access was not completed in the restricted test shell |

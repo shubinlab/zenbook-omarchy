@@ -57,6 +57,22 @@ them only when needed:
 | `lm_sensors` | `3.6.2-1` | dependency | Sensor readings |
 | `mpv` | `0.41.0-6` | explicit | Controlled media/display checks |
 
+## Required local NPU voice backend
+
+The Zenbook clean profile declares only these two direct additions. They are
+installed through Omarchy's `omarchy-pkg-add` helper before the native Voxtype
+stage; Arch resolves the XRT and AMD XDNA runtime dependencies. No second
+Voxtype installer, audio stack or typing tool is added.
+
+| Package | Role |
+|---|---|
+| `lemonade-server` | Local OpenAI-compatible transcription service and model manager |
+| `fastflowlm` | FLM backend that runs the supported Whisper model on AMD XDNA2 NPU |
+
+The active model is `whisper-v3-turbo-FLM`. The native Omarchy installer still
+owns and may download its stock Voxtype model artifact; remote mode simply does
+not select that artifact for active inference on this profile.
+
 ## User-facing additions
 
 | Package or component | State | Why it exists |
@@ -77,7 +93,8 @@ installer and `pacman -Qi` install reason are the authority. Do not remove a
 package solely because it is absent from the two stock catalog files.
 
 The source manifests are [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt)
-for reference and [diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt)
+for reference, [voice-npu.txt](../../profiles/zenbook-um3406ka/packages/voice-npu.txt)
+for the required NPU voice runtime and [diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt)
 for the optional stage. Terminal preview owns its `chafa` dependency in
 `profiles/zenbook-um3406ka/terminal/apply.sh`.
 `voxtype-bin` and `wtype` are intentionally not duplicated in a repository

@@ -29,8 +29,8 @@ usage() {
 Usage: profiles/<id>/voice/apply.sh [--check|--apply|--rollback]
 
 The default is a read-only check. --apply keeps Omarchy's native Voxtype
-installation and applies this host's multilingual model/language policy,
-native OSD and start/stop audio feedback. It restores a physical ALSA
+installation and applies this host's local Lemonade/NPU route, auto-language
+policy, native OSD and start/stop audio feedback. It restores a physical ALSA
 microphone as the user-session default. Every apply is backed up.
 --rollback restores it.
 EOF
@@ -52,10 +52,14 @@ done
 [[ -r "${NATIVE_CONFIG}" ]] || die "native Omarchy Voxtype config is missing: ${NATIVE_CONFIG}"
 # shellcheck disable=SC1090
 source "${PROFILE_FILE}"
-: "${VOICE_MODEL:=large-v3-turbo}"
 : "${VOICE_LANGUAGE:=auto}"
 : "${VOICE_TYPE_DELAY_MS:=10}"
+: "${VOICE_MODE:=remote}"
+: "${VOICE_REMOTE_ENDPOINT:=http://127.0.0.1:13305}"
+: "${VOICE_REMOTE_MODEL:=whisper-v3-turbo-FLM}"
 [[ "${VOICE_TYPE_DELAY_MS}" =~ ^[0-9]+$ ]] || die 'VOICE_TYPE_DELAY_MS must be an integer'
+[[ "${VOICE_MODE}" == remote ]] || die 'this profile requires the Lemonade remote mode'
+[[ "${VOICE_REMOTE_ENDPOINT}" == http://127.0.0.1:* ]] || die 'Lemonade endpoint must stay on localhost'
 
 safe_name() {
   [[ "$1" =~ ^[A-Za-z0-9_.:-]+$ ]] || die "unsafe PipeWire node name: $1"
@@ -85,6 +89,81 @@ output_config_value() {
       exit
     }
   ' "${VOXTYPE_TARGET}"
+}
+
+lemonade_health() {
+  curl --fail --silent --show-error --max-time 10 \
+    "${VOICE_REMOTE_ENDPOINT}/api/v1/health"
+}
+
+lemonade_npu_loaded() {
+  lemonade_health | jq -e --arg model "${VOICE_REMOTE_MODEL}" '
+    .all_models_loaded[]?
+    | select(
+        .model_name == $model and
+        .recipe == "flm" and
+        .device == "npu" and
+        .backend_health == "ready" and
+        .loaded == true
+      )
+  ' >/dev/null
+}
+
+ensure_lemonade_server() {
+  need lemonade
+  need curl
+  need jq
+  if lemonade_health >/dev/null 2>&1; then
+    return 0
+  fi
+  need systemctl
+  need sudo
+  [[ -r /dev/tty ]] || die 'Lemonade needs a terminal to start its system service'
+  printf 'voice-omarchy: starting the native Lemonade system service\n'
+  sudo systemctl enable --now lemond.service </dev/tty
+  for _ in {1..30}; do
+    if lemonade_health >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 1
+  done
+  die 'Lemonade server did not become ready on 127.0.0.1:13305'
+}
+
+ensure_lemonade_npu() {
+  ensure_lemonade_server
+
+  # Keep the package-owned service local and quiet: the voice client uses the
+  # loopback HTTP endpoint, so LAN discovery is unnecessary.
+  lemonade config set no_broadcast=true >/dev/null ||
+    die 'could not disable Lemonade LAN broadcast discovery'
+
+  if ! lemonade_health | jq -e '.telemetry.enabled == false' >/dev/null; then
+    printf 'voice-omarchy: Lemonade telemetry is enabled; refusing to use it for voice\n' >&2
+    die 'disable Lemonade telemetry before enabling NPU voice'
+  fi
+
+  if ! curl --fail --silent --show-error --max-time 10 \
+      "${VOICE_REMOTE_ENDPOINT}/api/v1/system-info" |
+      jq -e '.recipes.flm.backends.npu.state == "installed"' >/dev/null; then
+    printf 'voice-omarchy: installing Lemonade FLM NPU backend\n'
+    lemonade backends install flm:npu
+  fi
+
+  if ! curl --fail --silent --show-error --max-time 10 \
+      "${VOICE_REMOTE_ENDPOINT}/api/v1/models?show_all=true" |
+      jq -e --arg model "${VOICE_REMOTE_MODEL}" '
+        .data[]? | select(.id == $model and .downloaded == true)
+      ' >/dev/null; then
+    printf 'voice-omarchy: downloading Lemonade model %s\n' "${VOICE_REMOTE_MODEL}"
+    lemonade pull "${VOICE_REMOTE_MODEL}"
+  fi
+
+  if ! lemonade_npu_loaded; then
+    printf 'voice-omarchy: loading %s on the AMD XDNA2 NPU\n' "${VOICE_REMOTE_MODEL}"
+    lemonade load "${VOICE_REMOTE_MODEL}"
+  fi
+  lemonade_npu_loaded || die 'Lemonade did not expose the voice model as ready on device=npu'
 }
 
 set_type_delay() {
@@ -154,6 +233,8 @@ check_state() {
   need pactl
   need systemctl
   need wtype
+  need curl
+  need jq
   check_native_bindings
 
   local default_source default_sink
@@ -171,9 +252,11 @@ check_state() {
     fi
   }
   check_value audio.device default "$(voxtype config get audio.device 2>/dev/null || true)"
-  check_value whisper.model "${VOICE_MODEL}" "$(voxtype config get whisper.model 2>/dev/null || true)"
+  check_value whisper.mode remote "$(voxtype config get whisper.mode 2>/dev/null || true)"
   check_value whisper.language "${VOICE_LANGUAGE}" "$(voxtype config get whisper.language 2>/dev/null || true)"
   check_value whisper.translate false "$(voxtype config get whisper.translate 2>/dev/null || true)"
+  check_value whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}" "$(voxtype config get whisper.remote_endpoint 2>/dev/null || true)"
+  check_value whisper.remote_model "${VOICE_REMOTE_MODEL}" "$(voxtype config get whisper.remote_model 2>/dev/null || true)"
   check_value output.mode type "$(voxtype config get output.mode 2>/dev/null || true)"
   check_value output.type_delay_ms "${VOICE_TYPE_DELAY_MS}" "$(output_config_value type_delay_ms)"
   check_value output.pre_type_delay_ms 300 "$(voxtype config get output.pre_type_delay_ms 2>/dev/null || true)"
@@ -197,6 +280,18 @@ check_state() {
     printf 'FAIL default sink is unavailable\n'
     CHECK_FAILURES=$((CHECK_FAILURES + 1))
   fi
+  if lemonade_npu_loaded; then
+    printf 'PASS Lemonade FLM voice model device=npu\n'
+  else
+    printf 'FAIL Lemonade FLM voice model is not ready on device=npu\n'
+    CHECK_FAILURES=$((CHECK_FAILURES + 1))
+  fi
+  if lemonade_health | jq -e '.telemetry.enabled == false' >/dev/null; then
+    printf 'PASS Lemonade telemetry disabled\n'
+  else
+    printf 'FAIL Lemonade telemetry is enabled\n'
+    CHECK_FAILURES=$((CHECK_FAILURES + 1))
+  fi
   printf 'result=%s\n' "$([[ ${CHECK_FAILURES} -eq 0 ]] && printf PASS || printf FAIL)"
   return "${CHECK_FAILURES}"
 }
@@ -208,15 +303,15 @@ apply_profile() {
   need wtype
   check_native_bindings
   [[ "${VOICE_LANGUAGE}" == auto ]] || die 'this profile requires language=auto'
-
-  if [[ ! -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]]; then
-    printf 'voice-omarchy: downloading native Voxtype model %s\n' "${VOICE_MODEL}"
-    voxtype setup --download --model "${VOICE_MODEL}" --no-post-install
-  fi
-  [[ -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]] || die "Voxtype model download did not produce ggml-${VOICE_MODEL}.bin"
+  ensure_lemonade_npu
 
   if (check_state >/dev/null 2>&1); then
+    # A previous apply may have written a valid config immediately before an
+    # interrupted restart. Reload it even when the resulting state is already
+    # correct, so the running daemon cannot retain stale settings.
+    systemctl --user restart voxtype.service
     printf 'voice-omarchy: native profile already applied\n'
+    check_state
     return 0
   fi
 
@@ -235,9 +330,11 @@ apply_profile() {
   # Keep the native output/audio path and apply only this host's useful
   # multilingual policy plus native feedback/OSD.
   voxtype config set audio.device default
-  voxtype config set whisper.model "${VOICE_MODEL}"
+  voxtype config set whisper.mode remote
   voxtype config set whisper.language "${VOICE_LANGUAGE}"
   voxtype config set whisper.translate false
+  voxtype config set whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}"
+  voxtype config set whisper.remote_model "${VOICE_REMOTE_MODEL}"
   voxtype config set output.mode type
   voxtype config set output.fallback_to_clipboard true
   set_type_delay

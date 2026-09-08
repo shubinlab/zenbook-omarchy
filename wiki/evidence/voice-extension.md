@@ -1,18 +1,27 @@
 # Native Omarchy voice profile
 
 This profile is a small post-install policy layer on top of Omarchy's native
-Voxtype installation. It does not port the Ubuntu/GNOME/Lemonade/AMD-XDNA2
-installer from `zenbook-voice` and does not create a competing audio pipeline.
+Voxtype installation. It does not port the Ubuntu/GNOME installer from
+`zenbook-voice` and does not create a competing audio pipeline. It adds the
+small Arch-native Lemonade/FastFlowLM backend needed to use this Zenbook's
+AMD XDNA2 NPU for inference.
 
 The stock Omarchy command `omarchy voxtype install` installs `voxtype-bin`,
-`wtype`, the Whisper model, the user service and the compositor bindings. The
+`wtype`, its stock Whisper model, the user service and the compositor
+bindings. The profile manifest adds `lemonade-server` and `fastflowlm`; the
 profile then keeps only these Zenbook-specific choices:
 
-- multilingual `large-v3-turbo` model;
+- local `whisper-v3-turbo-FLM` inference through Lemonade on `device=npu`;
 - `language = "auto"` and `translate = false`;
 - native `type` output through `wtype`;
 - a 300 ms native pre-type focus delay to avoid first-character loss;
 - native Voxtype OSD and start/stop audio feedback enabled.
+
+The native model setting and artifact may remain in the config because the
+Omarchy installer owns them, but remote mode selects the Lemonade FLM model
+for actual transcription. The endpoint is loopback-only and telemetry must be
+disabled; LAN broadcast discovery is disabled as well because no remote client
+is needed.
 
 The normal Zenbook bootstrap invokes the stock installer automatically and
 then applies this extension in the same clean-install run. There is no

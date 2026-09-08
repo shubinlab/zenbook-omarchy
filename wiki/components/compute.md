@@ -26,12 +26,15 @@ amdgpu/DRM/Hyprland chain, not a separate vendor display driver.
 ## NPU
 
 The AMD XDNA device is enumerated at PCI `64:00.1` with the `amdxdna` driver.
-No NPU workload was installed or measured. NPU readiness does not improve
-DisplayPort sharpness, HDR, VRR or Voxtype transcription by itself; it becomes
-relevant only when a compatible runtime and model are tested.
+The profile installs Lemonade Server and FastFlowLM, downloads
+`whisper-v3-turbo-FLM`, and requires Lemonade to report `recipe=flm`,
+`device=npu` and `backend_health=ready`. A live fixture run reached the NPU
+route; CPU/GPU are not the selected Whisper inference device. NPU readiness
+does not improve DisplayPort sharpness, HDR or VRR, and a separate LLM NPU
+workload was not evaluated.
 
 ## Evidence and open work
 
 - [Component audit](../evidence/components.md)
 - [Vendor and driver research](../evidence/vendor-research.md)
-- Open: GPU benchmark, sustained thermal test and a real NPU workload.
+- Open: GPU benchmark, sustained thermal test and an LLM NPU workload.

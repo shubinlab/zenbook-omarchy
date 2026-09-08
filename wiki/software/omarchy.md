@@ -15,6 +15,10 @@ user configuration under `~/.config`.
 - Omarchy's Voxtype installer owns packages, model download, user service and
   native Hyprland bindings.
 - Voxtype's native OSD and output path remain in use.
+- This host's separate package-owned Lemonade service supplies the local FLM
+  Whisper inference on the AMD XDNA2 NPU; it does not replace Voxtype capture,
+  feedback, typing or bindings. Its optional LAN broadcast discovery is
+  disabled because this profile uses only the loopback client.
 - PipeWire and WirePlumber remain the stock audio session.
 - `omarchy-pkg-add` is the package transaction helper.
 - `omarchy update` owns full system updates and migrations.
@@ -27,7 +31,8 @@ user configuration under `~/.config`.
 - default agent set to `codex`;
 - ChatGPT replaces the stock web-app shortcut at `Super+Shift+Alt+A`;
 - Foot Sixel, ble.sh/fzf and image preview helpers;
-- multilingual native Voxtype policy (`large-v3-turbo`, `language=auto`);
+- native Voxtype frontend with `language=auto`, using local Lemonade FLM NPU
+  inference (`whisper-v3-turbo-FLM`);
 - optional diagnostic packages listed in the profile.
 
 The [configuration comparison](configuration.md) shows each changed user file.

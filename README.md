@@ -29,8 +29,8 @@ The installer runs these stages in order:
 |---:|---|---|
 | 1 | **Network** | Install/login/connect AdGuard VPN when the Zenbook profile requires it |
 | 2 | **Display** | Apply the tested monitor layout with a backup |
-| 3 | **Packages** | Verify the profile package set; stock Omarchy remains authoritative |
-| 4 | **Voice** | Run native `omarchy voxtype install`, then apply the multilingual policy |
+| 3 | **Packages** | Install the small local Lemonade/FLM NPU runtime through Omarchy's package helper |
+| 4 | **Voice** | Run native `omarchy voxtype install`, then route its inference to Lemonade on the AMD NPU |
 | 5 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
 | 6 | **Doctor** | Verify the resulting native/user configuration |
 
@@ -59,7 +59,7 @@ The raw URL must include the branch name (`main`).
 |---|---|
 | **Omarchy** | Native commands and defaults remain the source of truth |
 | **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
-| **Voice** | Native Voxtype, Whisper `large-v3-turbo`, `language=auto`, OSD, start/stop sounds and native Wayland typing |
+| **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; OSD, start/stop sounds and `language=auto` |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
 | **Diagnostics** | Optional hardware tools, installed only with `--stage diagnostics` |
@@ -117,8 +117,13 @@ Useful safety switches:
 ## Why this stays native
 
 The profile never edits `/usr/share/omarchy`. The stock Omarchy command
-`omarchy voxtype install` owns Voxtype packages, model setup, the user service
-and compositor bindings; this repository only adds the tested Zenbook policy.
+`omarchy voxtype install` owns Voxtype packages, its stock model download, the
+user service and compositor bindings. The profile adds only the two direct
+Lemonade packages and a localhost Voxtype remote policy: FastFlowLM serves
+`whisper-v3-turbo-FLM` on the AMD XDNA2 NPU, while Voxtype remains the native
+capture, feedback and typing frontend. The stock model artifact may therefore
+remain installed for native Omarchy compatibility, but it is not selected as
+the active inference route on this profile.
 The same rule applies to the shell, Hyprland defaults and package helpers:
 use Omarchy's supported command first, then add the smallest user override.
 

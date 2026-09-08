@@ -22,7 +22,8 @@ updates.
 | `~/.config/foot/foot.ini` | Stock Foot settings | `sixel=yes` appended; other Foot settings retained |
 | `~/.config/omarchy/shell.json` | Stock bar and clock defaults | Clock format is `ddd d MMM HH:mm`; idle 150/300 seconds retained |
 | `~/.config/omarchy/defaults/agent` | Omarchy default agent | `codex` |
-| `~/.config/voxtype/config.toml` | Native default model/language and audio path | `large-v3-turbo`, auto language, native OSD and audio feedback |
+| `~/.config/voxtype/config.toml` | Native Voxtype config | Remote mode to loopback Lemonade `whisper-v3-turbo-FLM`, auto language, native OSD, feedback and `wtype` output |
+| `lemond.service` | Package-owned Lemonade system service | Enabled by the Zenbook voice profile; local FLM model must report `device=npu` |
 | `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile drop-in | Not created by clean install; legacy repair handles older installs explicitly |
 | `~/.bashrc` / `~/.blerc` | Omarchy Bash and fzf setup | Managed profile blocks source ble.sh and fzf integration |
 

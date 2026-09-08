@@ -18,7 +18,7 @@ The installer clones or updates the repository, selects the profile from DMI
 and runs the supported stages in this order:
 
 ```text
-VPN → display → package check → native Voxtype → terminal → doctor
+VPN → display → NPU packages → native Voxtype → Lemonade model → terminal → doctor
 ```
 
 On the first run, the only expected questions are the official AdGuard login
@@ -41,9 +41,9 @@ the profile and exits without installing packages or changing user files.
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage doctor
 ```
 
-`doctor` is read-only. It checks Omarchy, native voice, terminal settings,
-Hyprland configuration and VPN status when those components belong to the
-selected profile.
+`doctor` is read-only. It checks Omarchy, native Voxtype capture/output,
+Lemonade's loaded NPU model, terminal settings, Hyprland configuration and VPN
+status when those components belong to the selected profile.
 
 ## Run one stage
 
@@ -92,9 +92,10 @@ are optional and are not part of the clean flow.
 ## Profile behavior
 
 `zenbook-um3406ka` is selected when DMI reports `UM3406KA`. It enables the
-official AdGuard VPN CLI, tested display configuration, native voice policy and
-terminal extension. Other hosts use `generic`, which makes no automatic
-changes. Run the diagnostic stage explicitly only when that is intended.
+official AdGuard VPN CLI, tested display configuration, the two-package local
+Lemonade/FLM NPU voice backend, native Voxtype policy and terminal extension.
+Other hosts use `generic`, which makes no automatic changes. Run the diagnostic
+stage explicitly only when that is intended.
 
 The installer never edits `/usr/share/omarchy`. It uses native Omarchy commands,
 keeps user changes under `~/.config`, and stores recoverable backups under

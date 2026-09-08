@@ -4,16 +4,18 @@ Last verified: 2026-09-08
 
 ## Decision
 
-The Ubuntu/GNOME/Lemonade/NPU installer from `zenbook-voice` is not used on
-this Arch/Omarchy/Hyprland host. Omarchy's own `omarchy voxtype install`
-remains authoritative for package installation, model download, the user
-service and Hyprland bindings. This profile adds only the host's useful
-multilingual policy:
+The Ubuntu/GNOME installer from `zenbook-voice` is not used on this
+Arch/Omarchy/Hyprland host. Omarchy's own `omarchy voxtype install` remains
+authoritative for Voxtype package installation, its stock model download, the
+user service and Hyprland bindings. This profile adds only a local Lemonade
+NPU backend and the host's useful multilingual/output policy:
 
 ```text
 physical PipeWire default microphone
   -> native Voxtype audio capture
-  -> Whisper large-v3-turbo, language=auto
+  -> localhost Lemonade API
+  -> whisper-v3-turbo-FLM through FastFlowLM
+  -> AMD XDNA2 NPU
   -> native wtype keyboard typing into the focused field
 ```
 
@@ -32,8 +34,13 @@ is modified.
 - `language = "auto"` is the supported single-recording setting for a phrase
   containing Russian and English; Whisper may still choose one language for an
   ambiguous mixed recording.
-- `large-v3-turbo` is multilingual and uses the installed Vulkan backend on
-  this host.
+- The active inference model is `whisper-v3-turbo-FLM`; the Lemonade health
+  endpoint must report `recipe=flm`, `device=npu` and `backend_health=ready`.
+  The stock native Voxtype model setting and artifact are left under Omarchy's
+  ownership; they are not selected for active inference here.
+- The endpoint is loopback-only (`127.0.0.1`); no cloud transcription path is
+  configured, Lemonade LAN broadcast discovery is disabled, and the profile
+  refuses to proceed if Lemonade telemetry is on.
 - Native `type` output uses `wtype` under Hyprland and leaves the normal
   clipboard path untouched.
 - `output.pre_type_delay_ms = 300` gives the focused Wayland field time to

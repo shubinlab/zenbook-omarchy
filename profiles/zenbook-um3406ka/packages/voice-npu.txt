@@ -1,0 +1,4 @@
+# Local NPU transcription backend. Native Omarchy still owns voxtype-bin,
+# wtype, its user service, bindings and native setup flow.
+lemonade-server
+fastflowlm

@@ -13,7 +13,7 @@ update this page first, then link detailed evidence from `wiki/evidence/`.
 | CPU | AMD Ryzen AI 7 350, 8 cores / 16 threads |
 | CPU policy | `amd-pstate-epp`, active mode, EPP `balance_performance` |
 | GPU | Radeon 860M / Krackan; inventory tools also reported 840M/860M labels; kernel `amdgpu`, power state D0 |
-| NPU | AMD XDNA device enumerated; no workload test installed |
+| NPU | AMD XDNA2 device with `amdxdna`; Lemonade FLM Whisper route installed and verified on `device=npu` |
 | Memory | About 30 GiB available; 60 GiB zram observed; swap unused during audit |
 | Internal display | `eDP-1`; closed during the external-display workflow |
 | Storage | WD_BLACK SN850X 2000 GB, firmware `620361WD`, Btrfs |

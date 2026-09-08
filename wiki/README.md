@@ -55,10 +55,11 @@ The machine profile is [ASUS Zenbook 14 UM3406KA](zenbook/README.md): an ASUS
 Zenbook with an LG DisplayPort monitor and JSAUX dock. DMI selects it
 automatically; other machines fall back to a no-op `generic` profile.
 
-The tested voice path is native Omarchy Voxtype with Whisper
-`large-v3-turbo`, `language=auto`, native Wayland typing, OSD and audio
-feedback. The profile does not install a competing audio pipeline or modify
-package-owned Omarchy files.
+The tested voice path is native Omarchy Voxtype capture and output with
+`language=auto`, OSD and audio feedback. Its local inference request goes to
+Lemonade's `whisper-v3-turbo-FLM` model through FastFlowLM on the AMD XDNA2
+NPU, then native Voxtype types the result through Wayland. The profile does
+not install a competing audio pipeline or modify package-owned Omarchy files.
 
 ## Evidence vocabulary
 

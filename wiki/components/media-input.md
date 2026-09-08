@@ -9,11 +9,12 @@ not install a global echo-cancel virtual source or change the default sink.
 Legacy cleanup is deliberately outside the clean profile and is available only
 through `scripts/repair-voice-legacy.sh`.
 
-Voxtype uses multilingual Whisper `large-v3-turbo`, `language = "auto"` and
-`translate = false`. Native OSD and start/stop audio feedback are enabled.
-Standalone Russian and English fixture recognition passed in the earlier
-audit; mixed-language recognition remains subject to Whisper's single-pass
-language detection and must not be treated as guaranteed.
+Voxtype uses native capture and output with `language = "auto"` and
+`translate = false`; the active Whisper request is served locally by
+Lemonade/FastFlowLM as `whisper-v3-turbo-FLM` on the AMD XDNA2 NPU. Native OSD
+and start/stop audio feedback are enabled. Standalone Russian and English
+fixture recognition passed; mixed-language recognition remains subject to the
+model's single-pass language behavior and must not be treated as guaranteed.
 
 ## Camera
 

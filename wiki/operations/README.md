@@ -41,7 +41,8 @@
 `doctor` is read-only and reports a final `RESULT PASS` or `RESULT FAIL`:
 
 - Omarchy version and command availability;
-- native Voxtype model, language, output, OSD, feedback and service;
+- native Voxtype mode, language, output, OSD, feedback and service;
+- Lemonade FLM model readiness on `device=npu` and telemetry state;
 - physical PipeWire microphone and available output sink;
 - terminal, Foot Sixel, ble.sh/fzf and managed shortcut;
 - Hyprland configuration errors;

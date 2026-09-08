@@ -315,9 +315,9 @@ print_manifest() {
   printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
   printf '{"name":"vpn","title":"Connect AdGuard VPN","category":"network","needs_user_input":true},'
   printf '{"name":"display","title":"Apply tested display settings","category":"configuration","needs_user_input":false},'
-  printf '{"name":"packages","title":"Install profile packages","category":"runtime","needs_user_input":false},'
+  printf '{"name":"packages","title":"Install required NPU voice runtime","category":"runtime","needs_user_input":false},'
   printf '{"name":"diagnostics","title":"Install optional diagnostic packages","category":"optional","needs_user_input":false},'
-  printf '{"name":"voice","title":"Install native Omarchy Voxtype","category":"runtime","needs_user_input":true},'
+  printf '{"name":"voice","title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},'
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
   printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
   printf '{"name":"doctor","title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}'
@@ -456,9 +456,9 @@ run_stage() {
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
       stage_note '2/6' 'Display: tested user settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/6' 'Packages: profile requirements'
+      stage_note '3/6' 'Packages: Lemonade/FLM NPU runtime'
       if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
-      stage_note '4/6' 'Voice: native Omarchy Voxtype'
+      stage_note '4/6' 'Voice: native Voxtype + NPU inference'
       if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
       stage_note '5/6' 'Terminal: user settings'
       apply_terminal
@@ -483,7 +483,7 @@ run_stage() {
       backup_and_install_monitor
       ;;
     packages)
-      stage_note '1/1' 'Packages: profile requirements'
+      stage_note '1/1' 'Packages: Lemonade/FLM NPU runtime'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
       if ((${#PACKAGE_SOURCES[@]})); then
         ensure_vpn_for_network_stage
@@ -495,7 +495,7 @@ run_stage() {
       install_diagnostics
       ;;
     voice)
-      stage_note '1/1' 'Voice: native Omarchy Voxtype'
+      stage_note '1/1' 'Voice: native Voxtype + NPU inference'
       ((DO_VOICE)) || die 'voice stage is disabled by --no-voice or this profile'
       ensure_vpn_for_network_stage
       install_voice

@@ -9,7 +9,7 @@ uses `/usr/share/omarchy/install/omarchy-base.packages` and
 `omarchy-other.packages`; the second file is a hardware/ISO availability
 catalog, so it is not proof that every name is installed by default.
 
-Explicit packages: **175**. Stock catalog names: **206**.
+Explicit packages: **177**. Stock catalog names: **206**.
 Profile-declared names not currently installed: none.
 
 | Package | Version | Classification | Install reason |
@@ -53,6 +53,7 @@ Profile-declared names not currently installed: none.
 | `expac` | `10-13` | stock catalog | Explicitly installed |
 | `eza` | `0.23.5-2` | stock catalog | Explicitly installed |
 | `fastfetch` | `2.67.1-1` | stock catalog | Explicitly installed |
+| `fastflowlm` | `1.0.2-1` | explicit local addition; profile declared | Explicitly installed |
 | `fcitx5` | `5.1.21-1` | stock catalog | Explicitly installed |
 | `fcitx5-gtk` | `5.1.7-1` | stock catalog | Explicitly installed |
 | `fcitx5-qt` | `5.1.14-2` | stock catalog | Explicitly installed |
@@ -88,6 +89,7 @@ Profile-declared names not currently installed: none.
 | `kernel-modules-hook` | `0.1.7-3` | stock catalog | Explicitly installed |
 | `lazydocker` | `0.25.2-1` | stock catalog | Explicitly installed |
 | `lazygit` | `0.64.1-1` | stock catalog | Explicitly installed |
+| `lemonade-server` | `11.7.0-2` | explicit local addition; profile declared | Explicitly installed |
 | `less` | `1:704-1` | stock catalog | Explicitly installed |
 | `libpulse` | `17.0+r98+gb096704c0-1` | stock catalog | Explicitly installed |
 | `libreoffice-fresh` | `26.2.5-3` | stock catalog | Explicitly installed |
