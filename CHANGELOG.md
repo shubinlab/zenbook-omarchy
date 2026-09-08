@@ -25,6 +25,7 @@
   summary, warning/error context and an explicit `OMARCHY_VERBOSE=1` trace mode.
 - Added a no-change `--plan` preview, exact source commit reporting, safe
   branch selection via `OMARCHY_REF`, and a direct `--verbose` shortcut.
+- Added CI coverage for the plan's native boundary and standalone-stage scope.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

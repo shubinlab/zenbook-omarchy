@@ -9,4 +9,13 @@ python -m py_compile profiles/*/tools/*.py tools/update-package-wiki.py
 ./tools/check-public-repo.sh
 git diff --check
 
+plan_output="$(./scripts/bootstrap.sh --profile zenbook-um3406ka --stage all \
+  --plan --no-vpn --no-bitwarden)"
+grep -q 'Native boundary: no edits to /usr/share/omarchy' <<<"$plan_output"
+grep -q 'Voice: keep native Omarchy Voxtype; add 2 Lemonade/NPU package entries' <<<"$plan_output"
+package_plan="$(./scripts/bootstrap.sh --profile zenbook-um3406ka --stage packages \
+  --plan --no-vpn)"
+! grep -q '^  Display:' <<<"$package_plan"
+! grep -q '^  Terminal:' <<<"$package_plan"
+
 printf '%s\n' 'ci-check: PASS'
