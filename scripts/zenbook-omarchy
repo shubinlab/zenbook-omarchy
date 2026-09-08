@@ -24,28 +24,78 @@ Extra options are passed to the selected stage.
 EOF
 }
 
-choose_stage() {
+open_menu_window() {
+  if [[ -n "${WAYLAND_DISPLAY:-}" ]] && command -v foot >/dev/null 2>&1 &&
+     [[ -z "${ZENBOOK_OMARCHY_NO_NEW_WINDOW:-}" && -z "${ZENBOOK_OMARCHY_MENU_WINDOW:-}" ]]; then
+    exec foot --title 'Zenbook Omarchy installer' bash -c '
+      "$1" menu
+      status=$?
+      printf "\\nFinished (exit %s). Press Enter to close. " "$status"
+      IFS= read -r
+      exit "$status"
+    ' bash "$0"
+  fi
+}
+
+SELECTED_COMPONENTS=""
+
+choose_components() {
   [[ -t 0 && -t 1 ]] || die 'run without arguments from a visible terminal, or choose a stage explicitly'
-  printf '\nZenbook Omarchy\n\n'
-  printf '1) Full restore\n'
-  printf '2) Voice / NPU\n'
-  printf '3) Bitwarden\n'
-  printf '4) Terminal\n'
-  printf '5) Doctor\n'
-  printf '6) Update Omarchy\n'
-  printf 'q) Cancel\n\n'
-  printf 'Choose [1-6/q]: '
-  local choice
-  IFS= read -r choice
-  case "${choice}" in
-    1) printf '%s\n' all ;;
-    2) printf '%s\n' voice ;;
-    3) printf '%s\n' bitwarden ;;
-    4) printf '%s\n' terminal ;;
-    5) printf '%s\n' doctor ;;
-    6) printf '%s\n' update ;;
-    q|Q) printf 'Cancelled.\n'; exit 0 ;;
-    *) die 'choose one of 1, 2, 3, 4, 5, 6 or q' ;;
+  while :; do
+    printf '\nZenbook Omarchy — choose any combination\n\n'
+    printf '  1  VPN / network\n'
+    printf '  2  Display\n'
+    printf '  3  Packages\n'
+    printf '  4  Voice / NPU\n'
+    printf '  5  Bitwarden\n'
+    printf '  6  Terminal\n'
+    printf '  7  Diagnostics\n'
+    printf '  8  Omarchy system update (alone)\n'
+    printf '\nDoctor runs automatically after every selection.\n'
+    printf 'Enter numbers separated by spaces, or a for recommended restore, q to cancel: '
+    local choice item component
+    IFS= read -r choice
+    case "${choice}" in
+      q|Q) printf 'Cancelled.\n'; exit 0 ;;
+      a|A) SELECTED_COMPONENTS='vpn,display,packages,voice,terminal,bitwarden'; break ;;
+      *)
+        local -a picks=() components=()
+        read -r -a picks <<<"${choice}"
+        for item in "${picks[@]}"; do
+          case "${item}" in
+            1) component=vpn ;;
+            2) component=display ;;
+            3) component=packages ;;
+            4) component=voice ;;
+            5) component=bitwarden ;;
+            6) component=terminal ;;
+            7) component=diagnostics ;;
+            8) component=update ;;
+            *) component='' ;;
+          esac
+          [[ -n "${component}" ]] || continue
+          [[ " ${components[*]} " == *" ${component} "* ]] || components+=("${component}")
+        done
+        ((${#components[@]})) || { printf 'No valid components selected.\n'; continue; }
+        SELECTED_COMPONENTS="$(IFS=','; printf '%s' "${components[*]}")"
+        if [[ ",${SELECTED_COMPONENTS}," == *,update,* && ",${SELECTED_COMPONENTS}," != *,update, && "${SELECTED_COMPONENTS}" != update ]]; then
+          printf 'System update must be selected alone; choose it separately.\n'
+          continue
+        fi
+        break
+        ;;
+    esac
+  done
+  printf '\nSelected: %s\n' "${SELECTED_COMPONENTS}"
+  if [[ "${SELECTED_COMPONENTS}" == *voice* || "${SELECTED_COMPONENTS}" == *bitwarden* ]]; then
+    printf 'Added automatically: packages dependency.\n'
+  fi
+  printf 'Proceed once with this plan? [Y/n] '
+  local confirm
+  IFS= read -r confirm
+  case "${confirm}" in
+    n|N|no|NO) SELECTED_COMPONENTS=''; choose_components ;;
+    *) ;;
   esac
 }
 
@@ -60,7 +110,9 @@ run_bitwarden() {
 
 stage="${1:-menu}"
 if [[ "${stage}" == menu ]]; then
-  stage="$(choose_stage)"
+  open_menu_window
+  choose_components
+  exec "${BOOTSTRAP}" --profile auto --stage selected --components "${SELECTED_COMPONENTS}"
 else
   shift
 fi

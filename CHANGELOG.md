@@ -15,6 +15,9 @@
   with the all-in-one stage; re-apply the profile after Omarchy updates.
 - Added the short `zenbook-omarchy` launcher with a numbered menu and a visible
   Foot window for interactive Bitwarden onboarding.
+- Changed the launcher menu to multi-select components and execute the selected
+  combination through one dependency-aware orchestrator run; system update
+  remains an explicit standalone action.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

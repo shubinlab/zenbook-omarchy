@@ -81,6 +81,9 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 # After the first install, use the short local launcher; it opens a small menu
 zenbook-omarchy
 
+# The menu accepts any combination and performs it in one orchestrated run;
+# for example, choose Display + Voice + Terminal + Bitwarden, then confirm once.
+
 # Or run one named stage without the long URL
 zenbook-omarchy voice
 zenbook-omarchy bitwarden

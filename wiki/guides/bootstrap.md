@@ -151,6 +151,13 @@ Choose **Bitwarden** from the numbered menu, or run `zenbook-omarchy bitwarden`.
 The latter opens onboarding in a visible Foot window so prompts are not hidden
 inside an automation terminal.
 
+The menu is a multi-select orchestrator: choose any combination of display,
+packages, voice/NPU, Bitwarden, terminal and diagnostics, then confirm once.
+Required package and VPN dependencies are added automatically, the components
+run in the safe order, and doctor verifies the result at the end. The Omarchy
+system update is intentionally selectable only by itself; re-apply the profile
+after that update.
+
 Run the read-only live check with:
 
 ```bash

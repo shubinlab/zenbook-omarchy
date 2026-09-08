@@ -28,6 +28,7 @@ PACKAGE_SOURCES=()
 VOICE_PACKAGE_SOURCES=()
 BITWARDEN_PACKAGE_SOURCES=()
 DIAGNOSTIC_SOURCES=()
+COMPONENTS_REQUEST=""
 MONITOR_SOURCE=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
@@ -45,6 +46,7 @@ DO_SYSTEM_UPDATE=0
 DO_TERMINAL=1
 DO_VOICE=0
 DO_BITWARDEN=0
+DO_DIAGNOSTICS=0
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
@@ -80,9 +82,11 @@ Options:
   --vpn-location NAME   Use an AdGuard location or ISO code for this run.
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` as a separate explicit stage (opt-in).
-  --stage NAME          Run one stage: all, vpn, display, packages, bitwarden,
-                        voice, diagnostics, terminal, update or doctor.
-                        Default: all.
+  --stage NAME          Run one stage: all, selected, vpn, display, packages,
+                        bitwarden, voice, diagnostics, terminal, update or
+                        doctor. Default: all.
+  --components LIST     For --stage selected, comma-separated components;
+                        dependencies are added automatically.
   --manifest            Print the stage manifest as JSON and exit.
   --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
@@ -427,6 +431,50 @@ print_manifest() {
   printf '\n'
 }
 
+selected_component() {
+  [[ ",${COMPONENTS_REQUEST}," == *",$1,"* ]]
+}
+
+configure_selected_components() {
+  [[ "$STAGE" == selected ]] || return 0
+  [[ -n "$COMPONENTS_REQUEST" ]] || die '--stage selected requires --components'
+  local component
+  local -a requested=()
+  IFS=',' read -r -a requested <<<"$COMPONENTS_REQUEST"
+  for component in "${requested[@]}"; do
+    case "$component" in
+      vpn|display|packages|voice|bitwarden|diagnostics|terminal|update|doctor) ;;
+      *) die "unknown selected component: $component" ;;
+    esac
+  done
+  if selected_component update && [[ "$COMPONENTS_REQUEST" != update ]]; then
+    die 'system update must be selected alone; re-apply the profile after it'
+  fi
+
+  DO_VPN=0
+  DO_MONITOR=0
+  DO_PACKAGES=0
+  DO_TERMINAL=0
+  DO_VOICE=0
+  DO_BITWARDEN=0
+  DO_DIAGNOSTICS=0
+  if selected_component vpn && ((VPN_OPTION_SET == 0)); then DO_VPN=1; fi
+  if selected_component display; then DO_MONITOR=1; fi
+  if selected_component packages; then DO_PACKAGES=1; fi
+  if selected_component terminal; then DO_TERMINAL=1; fi
+  if selected_component voice; then DO_VOICE=1; DO_PACKAGES=1; fi
+  if selected_component bitwarden; then DO_BITWARDEN=1; DO_PACKAGES=1; fi
+  if selected_component diagnostics; then DO_DIAGNOSTICS=1; fi
+
+  # Package/model, diagnostic and update work is network-dependent. A
+  # terminal-only run still lets its own stage decide whether ble.sh is needed,
+  # preserving the no-VPN fast path when local prerequisites are ready.
+  if ((VPN_OPTION_SET == 0)) && ((DO_VPN == 0)) &&
+     { ((DO_PACKAGES)) || ((DO_DIAGNOSTICS)) || ((DO_TERMINAL)) || selected_component update; }; then
+    DO_VPN="$PROFILE_ENABLE_VPN"
+  fi
+}
+
 run_doctor() {
   local failures=0 version status errors
   printf '\n%sOmarchy profile doctor%s (read-only)\n' "$C_CYAN" "$C_RESET"
@@ -514,6 +562,7 @@ while (($#)); do
     --update-vpn-cli) DO_VPN_CLI_UPDATE=1; DO_VPN=1; VPN_OPTION_SET=1 ;;
     --update-system) DO_SYSTEM_UPDATE=1 ;;
     --stage) shift; (($#)) || die "--stage needs a value"; STAGE="$1" ;;
+    --components) shift; (($#)) || die "--components needs a value"; COMPONENTS_REQUEST="$1" ;;
     --manifest) MANIFEST=1 ;;
     --non-interactive) NON_INTERACTIVE=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
@@ -531,6 +580,7 @@ done
 [[ "$EUID" -ne 0 ]] || die "run as the normal user; Omarchy helpers request privilege when needed"
 [[ -d "$HOME" ]] || die "HOME is not available"
 detect_profile
+configure_selected_components
 
 if ((DO_VOICE && !DO_PACKAGES)); then
   die 'voice requires the package stage; remove --no-packages or add --no-voice'
@@ -709,6 +759,37 @@ run_stage() {
       stage_note '1/1' 'System: supported Omarchy update'
       ensure_vpn_for_network_stage
       apply_update
+      ;;
+    selected)
+      [[ -n "$COMPONENTS_REQUEST" ]] || die 'selected stage requires --components'
+      local selected_network=0
+      if ((DO_VPN)) && selected_component vpn; then selected_network=1; fi
+      if ((DO_VPN)) && {
+        ((DO_PACKAGES)) || ((DO_DIAGNOSTICS)) || selected_component update
+      }; then selected_network=1; fi
+      stage_note '1/7' 'Network: AdGuard VPN'
+      if ((selected_network)); then
+        connect_vpn
+      else
+        printf 'bootstrap: VPN not selected or not required\n'
+      fi
+      stage_note '2/7' 'Display: tested user settings'
+      if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
+      stage_note '3/7' 'Packages: profile and native runtimes'
+      if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
+      stage_note '4/7' 'Voice: native Voxtype + NPU inference'
+      if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
+      stage_note '5/7' 'Terminal: user settings'
+      if ((DO_TERMINAL)); then apply_terminal; else printf 'bootstrap: terminal stage skipped\n'; fi
+      stage_note '6/7' 'Bitwarden: native Wayland setup'
+      if ((DO_BITWARDEN)); then install_bitwarden; else printf 'bootstrap: Bitwarden stage skipped\n'; fi
+      if ((DO_DIAGNOSTICS)); then
+        stage_note '7/8' 'Optional diagnostics: package tools'
+        install_diagnostics
+      else
+        stage_note '7/7' 'Doctor: verify the selected components'
+      fi
+      run_doctor
       ;;
     doctor)
       run_doctor
