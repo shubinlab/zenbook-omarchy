@@ -15,3 +15,5 @@ Run from the graphical session with the display connected:
 The wrapper blocks idle, suspend and the closed-lid action with `systemd-inhibit`. The runner also disables Omarchy idle, checks lock state and inhibitors in every sample, forces global and per-output `vrr=1`, runs the mode matrix and stress checks, then restores the recommended 1440p/144 Hz/10-bit/VRR=1 profile and the prior idle state.
 
 Results are written to `runs/` as JSON and Markdown. The local telemetry service writes its private JSONL log under `~/.local/state/omarchy/monitor-telemetry/` and is not copied into this repository automatically.
+
+The latest full audit is [docs/AUDIT-2026-09-08.md](docs/AUDIT-2026-09-08.md), with the protected display results in [docs/RESULTS-2026-09-08.md](docs/RESULTS-2026-09-08.md) and the system baseline in `runs/2026-09-08-steady-health.md`.
