@@ -11,6 +11,7 @@ PROFILE_DIR="${OMARCHY_PROFILE_DIR:-${ROOT_DIR}/profiles/zenbook-um3406ka}"
 PROFILE_FILE="${VOICE_PROFILE_FILE:-${PROFILE_DIR}/voice/voxtype-omarchy.env.example}"
 TEMPLATE="${VOICE_TEMPLATE:-${PROFILE_DIR}/voice/pipewire-echo-cancel.conf.tmpl}"
 VOXTYPE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/voxtype/config.toml"
+VAD_MODEL="${XDG_DATA_HOME:-${HOME}/.local/share}/voxtype/models/ggml-silero-vad.bin"
 PIPEWIRE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf"
 LEGACY_PIPEWIRE_TARGET="${XDG_CONFIG_HOME:-${HOME}/.config}/pipewire/pipewire-pulse.conf.d/90-zenbook-omarchy-voice.conf"
 BACKUP_ROOT="${XDG_STATE_HOME:-${HOME}/.local/state}/omarchy-profiles/backups/voice"
@@ -60,7 +61,6 @@ source "${PROFILE_FILE}"
 : "${VOICE_MODEL:=base}"
 : "${VOICE_LANGUAGE:=auto}"
 : "${VOICE_VAD_THRESHOLD:=0.5}"
-: "${VOICE_PRE_TYPE_DELAY_MS:=300}"
 : "${VOICE_PIPEWIRE_SOURCE_MASTER:=}"
 : "${VOICE_PIPEWIRE_SINK_MASTER:=}"
 
@@ -176,6 +176,7 @@ check_state() {
   need voxtype
   need pactl
   need systemctl
+  need wtype
   check_native_bindings
   get_masters
   printf 'voice-omarchy check\n'
@@ -192,7 +193,7 @@ check_state() {
   check_value audio.device "${VOICE_AUDIO_DEVICE}" "$(voxtype config get audio.device 2>/dev/null || true)"
   check_value whisper.model "${VOICE_MODEL}" "$(voxtype config get whisper.model 2>/dev/null || true)"
   check_value whisper.language "${VOICE_LANGUAGE}" "$(voxtype config get whisper.language 2>/dev/null || true)"
-  check_value output.mode paste "$(voxtype config get output.mode 2>/dev/null || true)"
+  check_value output.mode type "$(voxtype config get output.mode 2>/dev/null || true)"
   check_value vad.enabled true "$(voxtype config get vad.enabled 2>/dev/null || true)"
   if systemctl --user is-active --quiet voxtype.service; then
     printf 'PASS voxtype.service active\n'
@@ -235,9 +236,11 @@ apply_profile() {
   need voxtype
   need pactl
   need systemctl
+  need wtype
   check_native_bindings
   get_masters
   [[ -r "${HOME}/.local/share/voxtype/models/ggml-${VOICE_MODEL}.bin" ]] || die "Voxtype model is missing: ggml-${VOICE_MODEL}.bin; download it before apply"
+  [[ -r "${VAD_MODEL}" ]] || die 'Whisper VAD model is missing; run: voxtype setup vad'
   [[ "${VOICE_AUDIO_DEVICE}" == default ]] || die 'profile must use the supported PipeWire host: default'
   [[ "${VOICE_LANGUAGE}" == auto ]] || die 'this profile requires language=auto'
 
@@ -261,9 +264,12 @@ apply_profile() {
   voxtype config set vad.enabled true
   voxtype config set vad.backend whisper
   voxtype config set vad.threshold "${VOICE_VAD_THRESHOLD}"
-  voxtype config set output.mode paste
-  voxtype config set output.fallback_to_clipboard true
-  voxtype config set output.pre_type_delay_ms "${VOICE_PRE_TYPE_DELAY_MS}"
+  # Preserve Omarchy/Voxtype's native keyboard typing path. In particular,
+  # do not switch to clipboard paste: Omarchy's clipboard watcher has a
+  # separate image stream and that path can surface image-format errors for
+  # ordinary text dictation.
+  voxtype config set output.mode type
+  voxtype config unset output.pre_type_delay_ms
 
   systemctl --user restart pipewire-pulse.service
   for _ in {1..20}; do

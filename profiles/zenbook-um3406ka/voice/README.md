@@ -13,9 +13,10 @@ the previous source is backed up. The physical sink and other Omarchy routing
 stay unchanged.
 
 The profile uses `language = "auto"`, a multilingual Whisper model, Voxtype
-Whisper VAD and paste output. Paste avoids keyboard-layout corruption when a
-single phrase contains both Cyrillic and Latin text. The native Omarchy
-bindings remain the source of truth for starting/stopping dictation.
+Whisper VAD and Voxtype's native keyboard typing output. This deliberately
+preserves Omarchy's normal text-entry path and does not route dictation
+through the clipboard manager. The native Omarchy bindings remain the source
+of truth for starting/stopping dictation.
 
 Apply from the repository root:
 

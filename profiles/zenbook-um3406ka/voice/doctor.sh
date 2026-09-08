@@ -5,15 +5,16 @@ failures=0
 pass() { printf 'PASS  %s\n' "$*"; }
 fail() { printf 'FAIL  %s\n' "$*"; failures=$((failures + 1)); }
 
-for command in voxtype pactl systemctl; do
+for command in voxtype pactl systemctl wtype; do
   command -v "${command}" >/dev/null 2>&1 && pass "command ${command}" || fail "command ${command} missing"
 done
 
 if command -v voxtype >/dev/null 2>&1; then
   [[ "$(voxtype config get audio.device 2>/dev/null || true)" == default ]] && pass 'Voxtype uses PipeWire default host' || fail 'Voxtype host is not default'
   [[ "$(voxtype config get whisper.language 2>/dev/null || true)" == auto ]] && pass 'Whisper language auto' || fail 'Whisper language is not auto'
-  [[ "$(voxtype config get output.mode 2>/dev/null || true)" == paste ]] && pass 'paste output' || fail 'paste output is not paste'
+  [[ "$(voxtype config get output.mode 2>/dev/null || true)" == type ]] && pass 'native type output' || fail 'native type output is not enabled'
   [[ "$(voxtype config get vad.enabled 2>/dev/null || true)" == true ]] && pass 'Voxtype VAD enabled' || fail 'Voxtype VAD disabled'
+  [[ -r "${XDG_DATA_HOME:-$HOME/.local/share}/voxtype/models/ggml-silero-vad.bin" ]] && pass 'Whisper VAD model present' || fail 'Whisper VAD model absent'
 fi
 
 if command -v systemctl >/dev/null 2>&1; then

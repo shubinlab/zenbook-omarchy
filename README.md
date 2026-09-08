@@ -51,6 +51,7 @@ Zenbook restore creates backups under
 
 For a guided recovery, read [Recovery](docs/recovery.md). For the exact
 hardware and connected-device inventory, read [Hardware](profiles/zenbook-um3406ka/hardware.md).
+The complete linked documentation is the [system wiki](wiki/README.md).
 
 ## This computer's known-good state
 

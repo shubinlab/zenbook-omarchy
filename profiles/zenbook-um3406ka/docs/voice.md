@@ -18,7 +18,7 @@ physical ALSA microphone + physical speaker sink
     noise suppression + high-pass + voice/transient detection
   -> voxtype_noise_suppressed (user-session default microphone)
   -> Voxtype multilingual Whisper
-  -> paste into the focused field
+  -> native keyboard typing into the focused field
 ```
 
 The user-session default microphone is changed to the filtered source because
@@ -60,7 +60,8 @@ Completed on this Zenbook on 2026-09-08:
 - the physical speaker test completed successfully at a deliberately low
   test volume, without changing the stored default sink;
 - the native Voxtype daemon recorded through `default`, used Vulkan on the
-  Radeon 860M, transcribed and pasted text, then returned to `idle`;
+  Radeon 860M, typed text through the native output path, then returned to
+  `idle`;
 - standalone Russian and English fixture tests pass acceptably with
   `large-v3-turbo`.
 
