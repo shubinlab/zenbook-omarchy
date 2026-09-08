@@ -61,8 +61,8 @@ The raw URL must include the branch name (`main`).
 |---|---|
 | **Omarchy** | Native commands and defaults remain the source of truth |
 | **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
-| **Bitwarden** | Optional final stage with guided onboarding; native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
-| **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; OSD, start/stop sounds and `language=auto` |
+| **Bitwarden** | Optional final stage with guided onboarding; native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; automatic official-extension install for a clean default Chromium profile; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
+| **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; Silero VAD, spoken punctuation, OSD, start/stop sounds and `language=auto`; optional local technical profile |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
 | **Diagnostics** | Optional hardware tools, installed only with `--stage diagnostics` |
@@ -80,6 +80,9 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 
 # One stage from the same URL; voice also installs its two NPU packages
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
+
+# Optional technical cleanup for the next recording (native capture remains unchanged)
+voxtype record start --profile technical
 
 # Native Wayland Bitwarden (also included in the full restore)
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage bitwarden

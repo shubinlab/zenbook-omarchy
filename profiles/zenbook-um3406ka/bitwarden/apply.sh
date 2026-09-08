@@ -15,6 +15,10 @@ PINENTRY="/usr/bin/pinentry-gnome3"
 LOCK_TIMEOUT="${OMARCHY_BITWARDEN_LOCK_TIMEOUT:-600}"
 SYNC_INTERVAL="${OMARCHY_BITWARDEN_SYNC_INTERVAL:-3600}"
 MARKER="zenbook-omarchy Bitwarden (managed)"
+CHROMIUM_POLICY_DIR="/etc/chromium/policies/managed"
+CHROMIUM_POLICY_FILE="${CHROMIUM_POLICY_DIR}/zenbook-omarchy-bitwarden.json"
+BITWARDEN_EXTENSION_ID="nngceckbapebfimnlniiiahkandclblb"
+BITWARDEN_EXTENSION_UPDATE_URL="https://clients2.google.com/service/update2/crx"
 
 ACTION=check
 BACKUP_ID=""
@@ -27,7 +31,7 @@ usage() {
 Usage: profiles/zenbook-um3406ka/bitwarden/apply.sh [--check|--apply|--rollback]
 
 --check     validate repository assets only; no system changes
---apply     install the native Wayland launcher and user settings
+--apply     install the native Wayland launcher, settings and Chromium policy
 --rollback  restore the latest Bitwarden integration backup
 EOF
 }
@@ -52,7 +56,60 @@ check_repository() {
   [[ ${LOCK_TIMEOUT} =~ ^[0-9]+$ ]] || die 'lock timeout must be an integer'
   [[ ${SYNC_INTERVAL} =~ ^[0-9]+$ ]] || die 'sync interval must be an integer'
   [[ ${PINENTRY} == /usr/bin/pinentry-gnome3 ]] || die 'pinentry path is not the expected native default'
+  [[ ${BITWARDEN_EXTENSION_ID} =~ ^[a-z]{32}$ ]] || die 'Bitwarden extension ID is invalid'
   printf 'bitwarden check: PASS (native Wayland assets valid; no system changes made)\n'
+}
+
+chromium_is_default() {
+  command -v xdg-settings >/dev/null 2>&1 || return 1
+  case "$(xdg-settings get default-web-browser 2>/dev/null || true)" in
+    chromium.desktop|*chromium*) return 0 ;;
+    *) return 1 ;;
+  esac
+}
+
+chromium_bitwarden_installed() {
+  local chromium_config_home="${CONFIG_HOME}/chromium"
+  [[ -d ${chromium_config_home} ]] || return 1
+  find "${chromium_config_home}" -mindepth 3 -maxdepth 3 -type d \
+    -name "${BITWARDEN_EXTENSION_ID}" -print -quit 2>/dev/null | grep -q .
+}
+
+write_chromium_policy() {
+  printf '{"ExtensionInstallForcelist":["%s;%s"]}\n' \
+    "$BITWARDEN_EXTENSION_ID" "$BITWARDEN_EXTENSION_UPDATE_URL"
+}
+
+install_chromium_policy() {
+  chromium_is_default || {
+    printf 'bitwarden-omarchy: Chromium is not the default browser; automatic Chromium extension install skipped\n'
+    return 0
+  }
+  need chromium
+  if chromium_bitwarden_installed; then
+    printf 'bitwarden-omarchy: Bitwarden extension already exists in Chromium; policy install skipped\n'
+    return 0
+  fi
+
+  local policy_tmp
+  policy_tmp="$(mktemp)"
+  write_chromium_policy >"$policy_tmp"
+  if [[ -e ${CHROMIUM_POLICY_FILE} ]]; then
+    if cmp -s "$policy_tmp" "$CHROMIUM_POLICY_FILE"; then
+      printf 'bitwarden-omarchy: Chromium auto-install policy is already present\n'
+    else
+      rm -f -- "$policy_tmp"
+      die "refusing to overwrite existing Chromium policy: ${CHROMIUM_POLICY_FILE}"
+    fi
+    rm -f -- "$policy_tmp"
+    return 0
+  fi
+
+  need sudo
+  sudo install -d -m 0755 "${CHROMIUM_POLICY_DIR}"
+  sudo install -m 0644 "$policy_tmp" "${CHROMIUM_POLICY_FILE}"
+  rm -f -- "$policy_tmp"
+  printf 'bitwarden-omarchy: Chromium will auto-install the official Bitwarden extension via policy\n'
 }
 
 backup_target() {
@@ -114,11 +171,27 @@ EOF
 }
 
 apply_profile() {
+  install_chromium_policy
   apply_rbw_config
   apply_launcher
   apply_binding
   printf 'bitwarden-omarchy: applied native Wayland integration (backup: %s)\n' \
     "${BACKUP_ID:-none; no files needed changing}"
+}
+
+remove_chromium_policy() {
+  [[ -e ${CHROMIUM_POLICY_FILE} ]] || return 0
+  local policy_tmp
+  policy_tmp="$(mktemp)"
+  write_chromium_policy >"$policy_tmp"
+  if cmp -s "$policy_tmp" "$CHROMIUM_POLICY_FILE"; then
+    need sudo
+    sudo rm -f -- "$CHROMIUM_POLICY_FILE"
+    printf 'bitwarden-omarchy: removed its Chromium auto-install policy\n'
+  else
+    printf 'bitwarden-omarchy: kept a different Chromium policy untouched: %s\n' "$CHROMIUM_POLICY_FILE"
+  fi
+  rm -f -- "$policy_tmp"
 }
 
 select_latest_backup() {
@@ -140,11 +213,16 @@ restore_target() {
 }
 
 rollback_profile() {
-  select_latest_backup
-  restore_target "${BINDINGS}" bindings.lua
-  restore_target "${RBW_CONFIG}" rbw-config.json
-  restore_target "${LAUNCHER}" launcher
-  printf 'bitwarden-omarchy: restored backup %s\n' "${BACKUP_ID}"
+  remove_chromium_policy
+  if [[ -d ${BACKUP_ROOT} ]]; then
+    select_latest_backup
+    restore_target "${BINDINGS}" bindings.lua
+    restore_target "${RBW_CONFIG}" rbw-config.json
+    restore_target "${LAUNCHER}" launcher
+    printf 'bitwarden-omarchy: restored backup %s\n' "${BACKUP_ID}"
+  else
+    printf 'bitwarden-omarchy: no user configuration backup found\n'
+  fi
 }
 
 case ${ACTION} in

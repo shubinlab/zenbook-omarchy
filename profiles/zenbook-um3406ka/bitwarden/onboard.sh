@@ -12,6 +12,7 @@ BITWARDEN_DOWNLOAD_URL="https://bitwarden.com/download/"
 VAULT_URL="https://vault.bitwarden.com/"
 CHROMIUM_CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}/chromium"
 BITWARDEN_EXTENSION_ID="nngceckbapebfimnlniiiahkandclblb"
+CHROMIUM_POLICY_FILE="/etc/chromium/policies/managed/zenbook-omarchy-bitwarden.json"
 
 ACTION=check
 
@@ -52,7 +53,8 @@ Bitwarden installed. Finish the one-time setup from this terminal:
   2. If needed, open Bitwarden Web Vault → Settings → Security → API Key.
   3. Complete `rbw register` using the Bitwarden API-key prompts (not the master password).
   4. Complete the rbw login prompt and sync.
-  5. Install and log in to the official browser extension.
+  5. On default Chromium the installer installs the official extension through
+     its local policy; otherwise install and log in to the extension manually.
 
 Run the guided flow later with:
   ./scripts/install-bitwarden.sh --profile zenbook-um3406ka
@@ -89,6 +91,11 @@ chromium_bitwarden_path() {
   [[ -d ${CHROMIUM_CONFIG_HOME} ]] || return 1
   find "${CHROMIUM_CONFIG_HOME}" -mindepth 3 -maxdepth 3 -type d \
     -name "${BITWARDEN_EXTENSION_ID}" -print -quit 2>/dev/null
+}
+
+chromium_policy_configured() {
+  [[ -r ${CHROMIUM_POLICY_FILE} ]] &&
+    grep -Fq -- "${BITWARDEN_EXTENSION_ID}" "${CHROMIUM_POLICY_FILE}"
 }
 
 run_onboarding() {
@@ -139,6 +146,14 @@ run_onboarding() {
   if [[ -n ${chromium_extension_path} ]]; then
     printf 'Официальное Bitwarden уже найдено в Chromium: %s\n' "$chromium_extension_path"
     printf 'Проверьте, что расширение включено и закреплено на панели браузера.\n'
+  elif chromium_policy_configured; then
+    printf 'Политика автоустановки Chromium уже установлена.\n'
+    pause 'Закройте все окна Chromium и запустите Chromium заново — расширение установится автоматически'
+    if chromium_extension_path="$(chromium_bitwarden_path || true)"; then
+      printf 'Bitwarden появилось в Chromium: %s\n' "$chromium_extension_path"
+    else
+      printf 'Chromium ещё не показал расширение; проверьте chrome://policy после перезапуска.\n'
+    fi
   else
     store_url="$(browser_store_url)"
     open_url "$store_url"

@@ -79,9 +79,10 @@ you pass `--no-vpn`. The display stage has no network dependency. Diagnostics
 are optional and are not part of the clean flow.
 
 The standalone voice stage is self-contained: it installs the voice-scoped
-Lemonade/FLM packages first, then runs native Voxtype and applies the NPU
-policy. `--no-packages` cannot be combined with voice because that would create
-an incomplete installation.
+Lemonade/FLM packages first, then runs native Voxtype, installs the native
+Silero VAD model and applies the NPU policy. It also installs the opt-in local
+`technical` post-process profile. `--no-packages` cannot be combined with voice
+because that would create an incomplete installation.
 
 ## Safe switches
 
@@ -119,6 +120,14 @@ The Zenbook profile installs only the Wayland path: `rbw`, `rofi-rbw`, `fuzzel`,
 Bitwarden desktop client or X11 typing/clipboard tools. The profile creates
 `~/.local/bin/omarchy-bitwarden` and replaces the default password-manager
 binding `Super + Shift + /` with that launcher.
+
+When Chromium is the default browser and Bitwarden is not already present, the
+apply step creates `/etc/chromium/policies/managed/zenbook-omarchy-bitwarden.json`
+with `sudo`. Chromium then installs the official Web Store extension without a
+store click. This is a mandatory local browser policy, so the extension remains
+managed until `bitwarden/apply.sh --rollback` removes the repository's policy.
+An existing Bitwarden installation is detected and left user-managed. Other
+default browsers use the one-click store fallback.
 
 The full restore asks before entering this stage. If accepted, the guided
 onboarding asks for the Bitwarden email, runs the first-time `rbw register`,
