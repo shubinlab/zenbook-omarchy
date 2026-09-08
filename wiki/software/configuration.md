@@ -25,7 +25,6 @@ updates.
 | `~/.config/voxtype/config.toml` | Native default model/language and audio path | `large-v3-turbo`, auto language, native OSD and audio feedback |
 | `~/.config/pipewire/pipewire-pulse.conf.d/90-omarchy-voice.conf` | No profile drop-in | Absent; native PipeWire routing is retained |
 | `~/.bashrc` / `~/.blerc` | Omarchy Bash and fzf setup | Managed profile blocks source ble.sh and fzf integration |
-| `~/.config/systemd/user/omarchy-monitor-telemetry.service` | No user monitor collector | Five-second local display/dock telemetry |
 
 The profile source, apply command and rollback location for each row are in
 [Zenbook configuration map](../zenbook/configuration.md).

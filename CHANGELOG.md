@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Simplified clean installation into ordered VPN, display, package, native
+  Voxtype, terminal and update stages; each stage is available independently.
+- Removed the obsolete local monitor collector, service, files and docs.
 - Added a canonical Zenbook hardware and peripheral inventory.
 - Added a per-file restore map and guided recovery commands.
 - Reworked the main README around restoration, diagnostics and current known-good values.

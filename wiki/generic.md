@@ -2,7 +2,7 @@
 
 This is the portable fallback for an Omarchy host without a matching tested
 hardware profile. It installs only the diagnostic packages in
-`packages/diagnostics.txt` and leaves monitor, VPN and telemetry state alone.
+`packages/diagnostics.txt` and leaves monitor, VPN and other user state alone.
 
 Check it without changing the system:
 

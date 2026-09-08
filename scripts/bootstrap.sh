@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Apply one selected Omarchy profile. Profile data is declarative; credentials,
-# backups and live telemetry stay in the user's state directories.
+# Apply one selected Omarchy profile. Profile data is declarative; credentials
+# and backups stay out of the repository.
 
 ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 PROFILE_REQUEST="${OMARCHY_PROFILE:-auto}"
@@ -13,16 +13,12 @@ PROFILE_ENABLE_VPN=0
 PROFILE_INSTALL_VPN_CLI=0
 PROFILE_LOGIN_AFTER_VPN_INSTALL=0
 PROFILE_MONITOR_CONFIG=""
-PROFILE_TELEMETRY_SERVICE=""
-PROFILE_TELEMETRY_COLLECTOR=""
 PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
 PROFILE_PACKAGE_MANIFESTS=""
 PACKAGE_SOURCES=()
 MONITOR_SOURCE=""
-TELEMETRY_SERVICE_SOURCE=""
-TELEMETRY_COLLECTOR_SOURCE=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/omarchy-profiles"
@@ -33,13 +29,13 @@ DO_PACKAGES=1
 DO_MONITOR=1
 DO_VPN=0
 DO_SYSTEM_UPDATE=0
-DO_TELEMETRY=0
 DO_TERMINAL=1
 DO_VOICE=0
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
 VOICE_OPTION_SET=0
+STAGE=all
 
 usage() {
   cat <<'HELP'
@@ -55,7 +51,8 @@ Options:
   --vpn-location NAME   Use an AdGuard location or ISO code for this run.
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` after applying the profile.
-  --enable-telemetry    Install and enable the profile telemetry service.
+  --stage NAME          Run one stage: all, vpn, display, packages, voice,
+                        terminal or update. Default: all.
   --no-terminal         Skip the profile's user-scoped terminal extension.
   --no-voice            Skip the profile's native Omarchy Voxtype setup.
   --check               Validate profile files without changing the system.
@@ -98,12 +95,6 @@ detect_profile() {
   done
   if [[ -n "$PROFILE_MONITOR_CONFIG" ]]; then
     MONITOR_SOURCE="$PROFILE_DIR/$PROFILE_MONITOR_CONFIG"
-  fi
-  if [[ -n "$PROFILE_TELEMETRY_SERVICE" ]]; then
-    TELEMETRY_SERVICE_SOURCE="$PROFILE_DIR/$PROFILE_TELEMETRY_SERVICE"
-  fi
-  if [[ -n "$PROFILE_TELEMETRY_COLLECTOR" ]]; then
-    TELEMETRY_COLLECTOR_SOURCE="$PROFILE_DIR/$PROFILE_TELEMETRY_COLLECTOR"
   fi
   if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
     TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
@@ -190,6 +181,7 @@ install_packages() {
 
 install_voice() {
   [[ "$DO_VOICE" -eq 1 ]] || return 0
+  need_command omarchy
   local native_installer="/usr/share/omarchy/bin/omarchy-voxtype-install"
   [[ -x "$native_installer" ]] || die "native Omarchy Voxtype installer is missing: $native_installer"
   [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
@@ -201,7 +193,7 @@ install_voice() {
      ! command -v voxtype >/dev/null 2>&1 || \
      ! command -v wtype >/dev/null 2>&1; then
     printf 'bootstrap: running the native Omarchy Voxtype installer\n'
-    "$native_installer"
+    omarchy voxtype install
   else
     printf 'bootstrap: native Omarchy Voxtype setup already exists\n'
   fi
@@ -230,24 +222,6 @@ backup_and_install_monitor() {
   printf 'bootstrap: installed %s (backup: %s)\n' "$target" "$backup"
 }
 
-install_telemetry() {
-  [[ -n "$TELEMETRY_SERVICE_SOURCE" && -f "$TELEMETRY_SERVICE_SOURCE" ]] || \
-    die "profile $PROFILE_ID has no telemetry service"
-  local bin="$HOME/.local/bin/omarchy-monitor-telemetry"
-  [[ -n "$TELEMETRY_COLLECTOR_SOURCE" && -f "$TELEMETRY_COLLECTOR_SOURCE" ]] || \
-    die "profile $PROFILE_ID has no telemetry collector"
-  local collector="$TELEMETRY_COLLECTOR_SOURCE"
-  local unit_dir="$HOME/.config/systemd/user"
-  mkdir -p "$(dirname -- "$bin")" "$unit_dir"
-  install -m 0755 "$collector" "$bin"
-  install -m 0644 "$TELEMETRY_SERVICE_SOURCE" \
-    "$unit_dir/omarchy-monitor-telemetry.service"
-  systemctl --user daemon-reload
-  systemctl --user enable --now omarchy-monitor-telemetry.service
-  printf 'bootstrap: enabled local telemetry under %s\n' \
-    "${XDG_STATE_HOME:-$HOME/.local/state}/omarchy/monitor-telemetry"
-}
-
 update_vpn_cli() {
   find_vpn_cli || die "AdGuard VPN CLI is not installed"
   printf 'bootstrap: checking for an AdGuard VPN CLI update\n'
@@ -267,17 +241,12 @@ check_profile() {
     [[ -f "$MONITOR_SOURCE" ]] || die "missing monitor profile: $MONITOR_SOURCE"
     grep -q 'hl.monitor' "$MONITOR_SOURCE" || die "monitor rules are missing"
   fi
-  if [[ -n "$TELEMETRY_SERVICE_SOURCE" ]]; then
-    [[ -f "$TELEMETRY_SERVICE_SOURCE" ]] || die "missing telemetry service"
-  fi
-  if [[ -n "$TELEMETRY_COLLECTOR_SOURCE" ]]; then
-    [[ -f "$TELEMETRY_COLLECTOR_SOURCE" ]] || die "missing telemetry collector"
-  fi
   if [[ -n "$TERMINAL_SOURCE" ]]; then
     [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
     "$TERMINAL_SOURCE" --check
   fi
   if ((DO_VOICE)); then
+    command -v omarchy >/dev/null 2>&1 || die 'native Omarchy command is missing'
     [[ -x "/usr/share/omarchy/bin/omarchy-voxtype-install" ]] || die 'native Omarchy Voxtype installer is missing'
     [[ -n "$VOICE_SOURCE" && -x "$VOICE_SOURCE" ]] || die "missing voice extension: $VOICE_SOURCE"
   fi
@@ -293,7 +262,7 @@ while (($#)); do
     --vpn-location) shift; (($#)) || die "--vpn-location needs a value"; VPN_LOCATION="$1"; DO_VPN=1; VPN_OPTION_SET=1 ;;
     --update-vpn-cli) DO_VPN_CLI_UPDATE=1; DO_VPN=1; VPN_OPTION_SET=1 ;;
     --update-system) DO_SYSTEM_UPDATE=1 ;;
-    --enable-telemetry) DO_TELEMETRY=1 ;;
+    --stage) shift; (($#)) || die "--stage needs a value"; STAGE="$1" ;;
     --no-terminal) DO_TERMINAL=0 ;;
     --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
     --check) DO_CHECK=1 ;;
@@ -313,18 +282,71 @@ if ((DO_CHECK)); then
   check_profile
   exit 0
 fi
-if ((DO_VPN)); then connect_vpn; fi
-if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
-if ((DO_PACKAGES)); then install_packages; fi
-if ((DO_VOICE)); then install_voice; fi
-if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
-  "$TERMINAL_SOURCE" --apply
-fi
-if ((DO_MONITOR)); then backup_and_install_monitor; fi
-if ((DO_TELEMETRY)); then install_telemetry; fi
-if ((DO_SYSTEM_UPDATE)); then
+apply_terminal() {
+  if ((DO_TERMINAL)) && [[ -n "$TERMINAL_SOURCE" ]]; then
+    "$TERMINAL_SOURCE" --apply
+  else
+    printf 'bootstrap: terminal stage skipped\n'
+  fi
+}
+
+apply_update() {
   need_command omarchy
   printf 'bootstrap: running the supported full Omarchy update\n'
   omarchy update
-fi
+}
+
+ensure_vpn_for_network_stage() {
+  if ((DO_VPN)); then
+    connect_vpn
+  fi
+}
+
+run_stage() {
+  case "$STAGE" in
+    all)
+      # Keep the least surprising clean-install order: network first, then
+      # simple tested user settings, then package/model/service work.
+      if ((DO_VPN)); then connect_vpn; fi
+      if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
+      if ((DO_MONITOR)); then backup_and_install_monitor; fi
+      if ((DO_PACKAGES)); then install_packages; fi
+      if ((DO_VOICE)); then install_voice; fi
+      apply_terminal
+      if ((DO_SYSTEM_UPDATE)); then apply_update; fi
+      ;;
+    vpn)
+      ((DO_VPN)) || die 'VPN stage is disabled; use the Zenbook profile or --vpn'
+      connect_vpn
+      if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
+      ;;
+    display)
+      ((DO_MONITOR)) || die 'display stage is disabled by --no-monitor'
+      backup_and_install_monitor
+      ;;
+    packages)
+      ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
+      ensure_vpn_for_network_stage
+      install_packages
+      ;;
+    voice)
+      ((DO_VOICE)) || die 'voice stage is disabled by --no-voice or this profile'
+      ensure_vpn_for_network_stage
+      install_voice
+      ;;
+    terminal)
+      ensure_vpn_for_network_stage
+      apply_terminal
+      ;;
+    update)
+      ensure_vpn_for_network_stage
+      apply_update
+      ;;
+    *)
+      die "unknown stage: $STAGE (use all, vpn, display, packages, voice, terminal or update)"
+      ;;
+  esac
+}
+
+run_stage
 printf 'bootstrap: complete profile=%s\n' "$PROFILE_ID"

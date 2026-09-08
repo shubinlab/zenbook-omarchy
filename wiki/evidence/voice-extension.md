@@ -4,7 +4,7 @@ This profile is a small post-install policy layer on top of Omarchy's native
 Voxtype installation. It does not port the Ubuntu/GNOME/Lemonade/AMD-XDNA2
 installer from `zenbook-voice` and does not create a competing audio pipeline.
 
-The stock Omarchy command `omarchy-voxtype-install` installs `voxtype-bin`,
+The stock Omarchy command `omarchy voxtype install` installs `voxtype-bin`,
 `wtype`, the Whisper model, the user service and the compositor bindings. The
 profile then keeps only these Zenbook-specific choices:
 

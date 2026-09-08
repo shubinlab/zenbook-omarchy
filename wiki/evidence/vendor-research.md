@@ -24,7 +24,7 @@ The local failure was traced to Omarchy's internal-monitor mirror toggle. Its st
 
 There is also a recent Omarchy report that the shared monitor-scaling helper can persist one scale across displays. That supports keeping the external rule explicit instead of using a shared scale variable for this laptop-plus-monitor layout. [Omarchy issue #7978](https://github.com/omacom/omarchy/issues/7978)
 
-The corrective setting was first verified through eight samples over 32 seconds at 143.991 Hz, scale 1.0, VRR on, DPMS on, DP-1 enabled and no mirror. It was then restored to 239.970 Hz and scale 1.6 using the official scaling helper; reload retained both values. The later color A/B showed that `cm=auto` selected `wide`/BT2020 at both 240 and 144 Hz, while `cm=srgb` kept the DRM colorspace at Default. This does not prove that every future Hyprland/monitor update is bug-free, so the telemetry service remains useful.
+The corrective setting was first verified through eight samples over 32 seconds at 143.991 Hz, scale 1.0, VRR on, DPMS on, DP-1 enabled and no mirror. It was then restored to 239.970 Hz and scale 1.6 using the official scaling helper; reload retained both values. The later color A/B showed that `cm=auto` selected `wide`/BT2020 at both 240 and 144 Hz, while `cm=srgb` kept the DRM colorspace at Default. This does not prove that every future Hyprland/monitor update is bug-free, so the protected display checks remain useful.
 
 Community reports still describe VRR flicker on some AMD DisplayPort and FreeSync combinations. They are relevant watchlist evidence, not proof for this LG path because panel, cable, dock revision and compositor workload differ. [Recent community report](https://www.reddit.com/r/linux_gaming/comments/1u51dp9/)
 
@@ -71,4 +71,4 @@ The boot warnings for `asus_armoury`, `asus_wmi`, the audio machine driver and `
 - `anecdotal`: community report with different hardware or incomplete reproduction.
 - `not reproduced`: issue found in searches but absent from this machine's tests.
 
-The next useful tests are a protected Wi-Fi association/throughput run, a Bluetooth pairing check, speaker playback, NVMe SMART inventory and a longer display telemetry period. They should be run with the same idle/suspend/lock guards used by the display tests.
+The next useful tests are a protected Wi-Fi association/throughput run, a Bluetooth pairing check, speaker playback and NVMe SMART inventory. They should be run with the same idle/suspend/lock guards used by the display tests.

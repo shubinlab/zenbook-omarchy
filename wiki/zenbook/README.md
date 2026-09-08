@@ -10,12 +10,11 @@ the restore and development map.
 
 The display rule keeps the tested external mode at 2560×1440, 240 Hz, 10-bit,
 sRGB, VRR enabled and the Omarchy-managed scale variable. The package lists
-cover the platform and diagnostics. The optional service records local
-monitor telemetry. The profile can use the official AdGuard VPN CLI before an
-update, but `--no-vpn` disables that behavior for a run.
+cover the platform and diagnostics. The profile can use the official AdGuard
+VPN CLI before an update, but `--no-vpn` disables that behavior for a run.
 
-The profile's `tools/` directory contains the connector-specific telemetry and
-protected display/component runners. They are intentionally outside the common
+The profile's `tools/` directory contains protected display/component runners.
+They are intentionally outside the common
 repository tools because their defaults describe this dock and monitor.
 
 Apply it explicitly only on matching hardware:
@@ -35,7 +34,6 @@ Profile evidence:
 - [display tests](../evidence/display-tests.md) — protected red-team runs;
 - [display incident](../evidence/display-incident.md) — mode drift and recovery;
 - [HDR](../evidence/hdr.md) — color and HDR decision;
-- [telemetry](../evidence/telemetry.md) — local collector and privacy boundary;
 - [vendor research](../evidence/vendor-research.md) and [sources](../evidence/research.md);
 - [repository map](../evidence/repository-map.md) — where related evidence lives;
 - [voice audit](../evidence/voice.md) and [voice extension](../evidence/voice-extension.md);

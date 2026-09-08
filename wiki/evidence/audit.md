@@ -46,4 +46,3 @@ The later 32-second post-fix control run held 143.991 Hz, scale 1.0, VRR on, DPM
 - Full hardware and component review: `wiki/evidence/components.md`
 - Raw steady-state data remains local under the Git-ignored `runs/` directory.
 - Display red-team methodology: `../guides/methodology.md`
-- Sanitized telemetry collector: `profiles/zenbook-um3406ka/tools/omarchy-monitor-telemetry.py`

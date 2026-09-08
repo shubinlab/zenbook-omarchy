@@ -16,7 +16,7 @@ reproducible test programs and aggregate results. It must not contain:
 - SSH/GPG keys, GitHub credentials, API tokens, cookies or license data;
 - raw `hyprctl`, `lsusb`, EDID, journal, network or firmware dumps;
 - monitor and USB serial numbers, hostnames, usernames, absolute home paths or
-  private telemetry.
+  private diagnostic data.
 
 Diagnostic runners may write raw results under the ignored `runs/` directory.
 The bootstrap creates local backups and never commits them.

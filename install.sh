@@ -31,6 +31,11 @@ if ((check_only)); then
 fi
 
 if [[ -d "$repo_dir/.git" ]]; then
+  if [[ -n "$(git -C "$repo_dir" status --porcelain)" ]]; then
+    printf '%s\n' "omarchy-profiles: refusing to update a modified checkout: $repo_dir" >&2
+    printf '%s\n' 'omarchy-profiles: commit, stash or remove local changes, then retry' >&2
+    exit 1
+  fi
   printf 'omarchy-profiles: updating %s\n' "$repo_dir"
   git -C "$repo_dir" pull --ff-only
 else

@@ -47,7 +47,7 @@ is modified.
 ## Apply and verify
 
 On a fresh Omarchy installation, the Zenbook bootstrap invokes the stock
-native installer automatically after the VPN and package stages. Confirm its
+`omarchy voxtype install` automatically after the VPN and package stages. Confirm its
 native prompt; the repository then applies the tested policy in the same run:
 
 ```bash

@@ -12,7 +12,6 @@ UM3406KA profile. The user-facing index is the repository [system wiki](../READM
 | Protected display results | [display-tests](display-tests.md) |
 | HDR and color decision | [hdr](hdr.md) |
 | Environment snapshot | [environment](environment.md) |
-| Local telemetry | [telemetry](telemetry.md) |
 | Vendor and community research | [vendor-research](vendor-research.md) |
 | External source list | [research](research.md) |
 | Cross-repository search map | [repository-map](repository-map.md) |

@@ -19,7 +19,7 @@ All six matrix phases had 15 samples each and zero harness anomalies:
 
 The mode-cycle stress test changed 144→120→240 Hz three times. Every sample reported an active inhibitor, an active unlocked session, DP-1 connected, DPMS on and DRM VRR active.
 
-The intentional DPMS test produced the expected `DPMS=false` sample and recovered to `DPMS=true`. It did not suspend or lock the system under the inhibitor. Kernel telemetry still recorded a USB HID reconnect for the LG monitor controls after the DPMS cycle; this is a real DPMS recovery side effect and should be treated separately from idle timeout.
+The intentional DPMS test produced the expected `DPMS=false` sample and recovered to `DPMS=true`. It did not suspend or lock the system under the inhibitor. The kernel journal recorded a USB HID reconnect for the LG monitor controls after the DPMS cycle; this is a real DPMS recovery side effect and should be treated separately from idle timeout.
 
 The post-fix wrapper check repeated three 144→120→240 Hz cycles and a DPMS off/on cycle. All samples kept DP-1 connected, the session active and unlocked, the inhibitor active, 10-bit output, scale 1.6, sRGB and Hyprland VRR enabled. The final state returned to 239.970 Hz, scale 1.6, sRGB, VRR on, DPMS on and no mirror. The only kernel event was the expected USB disconnect/re-enumeration of `LG Monitor Controls` (`043e:9a8a`) during DPMS; no DP connector loss or AMDGPU reset occurred.
 

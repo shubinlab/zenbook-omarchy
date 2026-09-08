@@ -10,7 +10,6 @@ executable files remain under the profile that applies them.
 | Recover a working system | [recovery.md](recovery.md) |
 | Understand the architecture | [architecture.md](architecture.md) |
 | Design protected experiments | [Methodology](methodology.md) |
-| Understand local telemetry | [telemetry.md](telemetry.md) |
 | Choose or add a host profile | [Profiles](../profiles.md) |
 | Public-data and vulnerability policy | [Security policy](../../SECURITY.md) |
 

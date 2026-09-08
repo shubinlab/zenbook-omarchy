@@ -28,7 +28,7 @@ The protected phases used `systemd-inhibit` for idle, sleep and lid-switch actio
 | Bluetooth | MediaTek controller powered and pairable | Controller healthy; no new pairing test performed |
 | USB dock/peripherals | USB2 hub 480 Mb/s, USB3 hub 10 Gb/s; keyboard/mouse receivers, LG controls, microphone and Ethernet enumerated | Link topology is plausible and stable |
 | Battery/charging | 67.4 Wh full charge against 75 Wh design, approximately 89.9% reported condition; AC online, threshold 100% | Usable; optional 80% cap for docked use |
-| Services | No system or user failed units; PipeWire, WirePlumber, Hyprland and telemetry active | Passed |
+| Services | No system or user failed units; PipeWire, WirePlumber and Hyprland active | Passed |
 
 ## Findings requiring follow-up
 

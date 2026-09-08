@@ -14,7 +14,7 @@ Before opening a pull request:
 The protected display runner requires the real graphical session and hardware.
 Its raw output belongs in the ignored local `runs/` directory. Publish only an
 aggregate report after removing hostnames, paths, serials, EDID hashes,
-network data, credentials and private telemetry.
+network data, credentials and private diagnostic data.
 
 Use `scripts/bootstrap.sh --profile generic --check` for a no-change profile check. Use the
 one-command installer only on an Omarchy system where an update and package

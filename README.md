@@ -22,6 +22,12 @@ Restore the detected profile:
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
+That one command is the complete orchestrator: VPN, simple display settings,
+packages, native Voxtype, terminal settings and the supported Omarchy update.
+On a first run, accept the native Voxtype prompt. To run one stage from the
+same raw entry point, pass `--stage vpn`, `--stage display`, `--stage packages`,
+`--stage voice`, `--stage terminal` or `--stage update`.
+
 With an existing checkout, check or apply explicitly:
 
 ```bash
@@ -33,6 +39,26 @@ On the matching Zenbook, the normal bootstrap runs Omarchy's native Voxtype
 installer automatically and then applies the repository's tested voice policy;
 there is no separate voice-install step. Confirm the native prompt on a fresh
 system. Use `--no-voice` only to opt out.
+
+The individual stage wrappers are also available from an existing checkout:
+
+```bash
+./scripts/install-vpn.sh --profile zenbook-um3406ka
+./scripts/install-display.sh --profile zenbook-um3406ka
+./scripts/install-packages.sh --profile zenbook-um3406ka
+./scripts/install-voice.sh --profile zenbook-um3406ka
+./scripts/install-terminal.sh --profile zenbook-um3406ka
+./scripts/install-update.sh --profile zenbook-um3406ka
+```
+
+For a raw one-liner, use the main URL with a stage, for example:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash -s -- --stage voice
+```
+
+The raw URL must include the branch (`main`); `/zenbook-omarchy/install.sh`
+alone is not a valid GitHub raw path.
 
 Run a protected display test from the graphical session:
 
@@ -62,7 +88,7 @@ on other Omarchy hardware. Applies create backups under
 install.sh                         one-line GitHub entry point
 scripts/bootstrap.sh               profile-aware restore engine
 profiles/                          executable profiles and apply assets
-profiles/zenbook-um3406ka/tools/  display, telemetry and hardware tests
+profiles/zenbook-um3406ka/tools/  display and hardware tests
 profiles/zenbook-um3406ka/voice/  voice extension
 profiles/zenbook-um3406ka/terminal/ terminal extension
 wiki/                              all narrative documentation and evidence

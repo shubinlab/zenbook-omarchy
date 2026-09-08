@@ -245,7 +245,7 @@ def write_markdown(path: Path, result: dict) -> None:
         f"- Host profile: ASUS Zenbook 14 UM3406, AMDGPU, Omarchy/Hyprland.",
         f"- Output under test: DP-1 через JSAUX USB-C dock, LG UltraGear, 2560×1440.",
         "- Forced policy: per-output and global `vrr=1` (always-on).",
-        "- Telemetry: local service sampled every 5 seconds; this runner sampled every 2 seconds.", "",
+        "- Sampling: this runner sampled every 2 seconds.", "",
         "## Results", "",
         "| Phase | Requested | Samples | VRR (Hyprland) | DRM VRR_ENABLED | DPMS | Connector | Format | Anomalies |",
         "|---|---|---:|---|---|---|---|---|---:|",

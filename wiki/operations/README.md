@@ -7,7 +7,6 @@
 | Test monitor/VRR | [Protected experiment](experiments.md) |
 | Check voice | `./profiles/zenbook-um3406ka/voice/doctor.sh` |
 | Check terminal | `terminal-doctor` |
-| Inspect telemetry | [Profile telemetry](../evidence/telemetry.md) |
 | Read the conclusion | [Audit](../evidence/audit.md) |
 
 Every experiment must record the active profile, power-management guards,

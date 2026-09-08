@@ -1,6 +1,6 @@
 ---
 name: Hardware or bootstrap issue
-about: Report a reproducible problem without attaching private telemetry
+about: Report a reproducible problem without attaching private diagnostic data
 title: ""
 labels: ""
 assignees: ""
@@ -26,4 +26,4 @@ assignees: ""
 ## Evidence
 
 <!-- Paste sanitized summaries. Do not attach VPN state, serials, EDID hashes,
-hostnames, absolute paths, raw journals, credentials or private telemetry. -->
+hostnames, absolute paths, raw journals, credentials or private diagnostic data. -->

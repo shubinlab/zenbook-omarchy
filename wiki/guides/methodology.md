@@ -19,6 +19,6 @@ state; and relevant kernel events. A profile supplies the connector and mode
 matrix for its hardware.
 
 An intentional DPMS phase must be labelled separately from an unexpected DPMS
-transition. Software telemetry can detect link loss, modesets, DRM VRR state
+transition. Software logs can detect link loss, modesets, DRM VRR state
 and kernel events, but cannot prove that a human-visible flicker never
 occurred. Optical confirmation requires a camera or photodiode.

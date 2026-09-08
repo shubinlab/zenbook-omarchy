@@ -51,12 +51,10 @@ for:
 ./profiles/zenbook-um3406ka/tools/run_vrr_redteam_safe.sh --seconds 30
 ```
 
-If the graphical session is already unusable, switch to a TTY, stop only the
-user telemetry service if it is running, and restore the latest monitor backup
-manually after checking its contents:
+If the graphical session is already unusable, switch to a TTY and restore the
+latest monitor backup manually after checking its contents:
 
 ```bash
-systemctl --user disable --now omarchy-monitor-telemetry.service
 ls -dt ~/.local/state/omarchy-profiles/zenbook-um3406ka/backups/*
 ```
 

@@ -12,5 +12,5 @@
 ## Public-data review
 
 - [ ] No credentials, private keys, VPN state, serials, EDID hashes, hostnames,
-      absolute paths, raw journals or private telemetry are included.
+      absolute paths, raw journals or private diagnostic data are included.
 - [ ] Any new claims identify their source, date and hardware-specific limits.
