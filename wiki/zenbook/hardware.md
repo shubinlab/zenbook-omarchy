@@ -2,7 +2,7 @@
 
 This is the canonical hardware record for the tested Zenbook profile. Values
 come from local inventory and protected experiments. A future audit should
-update this file first, then link detailed evidence from `docs/`.
+update this page first, then link detailed evidence from `wiki/evidence/`.
 
 ## Laptop
 
@@ -40,10 +40,10 @@ Zenbook USB-C/USB4
 | DDC/CI | LG input and brightness/contrast respond; no OSD writes were automated |
 | Alternate control run | `2560x1440@143.991 Hz`, scale 1.0, 10-bit, VRR on, DPMS on |
 
-The persistent rule is [monitors.lua](monitors.lua). The `cm=srgb` choice is
+The persistent rule is [monitors.lua](../../profiles/zenbook-um3406ka/monitors.lua). The `cm=srgb` choice is
 deliberate: the local A/B showed `cm=auto` selecting a wide/BT2020 path at
 10-bit, which caused the pale SDR image. HDR remains an application-dependent
-option; the decision and evidence are in [docs/hdr.md](docs/hdr.md).
+option; the decision and evidence are in [HDR evidence](../evidence/hdr.md).
 
 ## Dock and downstream devices
 
@@ -74,10 +74,10 @@ time before considering a kernel quirk.
 
 ## Evidence and limits
 
-- [Audit](docs/audit.md) contains the system-level verdict and device checks.
-- [Component audit](docs/components.md) contains test methods and warnings.
-- [Diagnostics](docs/diagnostics.md) records package versions and staged tests.
-- [Vendor research](docs/vendor-research.md) records source scope and claim status.
+- [Audit](../evidence/audit.md) contains the system-level verdict and device checks.
+- [Component audit](../evidence/components.md) contains test methods and warnings.
+- [Diagnostics](../evidence/diagnostics.md) records package versions and staged tests.
+- [Vendor research](../evidence/vendor-research.md) records source scope and claim status.
 - Raw runs stay in the ignored `runs/` directory. No EDID hash, serial number,
   hostname, credential or raw journal belongs in this file.
 - Wi-Fi throughput, Bluetooth pairing, speaker playback, NVMe SMART self-test,

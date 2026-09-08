@@ -21,5 +21,5 @@ Run the profile-specific wrapper from the graphical session:
 
 The wrapper restores the selected final display mode. Results are written to
 the ignored `runs/` directory. The full matrix and known limitations are in
-[display-tests.md](../../profiles/zenbook-um3406ka/docs/display-tests.md),
-while the component run is in [components.md](../../profiles/zenbook-um3406ka/docs/components.md).
+[display-tests.md](../evidence/display-tests.md),
+while the component run is in [components.md](../evidence/components.md).

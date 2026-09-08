@@ -57,7 +57,7 @@ This isolates the pale SDR image to `cm=auto` selecting the `wide`/BT2020 path a
 
 The choice follows current Hyprland color-management documentation: `auto` selects sRGB for 8 bpc and wide gamut for 10 bpc, while `srgb` forces sRGB primaries. [Hyprland colors and colorspaces](https://wiki.hypr.land/configuring/core/monitors/colors/)
 
-The separate HDR experiment confirmed that `cm=hdr` can engage PQ/BT2020 metadata on this path, with 603 cd/m² peak metadata, but it was restored immediately. The persistent decision and tradeoffs are recorded in [profiles/zenbook-um3406ka/docs/hdr.md](hdr.md).
+The separate HDR experiment confirmed that `cm=hdr` can engage PQ/BT2020 metadata on this path, with 603 cd/m² peak metadata, but it was restored immediately. The persistent decision and tradeoffs are recorded in [wiki/evidence/hdr.md](hdr.md).
 
 ## Current profile
 

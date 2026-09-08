@@ -8,7 +8,7 @@ cross-check and search index. Private repositories are not copied here.
 
 | Component | Local evidence first | Then check vendor/community sources | Useful terms |
 |---|---|---|---|
-| External display | `profiles/zenbook-um3406ka/monitors.lua`, `profiles/zenbook-um3406ka/docs/display-incident.md`, protected telemetry | Omarchy monitor manual, Omarchy issues, Hyprland issues, LG manual | `DP-1`, `scale`, `bitdepth`, `vrr`, `DPMS`, `preferred` |
+| External display | `profiles/zenbook-um3406ka/monitors.lua`, `wiki/evidence/display-incident.md`, protected telemetry | Omarchy monitor manual, Omarchy issues, Hyprland issues, LG manual | `DP-1`, `scale`, `bitdepth`, `vrr`, `DPMS`, `preferred` |
 | AMD display/GPU | kernel journal, `lspci -k`, Mesa/AMDGPU versions | AMD kernel docs, Arch packages, AMDGPU/Hyprland issues | `amdgpu`, `DC`, `VRR`, `10-bit` |
 | ASUS firmware/ACPI | BIOS version, ACPI journal, battery and lid state | ASUS UM3406KA support, kernel ACPI reports | `UM3406KA`, `BIOS 306`, `lid`, `asus_wmi` |
 | USB-C dock and DisplayPort | `lsusb -t`, DRM connectors, link speed and mode matrix | JSAUX product/FAQ and Linux dock reports | `JSAUX RGB`, `DP Alt Mode`, `VRR`, `RTL8153` |

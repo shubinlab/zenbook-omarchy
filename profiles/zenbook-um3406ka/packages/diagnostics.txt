@@ -17,5 +17,4 @@ i2c-tools
 libinput
 lm_sensors
 mpv
-edid-decode
 wayland-utils

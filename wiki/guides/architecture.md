@@ -8,7 +8,7 @@ install.sh                 short GitHub entry point
 scripts/bootstrap.sh       profile loader and idempotent apply engine
 profiles/<id>/              declarative packages, monitor rules and extensions
 tools/                      read-only checks and protected experiments
-docs/                       stable design and operating guidance
+wiki/                       all stable guides, inventories and evidence
 runs/                       local ignored evidence only
 ```
 

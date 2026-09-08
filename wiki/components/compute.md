@@ -32,6 +32,6 @@ relevant only when a compatible runtime and model are tested.
 
 ## Evidence and open work
 
-- [Component audit](../../profiles/zenbook-um3406ka/docs/components.md)
-- [Vendor and driver research](../../profiles/zenbook-um3406ka/docs/vendor-research.md)
+- [Component audit](../evidence/components.md)
+- [Vendor and driver research](../evidence/vendor-research.md)
 - Open: GPU benchmark, sustained thermal test and a real NPU workload.

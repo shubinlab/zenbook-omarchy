@@ -38,11 +38,11 @@ separately and is not forced globally.
 The Omarchy internal-monitor mirror toggle contained a `preferred` DP-1 rule.
 After reload it could win over the explicit profile and select the dock's
 preferred mode. The recovery was performed through the supported Omarchy
-command and is recorded in [display-incident.md](../../profiles/zenbook-um3406ka/docs/display-incident.md).
+command and is recorded in [display-incident.md](../evidence/display-incident.md).
 
 ## Verification
 
 Use the protected runner from the [operations page](../operations/README.md).
 It blocks idle, lock, suspend and lid handling, and samples compositor mode,
 DRM VRR, connector state, DPMS and session state. The full results are in
-[display-tests.md](../../profiles/zenbook-um3406ka/docs/display-tests.md).
+[display-tests.md](../evidence/display-tests.md).

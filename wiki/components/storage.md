@@ -16,4 +16,4 @@ or alter the kernel command line. A temporary 512 MiB write/read/delete test
 passed and Btrfs device error counters were zero in the audit.
 
 SMART self-test and a long performance benchmark remain open because they have
-different thermal, wear and power implications. See the [component audit](../../profiles/zenbook-um3406ka/docs/components.md).
+different thermal, wear and power implications. See the [component audit](../evidence/components.md).

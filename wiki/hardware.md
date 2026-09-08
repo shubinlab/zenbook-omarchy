@@ -1,6 +1,6 @@
 # Hardware overview
 
-The canonical detailed inventory is [profiles/zenbook-um3406ka/hardware.md](../profiles/zenbook-um3406ka/hardware.md). This page connects each device to its Linux driver, its user-visible function and its detailed component page.
+The canonical detailed inventory is [Zenbook hardware](zenbook/hardware.md). This page connects each device to its Linux driver, its user-visible function and its detailed component page.
 
 | Component | Observed hardware | Linux path | Page |
 |---|---|---|---|

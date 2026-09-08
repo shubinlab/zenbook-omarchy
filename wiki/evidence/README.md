@@ -1,7 +1,7 @@
 # Zenbook evidence map
 
 This directory contains evidence and research for the ASUS Zenbook 14
-UM3406KA profile. The user-facing index is the repository [system wiki](../../../wiki/README.md).
+UM3406KA profile. The user-facing index is the repository [system wiki](../README.md).
 
 | Subject | Document |
 |---|---|
@@ -18,4 +18,4 @@ UM3406KA profile. The user-facing index is the repository [system wiki](../../..
 | Cross-repository search map | [repository-map](repository-map.md) |
 | Native voice evidence | [voice](voice.md) |
 
-The canonical hardware record and restore map are one directory above: [hardware.md](../hardware.md) and [configuration.md](../configuration.md).
+The canonical hardware record and restore map are one directory above: [hardware.md](../zenbook/hardware.md) and [configuration.md](../zenbook/configuration.md).

@@ -9,10 +9,9 @@ package manifests, optional telemetry service and voice extension. It is
 selected automatically when DMI reports `UM3406KA`, or explicitly with
 `--profile zenbook-um3406ka`.
 
-Within a machine profile, keep `hardware.md` as the canonical device record
-and `configuration.md` as the restore map. Put experiments and source links in
-`docs/`, and keep user-facing extensions in their own directory such as
-`voice/` or `terminal/`.
+Keep all narrative pages, inventories, experiments and source links in the
+repository `wiki/`. Keep a machine profile executable: manifests, source
+configuration, tests and user-facing extensions such as `voice/` or `terminal/`.
 
 To add another machine, create a directory with:
 
@@ -20,7 +19,7 @@ To add another machine, create a directory with:
 - `packages/*.txt` for package names, split by purpose;
 - a monitor file only when the profile owns a tested monitor layout;
 - service and extension files under the profile directory;
-- stable documentation under `docs/`.
+- a matching section under `wiki/` for its inventory, configuration and evidence.
 
 Profiles must not contain credentials, serials, EDID hashes, raw journals,
 absolute home paths or live telemetry. The bootstrap backs up user files before

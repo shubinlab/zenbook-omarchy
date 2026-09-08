@@ -34,5 +34,5 @@ boot. It was not on the DisplayPort path and did not recur during protected
 tests. If input failures return, remove nonessential USB2 devices one at a time
 before changing kernel parameters.
 
-See the [canonical hardware record](../../profiles/zenbook-um3406ka/hardware.md)
-and [component audit](../../profiles/zenbook-um3406ka/docs/components.md).
+See the [canonical hardware record](../zenbook/hardware.md)
+and [component audit](../evidence/components.md).

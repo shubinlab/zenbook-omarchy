@@ -10,7 +10,7 @@ uses `/usr/share/omarchy/install/omarchy-base.packages` and
 catalog, so it is not proof that every name is installed by default.
 
 Explicit packages: **173**. Stock catalog names: **206**.
-Profile-declared names not currently installed: `edid-decode`, `wayland-utils`.
+Profile-declared names not currently installed: `wayland-utils`.
 
 | Package | Version | Classification | Install reason |
 |---|---|---|---|
@@ -168,7 +168,7 @@ Profile-declared names not currently installed: `edid-decode`, `wayland-utils`.
 | `usage` | `5.1.0-1` | stock catalog | Explicitly installed |
 | `usbutils` | `019-1` | explicit local addition; profile declared | Explicitly installed |
 | `uwsm` | `0.26.7-1` | stock catalog | Explicitly installed |
-| `voxtype-bin` | `1.0.1-1` | explicit local addition | Explicitly installed |
+| `voxtype-bin` | `1.0.1-1` | explicit local addition; profile declared | Explicitly installed |
 | `vulkan-radeon` | `1:26.2.2-1` | stock catalog; profile declared | Explicitly installed |
 | `vulkan-tools` | `1.4.357.0-1` | explicit local addition; profile declared | Explicitly installed |
 | `whois` | `5.6.6-1` | stock catalog | Explicitly installed |
@@ -176,7 +176,7 @@ Profile-declared names not currently installed: `edid-decode`, `wayland-utils`.
 | `wireplumber` | `0.5.17-1` | stock catalog; profile declared | Explicitly installed |
 | `wl-clipboard` | `1:2.3.0-1` | stock catalog | Explicitly installed |
 | `woff2-font-awesome` | `7.3.1-1` | stock catalog | Explicitly installed |
-| `wtype` | `0.4-2` | stock catalog | Explicitly installed |
+| `wtype` | `0.4-2` | stock catalog; profile declared | Explicitly installed |
 | `xdg-desktop-portal-gtk` | `1.15.3-1` | stock catalog | Explicitly installed |
 | `xdg-desktop-portal-hyprland` | `1.4.1-2` | stock catalog | Explicitly installed |
 | `xdg-terminal-exec` | `0.14.3-1` | stock catalog | Explicitly installed |

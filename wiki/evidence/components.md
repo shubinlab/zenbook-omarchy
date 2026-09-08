@@ -58,7 +58,7 @@ The CPU phase produced valid thermal samples and SHA-256 results, then the runne
 ## Evidence files
 
 - Raw component and steady-state runs remain local under the Git-ignored `runs/` directory.
-- `profiles/zenbook-um3406ka/docs/audit.md`
-- `profiles/zenbook-um3406ka/docs/display-incident.md`
-- `profiles/zenbook-um3406ka/docs/repository-map.md`
-- `profiles/zenbook-um3406ka/docs/vendor-research.md`
+- `wiki/evidence/audit.md`
+- `wiki/evidence/display-incident.md`
+- `wiki/evidence/repository-map.md`
+- `wiki/evidence/vendor-research.md`

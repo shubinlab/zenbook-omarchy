@@ -28,4 +28,4 @@ updates.
 | `~/.config/systemd/user/omarchy-monitor-telemetry.service` | No user monitor collector | Five-second local display/dock telemetry |
 
 The profile source, apply command and rollback location for each row are in
-[configuration.md](../../profiles/zenbook-um3406ka/configuration.md).
+[Zenbook configuration map](../zenbook/configuration.md).

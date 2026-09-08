@@ -10,4 +10,4 @@ raw audio. Local evidence belongs in the ignored `runs/` directory. Publish
 only an aggregate report after sanitizing it.
 
 The Zenbook profile's implementation and fields are documented in its
-[telemetry guide](../profiles/zenbook-um3406ka/docs/telemetry.md).
+[telemetry evidence page](../evidence/telemetry.md).

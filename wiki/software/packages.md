@@ -44,7 +44,6 @@ hardware package is installed on every machine. Omarchy's package helper uses
 | `libinput` | `1.31.3-1` | dependency | Input diagnostics |
 | `lm_sensors` | `3.6.2-1` | dependency | Sensor readings |
 | `mpv` | `0.41.0-6` | explicit | Controlled media/display checks |
-| `edid-decode` | — | declared, missing | EDID decoding; package availability must be checked before install |
 | `wayland-utils` | — | declared, missing | Wayland compositor queries; available in repository but not installed |
 
 ## User-facing additions
@@ -67,8 +66,8 @@ the authority. Do not remove a package solely because it is absent from the
 two stock catalog files.
 
 The source manifests are [platform.txt](../../profiles/zenbook-um3406ka/packages/platform.txt),
-[diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt) and
-[terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt).
+[diagnostics.txt](../../profiles/zenbook-um3406ka/packages/diagnostics.txt),
+[voice.txt](../../profiles/zenbook-um3406ka/packages/voice.txt) and [terminal.txt](../../profiles/zenbook-um3406ka/packages/terminal.txt).
 
 The complete explicit package table is regenerated from the live package
 database in [package-inventory.md](package-inventory.md).

@@ -45,9 +45,9 @@ Every claim has one of four meanings:
 - **stock** — supplied by the installed Omarchy release;
 - **open** — not measured yet, or dependent on hardware/firmware behavior.
 
-The current machine record is [profiles/zenbook-um3406ka/hardware.md](../profiles/zenbook-um3406ka/hardware.md). The file-level restore map is
-[profiles/zenbook-um3406ka/configuration.md](../profiles/zenbook-um3406ka/configuration.md).
-Detailed experiment reports live in the [Zenbook profile docs](../profiles/zenbook-um3406ka/docs/README.md), while raw runs remain local and ignored.
+The current machine record is [Zenbook hardware](zenbook/hardware.md). The file-level restore map is
+[Zenbook configuration](zenbook/configuration.md).
+Detailed experiment reports live in the [evidence index](evidence/README.md), while raw runs remain local and ignored.
 
 ## Current boundary
 

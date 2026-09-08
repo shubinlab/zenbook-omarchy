@@ -29,17 +29,17 @@ Profile evidence:
 
 - [hardware](hardware.md) — canonical laptop, display, dock and peripheral inventory;
 - [configuration](configuration.md) — source files, apply commands and rollback paths;
-- [audit](docs/audit.md) — system and connected-device baseline;
-- [components](docs/components.md) — component checks and limitations;
-- [diagnostics](docs/diagnostics.md) — package and staged validation;
-- [display tests](docs/display-tests.md) — protected red-team runs;
-- [display incident](docs/display-incident.md) — mode drift and recovery;
-- [HDR](docs/hdr.md) — color and HDR decision;
-- [telemetry](docs/telemetry.md) — local collector and privacy boundary;
-- [vendor research](docs/vendor-research.md) and [sources](docs/research.md);
-- [repository map](docs/repository-map.md) — where related evidence lives;
-- [voice audit](docs/voice.md) and [voice extension](voice/README.md);
-- [terminal extension](terminal/README.md) — Sixel, ble.sh, fzf and doctor.
+- [audit](../evidence/audit.md) — system and connected-device baseline;
+- [components](../evidence/components.md) — component checks and limitations;
+- [diagnostics](../evidence/diagnostics.md) — package and staged validation;
+- [display tests](../evidence/display-tests.md) — protected red-team runs;
+- [display incident](../evidence/display-incident.md) — mode drift and recovery;
+- [HDR](../evidence/hdr.md) — color and HDR decision;
+- [telemetry](../evidence/telemetry.md) — local collector and privacy boundary;
+- [vendor research](../evidence/vendor-research.md) and [sources](../evidence/research.md);
+- [repository map](../evidence/repository-map.md) — where related evidence lives;
+- [voice audit](../evidence/voice.md) and [voice extension](../evidence/voice-extension.md);
+- [terminal extension](../evidence/terminal.md) — Sixel, ble.sh, fzf and doctor.
 
 Dates in these documents describe when evidence was collected. They are kept
 inside the records rather than in filenames so links remain stable when the

@@ -9,7 +9,7 @@ Before opening a pull request:
 1. Run `./tools/ci-check.sh`.
 2. Run `./tools/check-public-repo.sh` after staging changes.
 3. Run `git diff --cached --check`.
-4. Update `docs/README.md` when adding or moving documentation.
+4. Update `wiki/guides/README.md` when adding or moving documentation.
 
 The protected display runner requires the real graphical session and hardware.
 Its raw output belongs in the ignored local `runs/` directory. Publish only an

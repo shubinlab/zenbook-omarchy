@@ -31,4 +31,4 @@ The earlier run around 13:58 is retained as contaminated evidence. At 13:58:02 t
 
 The current selected operating point is 2560×1440 at 240 Hz, 10-bit, scale 1.6, `cm=srgb`, per-output `vrr=1`. A/B testing showed that both 240 and 144 Hz stayed technically identical, while `cm=auto` selected `wide`/BT2020 and was associated with the pale SDR image. The external rule references `omarchy_monitor_scale`, so the official Omarchy scaling command can change 1.6 and persist it across reloads. The earlier mode drift was caused by the mirror toggle, not by 240 Hz itself.
 
-The package installation, staged hardware checks and color A/B are detailed in `profiles/zenbook-um3406ka/docs/diagnostics.md`.
+The package installation, staged hardware checks and color A/B are detailed in `wiki/evidence/diagnostics.md`.
