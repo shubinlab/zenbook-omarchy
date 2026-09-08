@@ -16,32 +16,25 @@ The public repository contains the reproducible parts of this Zenbook profile:
 - `install.sh` is the short GitHub entry point that clones or updates the
   repository and invokes the full bootstrap.
 
+The short entry point installs the official AdGuard VPN CLI when it is missing.
 The script does not contain or copy AdGuard credentials, VPN databases, tokens,
 private keys, serial numbers or raw machine telemetry. It also does not edit
 `/usr/share/omarchy`; user configuration belongs under `~/.config`.
 
-For a machine where AdGuard VPN CLI is already installed and logged in, update
-the repository and apply the profile in one line:
+The shortest command installs or updates the profile in one line:
 
 ```bash
 repo="$HOME/zenbook-omarchy"; if [ -d "$repo/.git" ]; then git -C "$repo" pull --ff-only; else git clone https://github.com/shubinlab/zenbook-omarchy.git "$repo"; fi && "$repo/install/bootstrap.sh" --vpn --update-system
 ```
 
-To select a particular AdGuard location without saving it in Git, add
+The first run may pause for the one-time interactive AdGuard login. To select a
+particular AdGuard location without saving it in Git, add
 `export ADGUARD_VPN_LOCATION=COUNTRY_OR_CITY;` before the `repo=...` part of
 the same one-liner.
 
-On a clean system without the CLI, install the official release first in the
-same shell, complete the one-time login interactively, then run the bootstrap:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/AdguardTeam/AdGuardVPNCLI/HEAD/scripts/release/install.sh | sh -s -- -v && adguardvpn-cli login && repo="$HOME/zenbook-omarchy"; git clone https://github.com/shubinlab/zenbook-omarchy.git "$repo" && "$repo/install/bootstrap.sh" --vpn --update-system
-```
-
-That installer command is the one published by AdGuard. It installs the
-official CLI; this repository only detects it and invokes its documented
-`status`, `connect` and optional `update` commands. The login step is never
-automated and no account data belongs in this repository.
+The installer URL is the one published by AdGuard. The repository invokes the
+CLI's documented `status`, `connect` and optional `update` commands. The login
+step remains interactive and no account data belongs in this repository.
 
 Use `--update-vpn-cli` when you explicitly want the installed AdGuard CLI to
 update itself. Use `--enable-telemetry` only when local five-second monitor

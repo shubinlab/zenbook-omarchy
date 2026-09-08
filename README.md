@@ -10,11 +10,11 @@ Run this from a normal terminal:
 curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
-It clones or updates this repository, connects the existing AdGuard VPN CLI,
+It installs the official AdGuard VPN CLI when it is missing, clones or updates this repository, connects the AdGuard VPN CLI,
 installs the recorded hardware and diagnostic packages, restores the monitor
 profile with a backup, disables the Omarchy internal-monitor mirror and runs
-the supported `omarchy update`. The command expects AdGuard VPN CLI to be
-installed and logged in once. It never puts VPN credentials in Git.
+the supported `omarchy update`. The first run may require the one-time
+interactive AdGuard login. It never puts VPN credentials in Git.
 
 To choose a VPN location for this run:
 
