@@ -27,6 +27,9 @@ packages, native Voxtype, terminal settings and the supported Omarchy update.
 On a first run, accept the native Voxtype prompt. To run one stage from the
 same raw entry point, pass `--stage vpn`, `--stage display`, `--stage packages`,
 `--stage voice`, `--stage terminal` or `--stage update`.
+Use `--stage doctor` any time for a read-only health check.
+`--manifest` prints the stages for external launchers; `--non-interactive`
+stops safely before a step that requires a terminal prompt.
 
 With an existing checkout, check or apply explicitly:
 
@@ -49,6 +52,7 @@ The individual stage wrappers are also available from an existing checkout:
 ./scripts/install-voice.sh --profile zenbook-um3406ka
 ./scripts/install-terminal.sh --profile zenbook-um3406ka
 ./scripts/install-update.sh --profile zenbook-um3406ka
+./scripts/doctor.sh --profile zenbook-um3406ka
 ```
 
 For a raw one-liner, use the main URL with a stage, for example:
@@ -86,7 +90,8 @@ on other Omarchy hardware. Applies create backups under
 
 ```text
 install.sh                         one-line GitHub entry point
-scripts/bootstrap.sh               profile-aware restore engine
+scripts/bootstrap.sh               profile-aware staged restore engine
+scripts/doctor.sh                  read-only health check
 profiles/                          executable profiles and apply assets
 profiles/zenbook-um3406ka/tools/  display and hardware tests
 profiles/zenbook-um3406ka/voice/  voice extension

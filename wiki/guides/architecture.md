@@ -7,6 +7,7 @@ machine profiles.
 install.sh                 short GitHub entry point
 scripts/bootstrap.sh       staged profile orchestrator and apply engine
 scripts/install-*.sh       standalone aliases for one safe stage
+scripts/doctor.sh           read-only installed-profile health check
 profiles/<id>/              declarative packages, monitor rules and extensions
 tools/                      read-only checks and protected experiments
 wiki/                       all stable guides, inventories and evidence

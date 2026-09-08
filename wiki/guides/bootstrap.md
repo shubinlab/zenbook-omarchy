@@ -15,7 +15,10 @@ curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/inst
 The default order is VPN, simple display settings, profile packages, native
 Voxtype, terminal settings and finally the supported `omarchy update`. Native
 Voxtype's first-run confirmation remains the only expected interactive prompt.
-The same raw entry point can run one stage with `--stage vpn|display|packages|voice|terminal|update`.
+The same raw entry point can run one stage with `--stage vpn|display|packages|voice|terminal|update`,
+or run the read-only health check with `--stage doctor`.
+`--manifest` exposes the same stage list as JSON for launchers; `--non-interactive`
+stops safely before login or first-run Voxtype confirmation.
 
 Use this first to validate the published repository without changing the
 system:
@@ -32,7 +35,8 @@ Useful explicit choices after the repository has been cloned are:
 ~/zenbook-omarchy/scripts/bootstrap.sh --profile zenbook-um3406ka --update-vpn-cli
 ```
 
-Equivalent standalone stage wrappers are in `scripts/install-*.sh`. They are
+Equivalent standalone stage wrappers are in `scripts/install-*.sh`, with
+`scripts/doctor.sh` for health checks. They are
 thin aliases over the same engine, so there is one implementation and one
 rollback/checking policy.
 

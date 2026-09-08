@@ -36,6 +36,20 @@ DO_CHECK=0
 VPN_OPTION_SET=0
 VOICE_OPTION_SET=0
 STAGE=all
+MANIFEST=0
+NON_INTERACTIVE=0
+
+if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
+  C_CYAN=$'\033[36m'
+  C_GREEN=$'\033[32m'
+  C_RED=$'\033[31m'
+  C_RESET=$'\033[0m'
+else
+  C_CYAN=''
+  C_GREEN=''
+  C_RED=''
+  C_RESET=''
+fi
 
 usage() {
   cat <<'HELP'
@@ -52,7 +66,9 @@ Options:
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` after applying the profile.
   --stage NAME          Run one stage: all, vpn, display, packages, voice,
-                        terminal or update. Default: all.
+                        terminal, update or doctor. Default: all.
+  --manifest            Print the stage manifest as JSON and exit.
+  --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
   --no-voice            Skip the profile's native Omarchy Voxtype setup.
   --check               Validate profile files without changing the system.
@@ -63,7 +79,7 @@ HELP
 }
 
 die() {
-  printf 'bootstrap: %s\n' "$*" >&2
+  printf '%sERROR%s %s\n' "$C_RED" "$C_RESET" "$*" >&2
   exit 1
 }
 
@@ -132,12 +148,18 @@ install_vpn_cli() {
   installer="$(mktemp)"
   printf 'bootstrap: installing the official AdGuard VPN CLI\n'
   curl -fsSL "$ADGUARD_INSTALLER_URL" -o "$installer"
-  sh "$installer" -v
+  ((NON_INTERACTIVE == 0)) || die 'AdGuard VPN installation may need confirmation; rerun without --non-interactive from a terminal'
+  [[ -r /dev/tty ]] || die 'AdGuard VPN installation needs a terminal for confirmation'
+  sh "$installer" -v </dev/tty
   rm -f "$installer"
   find_vpn_cli || die "AdGuard VPN CLI installer completed without an executable"
   if ((PROFILE_LOGIN_AFTER_VPN_INSTALL)); then
     printf 'bootstrap: complete the one-time AdGuard login\n'
-    "$VPN_CLI" login
+    if [[ -r /dev/tty ]]; then
+      "$VPN_CLI" login </dev/tty
+    else
+      die 'AdGuard login needs a terminal; rerun without --non-interactive from a terminal'
+    fi
   fi
 }
 
@@ -193,7 +215,9 @@ install_voice() {
      ! command -v voxtype >/dev/null 2>&1 || \
      ! command -v wtype >/dev/null 2>&1; then
     printf 'bootstrap: running the native Omarchy Voxtype installer\n'
-    omarchy voxtype install
+    ((NON_INTERACTIVE == 0)) || die 'native Voxtype setup needs confirmation; rerun without --non-interactive from a terminal'
+    [[ -r /dev/tty ]] || die 'native Voxtype setup needs a terminal for confirmation'
+    omarchy voxtype install </dev/tty
   else
     printf 'bootstrap: native Omarchy Voxtype setup already exists\n'
   fi
@@ -258,6 +282,82 @@ check_profile() {
     "$PROFILE_ID" "$count" "${MONITOR_SOURCE:+yes}" "$DO_VPN"
 }
 
+print_manifest() {
+  printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
+  printf '{"name":"vpn","title":"Connect AdGuard VPN","category":"network","needs_user_input":true},'
+  printf '{"name":"display","title":"Apply tested display settings","category":"configuration","needs_user_input":false},'
+  printf '{"name":"packages","title":"Install profile packages","category":"runtime","needs_user_input":false},'
+  printf '{"name":"voice","title":"Install native Omarchy Voxtype","category":"runtime","needs_user_input":true},'
+  printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
+  printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
+  printf '{"name":"doctor","title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}'
+  printf '\n'
+}
+
+run_doctor() {
+  local failures=0 version status errors
+  printf '\n%sOmarchy profile doctor%s (read-only)\n' "$C_CYAN" "$C_RESET"
+  printf 'Profile: %s\n' "$PROFILE_ID"
+
+  if command -v omarchy >/dev/null 2>&1; then
+    version="$(omarchy version 2>/dev/null || true)"
+    printf '%sOK%s Omarchy%s\n' "$C_GREEN" "$C_RESET" "${version:+: $version}"
+  else
+    printf '%sFAIL%s Omarchy command is missing\n' "$C_RED" "$C_RESET"
+    failures=$((failures + 1))
+  fi
+
+  if [[ -n "$VOICE_SOURCE" ]]; then
+    if "$VOICE_SOURCE" --check; then
+      printf '%sOK%s native voice\n' "$C_GREEN" "$C_RESET"
+    else
+      printf '%sFAIL%s native voice\n' "$C_RED" "$C_RESET"
+      failures=$((failures + 1))
+    fi
+  fi
+
+  if [[ -n "$TERMINAL_SOURCE" ]] && command -v terminal-doctor >/dev/null 2>&1; then
+    if terminal-doctor; then
+      printf '%sOK%s terminal\n' "$C_GREEN" "$C_RESET"
+    else
+      printf '%sFAIL%s terminal\n' "$C_RED" "$C_RESET"
+      failures=$((failures + 1))
+    fi
+  fi
+
+  if command -v hyprctl >/dev/null 2>&1; then
+    errors="$(hyprctl configerrors 2>/dev/null || true)"
+    if [[ -z "$errors" ]]; then
+      printf '%sOK%s Hyprland configuration\n' "$C_GREEN" "$C_RESET"
+    else
+      printf '%sFAIL%s Hyprland configuration errors:\n%s\n' "$C_RED" "$C_RESET" "$errors"
+      failures=$((failures + 1))
+    fi
+  else
+    printf 'WARN Hyprland session is not available; skipped compositor check\n'
+  fi
+
+  if ((DO_VPN)); then
+    if find_vpn_cli; then
+      status="$($VPN_CLI status 2>/dev/null || true)"
+      if grep -Eiq '(^|[^[:alpha:]])connected([^[:alpha:]]|$)|protected' <<<"$status"; then
+        printf '%sOK%s AdGuard VPN connected\n' "$C_GREEN" "$C_RESET"
+      else
+        printf 'WARN AdGuard VPN is installed but not connected\n'
+      fi
+    else
+      printf 'WARN AdGuard VPN CLI is not installed\n'
+    fi
+  fi
+
+  if ((failures == 0)); then
+    printf '\n%sRESULT%s PASS\n' "$C_GREEN" "$C_RESET"
+  else
+    printf '\n%sRESULT%s FAIL (%d check(s))\n' "$C_RED" "$C_RESET" "$failures"
+  fi
+  return "$failures"
+}
+
 while (($#)); do
   case "$1" in
     --profile) shift; (($#)) || die "--profile needs a value"; PROFILE_REQUEST="$1" ;;
@@ -267,6 +367,8 @@ while (($#)); do
     --update-vpn-cli) DO_VPN_CLI_UPDATE=1; DO_VPN=1; VPN_OPTION_SET=1 ;;
     --update-system) DO_SYSTEM_UPDATE=1 ;;
     --stage) shift; (($#)) || die "--stage needs a value"; STAGE="$1" ;;
+    --manifest) MANIFEST=1 ;;
+    --non-interactive) NON_INTERACTIVE=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
     --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
     --check) DO_CHECK=1 ;;
@@ -282,6 +384,10 @@ done
 [[ -d "$HOME" ]] || die "HOME is not available"
 detect_profile
 
+if ((MANIFEST)); then
+  print_manifest
+  exit 0
+fi
 if ((DO_CHECK)); then
   check_profile
   exit 0
@@ -364,11 +470,15 @@ run_stage() {
       ensure_vpn_for_network_stage
       apply_update
       ;;
+    doctor)
+      run_doctor
+      ;;
     *)
-      die "unknown stage: $STAGE (use all, vpn, display, packages, voice, terminal or update)"
+      die "unknown stage: $STAGE (use all, vpn, display, packages, voice, terminal, update or doctor)"
       ;;
   esac
 }
 
+printf '\n%sOmarchy Zenbook setup%s\nProfile: %s\n' "$C_CYAN" "$C_RESET" "$PROFILE_LABEL"
 run_stage
-printf '\nDONE: profile=%s stage=%s\n' "$PROFILE_ID" "$STAGE"
+printf '\n%sDONE%s profile=%s stage=%s\n' "$C_GREEN" "$C_RESET" "$PROFILE_ID" "$STAGE"
