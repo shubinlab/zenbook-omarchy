@@ -152,11 +152,17 @@ The latter opens onboarding in a visible Foot window so prompts are not hidden
 inside an automation terminal.
 
 The menu is a multi-select orchestrator: choose any combination of display,
-packages, voice/NPU, Bitwarden, terminal and diagnostics, then confirm once.
-Required package and VPN dependencies are added automatically, the components
+voice/NPU, Bitwarden, terminal and diagnostics, then confirm once. Required
+runtime package and VPN dependencies are added automatically, the components
 run in the safe order, and doctor verifies the result at the end. The Omarchy
 system update is intentionally selectable only by itself; re-apply the profile
 after that update.
+
+There is no separate Packages choice in the menu. Packages are implementation
+dependencies: Voice adds native Voxtype plus the Lemonade/FLM NPU runtime,
+Bitwarden adds its native Wayland tools, and Diagnostics adds its optional
+hardware tools. This keeps the user menu focused on capabilities rather than
+package names.
 
 Run the read-only live check with:
 

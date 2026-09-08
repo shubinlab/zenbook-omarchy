@@ -253,7 +253,6 @@ install_packages() {
   if ((${#PACKAGE_SOURCES[@]})); then
     install_package_set profile "${PACKAGE_SOURCES[@]}"
   fi
-  install_voice_packages
 }
 
 install_bitwarden_packages() {
@@ -443,7 +442,7 @@ configure_selected_components() {
   IFS=',' read -r -a requested <<<"$COMPONENTS_REQUEST"
   for component in "${requested[@]}"; do
     case "$component" in
-      vpn|display|packages|voice|bitwarden|diagnostics|terminal|update|doctor) ;;
+      vpn|display|voice|bitwarden|diagnostics|terminal|update|doctor) ;;
       *) die "unknown selected component: $component" ;;
     esac
   done
@@ -460,7 +459,6 @@ configure_selected_components() {
   DO_DIAGNOSTICS=0
   if selected_component vpn && ((VPN_OPTION_SET == 0)); then DO_VPN=1; fi
   if selected_component display; then DO_MONITOR=1; fi
-  if selected_component packages; then DO_PACKAGES=1; fi
   if selected_component terminal; then DO_TERMINAL=1; fi
   if selected_component voice; then DO_VOICE=1; DO_PACKAGES=1; fi
   if selected_component bitwarden; then DO_BITWARDEN=1; DO_PACKAGES=1; fi
@@ -580,6 +578,12 @@ done
 [[ "$EUID" -ne 0 ]] || die "run as the normal user; Omarchy helpers request privilege when needed"
 [[ -d "$HOME" ]] || die "HOME is not available"
 detect_profile
+if [[ "$STAGE" == packages ]]; then
+  # Keep the compatibility package-only stage genuinely package-only. Profile
+  # defaults for voice and Bitwarden must not leak into its checks or actions.
+  DO_VOICE=0
+  DO_BITWARDEN=0
+fi
 configure_selected_components
 
 if ((DO_VOICE && !DO_PACKAGES)); then
@@ -682,10 +686,10 @@ run_stage() {
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
       stage_note '2/7' 'Display: tested user settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/7' 'Packages: profile and native runtimes'
+      stage_note '3/7' 'Runtime dependencies: selected components'
       if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
       stage_note '4/7' 'Voice: native Voxtype + NPU inference'
-      if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
+      if ((DO_VOICE)); then install_voice_packages; install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
       stage_note '5/7' 'Terminal: user settings'
       apply_terminal
       if ((DO_SYSTEM_UPDATE)); then
@@ -713,10 +717,9 @@ run_stage() {
       backup_and_install_monitor
       ;;
     packages)
-      stage_note '1/1' 'Packages: profile and native runtimes'
+      stage_note '1/1' 'Runtime dependencies: profile packages'
       ((DO_PACKAGES)) || die 'package stage is disabled by --no-packages'
-      if ((${#PACKAGE_SOURCES[@]})) ||
-         { ((DO_VOICE)) && ((${#VOICE_PACKAGE_SOURCES[@]})); }; then
+      if ((${#PACKAGE_SOURCES[@]})); then
         ensure_vpn_for_network_stage
       fi
       install_packages
@@ -775,10 +778,10 @@ run_stage() {
       fi
       stage_note '2/7' 'Display: tested user settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
-      stage_note '3/7' 'Packages: profile and native runtimes'
+      stage_note '3/7' 'Runtime dependencies: selected components'
       if ((DO_PACKAGES)); then install_packages; else printf 'bootstrap: package stage skipped\n'; fi
       stage_note '4/7' 'Voice: native Voxtype + NPU inference'
-      if ((DO_VOICE)); then install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
+      if ((DO_VOICE)); then install_voice_packages; install_voice; else printf 'bootstrap: voice stage skipped\n'; fi
       stage_note '5/7' 'Terminal: user settings'
       if ((DO_TERMINAL)); then apply_terminal; else printf 'bootstrap: terminal stage skipped\n'; fi
       stage_note '6/7' 'Bitwarden: native Wayland setup'

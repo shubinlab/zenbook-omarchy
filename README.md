@@ -29,7 +29,7 @@ The installer runs these stages in order:
 |---:|---|---|
 | 1 | **Network** | Install/login/connect AdGuard VPN when the Zenbook profile requires it |
 | 2 | **Display** | Apply the tested monitor layout with a backup |
-| 3 | **Packages** | Install the small local Lemonade/FLM NPU runtime through Omarchy's package helper |
+| 3 | **Runtime dependencies** | Install only the packages required by the selected voice, Bitwarden or diagnostic components through Omarchy's package helper |
 | 4 | **Voice** | Run native `omarchy voxtype install`, then route its inference to Lemonade on the AMD NPU |
 | 5 | **Terminal** | Apply user-scoped Foot, Sixel, ble.sh, fzf and shortcut settings |
 | 6 | **Bitwarden** | Ask before installing the native Wayland launcher and guide the complete first setup |

@@ -46,40 +46,41 @@ choose_components() {
     printf '\nZenbook Omarchy — choose any combination\n\n'
     printf '  1  VPN / network\n'
     printf '  2  Display\n'
-    printf '  3  Packages\n'
-    printf '  4  Voice / NPU\n'
-    printf '  5  Bitwarden\n'
-    printf '  6  Terminal\n'
-    printf '  7  Diagnostics\n'
-    printf '  8  Omarchy system update (alone)\n'
-    printf '\nDoctor runs automatically after every selection.\n'
-    printf 'Enter numbers separated by spaces, or a for recommended restore, q to cancel: '
+    printf '  3  Voice / NPU transcription\n'
+    printf '  4  Bitwarden passwords\n'
+    printf '  5  Terminal enhancements\n'
+    printf '  6  Diagnostics (optional)\n'
+    printf '  7  Omarchy system update (alone)\n'
+    printf '\nDoctor verification runs automatically after the installation.\n'
+    printf 'Dependencies are added automatically. Enter numbers separated by spaces,\n'
+    printf 'or a for recommended restore, q to cancel: '
     local choice item component
     IFS= read -r choice
     case "${choice}" in
       q|Q) printf 'Cancelled.\n'; exit 0 ;;
-      a|A) SELECTED_COMPONENTS='vpn,display,packages,voice,terminal,bitwarden'; break ;;
+      a|A) SELECTED_COMPONENTS='vpn,display,voice,terminal,bitwarden'; break ;;
       *)
         local -a picks=() components=()
+        local invalid=0
         read -r -a picks <<<"${choice}"
         for item in "${picks[@]}"; do
           case "${item}" in
             1) component=vpn ;;
             2) component=display ;;
-            3) component=packages ;;
-            4) component=voice ;;
-            5) component=bitwarden ;;
-            6) component=terminal ;;
-            7) component=diagnostics ;;
-            8) component=update ;;
-            *) component='' ;;
+            3) component=voice ;;
+            4) component=bitwarden ;;
+            5) component=terminal ;;
+            6) component=diagnostics ;;
+            7) component=update ;;
+            *) printf 'Unknown menu item: %s\n' "${item}"; invalid=1; component='' ;;
           esac
           [[ -n "${component}" ]] || continue
           [[ " ${components[*]} " == *" ${component} "* ]] || components+=("${component}")
         done
+        ((invalid == 0)) || continue
         ((${#components[@]})) || { printf 'No valid components selected.\n'; continue; }
         SELECTED_COMPONENTS="$(IFS=','; printf '%s' "${components[*]}")"
-        if [[ ",${SELECTED_COMPONENTS}," == *,update,* && ",${SELECTED_COMPONENTS}," != *,update, && "${SELECTED_COMPONENTS}" != update ]]; then
+        if [[ ",${SELECTED_COMPONENTS}," == *,update,* && "${SELECTED_COMPONENTS}" != update ]]; then
           printf 'System update must be selected alone; choose it separately.\n'
           continue
         fi
@@ -88,9 +89,13 @@ choose_components() {
     esac
   done
   printf '\nSelected: %s\n' "${SELECTED_COMPONENTS}"
-  if [[ "${SELECTED_COMPONENTS}" == *voice* || "${SELECTED_COMPONENTS}" == *bitwarden* ]]; then
-    printf 'Added automatically: packages dependency.\n'
-  fi
+  [[ "${SELECTED_COMPONENTS}" == *voice* ]] &&
+    printf 'Automatic dependency: native Voxtype + Lemonade/FLM NPU runtime.\n'
+  [[ "${SELECTED_COMPONENTS}" == *bitwarden* ]] &&
+    printf 'Automatic dependency: native Wayland Bitwarden tools.\n'
+  [[ "${SELECTED_COMPONENTS}" == *diagnostics* ]] &&
+    printf 'Automatic dependency: optional hardware diagnostic packages.\n'
+  printf 'Verification: doctor runs automatically after the installation.\n'
   printf 'Proceed once with this plan? [Y/n] '
   local confirm
   IFS= read -r confirm

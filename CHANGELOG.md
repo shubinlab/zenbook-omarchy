@@ -18,6 +18,9 @@
 - Changed the launcher menu to multi-select components and execute the selected
   combination through one dependency-aware orchestrator run; system update
   remains an explicit standalone action.
+- Removed the confusing user-facing Packages choice: runtime packages are now
+  internal dependencies of the selected components, and the package-only stage
+  no longer installs voice packages accidentally.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.
