@@ -13,6 +13,8 @@
   the explicit AdGuard VPN step.
 - Added an HDMI feedback-sink warning and rejected combining a system update
   with the all-in-one stage; re-apply the profile after Omarchy updates.
+- Calibrated the Zenbook voice capture baseline to 30% after measuring clipping
+  at 60% and a too-quiet VAD input at 15%.
 - Added the short `zenbook-omarchy` launcher with a numbered menu and a visible
   Foot window for interactive Bitwarden onboarding.
 - Changed the launcher menu to multi-select components and execute the selected
