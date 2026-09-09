@@ -4,8 +4,7 @@ The repository is split into a stable engine, reusable documentation and
 machine profiles.
 
 ```text
-sh.sh                      canonical short GitHub entry point
-install.sh                 backward-compatible entry point
+install.sh                 short GitHub entry point and bootstrap
 scripts/bootstrap.sh       staged profile orchestrator and apply engine
 scripts/install-*.sh       standalone aliases for one safe stage
 scripts/doctor.sh           read-only installed-profile health check

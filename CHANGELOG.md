@@ -29,8 +29,8 @@
 - Made the no-argument path the only prominent user flow; advanced plan and
   trace switches remain available internally but are no longer advertised as
   normal steps.
-- Added the requested canonical `sh.sh` entry point; `install.sh` remains only
-  as a compatibility wrapper for existing bookmarks.
+- Kept a single public `install.sh` entry point; the temporary duplicate
+  `sh.sh` entry point was removed from the clean-install flow.
 - Simplified clean installation into ordered VPN, display, package, native
   Voxtype, terminal and doctor stages; diagnostics and update are explicit
   optional stages.

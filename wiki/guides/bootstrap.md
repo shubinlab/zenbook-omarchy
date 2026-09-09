@@ -11,7 +11,7 @@
 ## Recommended
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
 The installer clones or updates the repository, selects the profile from DMI

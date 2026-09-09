@@ -20,7 +20,7 @@ user-level overrides, and makes every applied change inspectable and reversible.
 Recommended — one command, full restore:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash
+curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/install.sh | bash
 ```
 
 The installer runs these stages in order:
@@ -108,8 +108,7 @@ page that matches the question:
 ## Repository map
 
 ```text
-sh.sh                               canonical one-line GitHub entry point
-install.sh                         backward-compatible entry point
+install.sh                         one-line GitHub entry point
 scripts/bootstrap.sh               staged profile orchestrator
 scripts/install-*.sh               standalone stage wrappers
 scripts/doctor.sh                  read-only health check
