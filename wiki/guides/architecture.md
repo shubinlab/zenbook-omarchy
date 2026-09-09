@@ -37,9 +37,9 @@ The design review rejected five failure modes:
 The default clean-install sequence is deliberately linear: connect the VPN,
 apply the simple tested display override, verify required packages, invoke
 Omarchy's native Voxtype path, apply the terminal extension and run doctor.
-Diagnostics and `omarchy update` are explicit optional stages. Each stage can
-be invoked independently through the main installer's `--stage` option or its
-thin local wrapper.
+Diagnostics and `omarchy update` are explicit optional menu actions. Individual
+components are selected through the thin local launcher; the underlying stage
+engine remains an internal implementation detail.
 
 Profiles are allowed to contain tested configuration and sanitized conclusions.
 They must not contain credentials, serial numbers, EDID hashes, raw journals,

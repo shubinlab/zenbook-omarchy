@@ -26,81 +26,12 @@ confirmation and (at the very end) one optional Bitwarden question. The
 installer reconnects safely on reruns, refuses to update a locally modified
 checkout and does not run a system update implicitly.
 
-## Verify without changing anything
+## Verification and individual components
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --check
-```
-
-The check clones the published repository into a temporary directory, validates
-the profile and exits without installing packages or changing user files. The
-normal installation command needs no arguments. It reports the exact source
-branch and commit; a reviewed branch or tag can be selected with
-`OMARCHY_REF=NAME`, while a modified or differently checked-out local
-repository is refused for safety.
-
-## Check the live system
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage doctor
-```
-
-`doctor` is read-only. It checks Omarchy, native Voxtype capture/output,
-Lemonade's loaded NPU model, terminal settings, Hyprland configuration and VPN
-status when those components belong to the selected profile.
-
-## Run one stage
-
-Use the same raw entry point when you want one action only:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage vpn
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage display
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage packages
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage bitwarden
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage diagnostics
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage voice
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage terminal
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage update
-```
-
-From an existing checkout, the equivalent short commands are:
-
-```bash
-./scripts/install-vpn.sh
-./scripts/install-display.sh
-./scripts/install-packages.sh
-./scripts/install-bitwarden.sh
-./scripts/install-diagnostics.sh
-./scripts/install-voice.sh
-./scripts/install-terminal.sh
-./scripts/install-update.sh
-./scripts/doctor.sh
-```
-
-Network-dependent standalone stages automatically ensure the profile VPN unless
-you pass `--no-vpn`. The display stage has no network dependency. Diagnostics
-are optional and are not part of the clean flow.
-
-The standalone voice stage is self-contained: it installs the voice-scoped
-Lemonade/FLM packages first, then runs native Voxtype, installs the native
-Silero VAD model and applies the NPU policy. It also installs the opt-in local
-`technical` post-process profile. `--no-packages` cannot be combined with voice
-because that would create an incomplete installation.
-
-## Safe switches
-
-| Switch | Effect |
-|---|---|
-| `--check` | Validate repository assets without changing the system |
-| `--manifest` | Print the stage manifest as JSON |
-| `--non-interactive` | Stop before interactive VPN/Voxtype/Bitwarden onboarding |
-| `--no-vpn` | Do not connect AdGuard VPN for this run |
-| `--no-voice` | Skip native Voxtype and its Zenbook policy |
-| `--no-bitwarden` | Skip native Wayland Bitwarden setup |
-| `--no-terminal` | Skip terminal settings |
-| `--no-monitor` | Skip the tested display override |
-| `--profile ID` | Select a profile instead of DMI detection |
+The clean installer runs the read-only doctor automatically at the end. After
+installation, open `zenbook-omarchy` to select any component or the optional
+diagnostic/update action; dependencies and ordering are handled internally.
+There is no separate command or argument to remember for normal operation.
 
 ## Profile behavior
 
@@ -108,8 +39,7 @@ because that would create an incomplete installation.
 official AdGuard VPN CLI, tested display configuration, native Wayland Bitwarden
 launcher, the two-package local Lemonade/FLM NPU voice backend, native Voxtype
 policy and terminal extension.
-The NPU package set is voice-scoped: `--no-voice` skips both native Voxtype and
-Lemonade/FLM installation.
+The NPU package set is voice-scoped and is installed automatically with Voice.
 Other hosts use `generic`, which makes no automatic changes. Run the diagnostic
 stage explicitly only when that is intended.
 
@@ -171,27 +101,14 @@ Bitwarden adds its native Wayland tools, and Diagnostics adds its optional
 hardware tools. This keeps the user menu focused on capabilities rather than
 package names.
 
-Run the read-only live check with:
-
-```bash
-./scripts/doctor.sh --profile zenbook-um3406ka
-```
+The read-only live check runs automatically after a multi-component selection.
 
 ## Full update policy
 
-The clean restore does not update the operating system automatically. Use
-`--stage update` only when you explicitly want Omarchy to own the snapshot,
-migrations and package update. Run the profile again after the update so
-user-owned overrides are checked against the new Omarchy defaults.
+The clean restore does not update the operating system automatically. Choose
+the optional update action in the `zenbook-omarchy` menu only when you want
+Omarchy to own the snapshot, migrations and package update. Reopen the menu
+afterward so the profile can be checked against the new Omarchy defaults.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage update
-```
-
-Older Zenbook installs can use the opt-in legacy repair command. It is never
-called by a clean install:
-
-```bash
-./scripts/repair-voice-legacy.sh --check
-./scripts/repair-voice-legacy.sh --apply
-```
+Older Zenbook installs have a separate legacy repair path, but it is never
+called by a clean install.

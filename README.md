@@ -37,25 +37,10 @@ The installer runs these stages in order:
 
 On a first run, answer the native VPN and Voxtype prompts when they appear. At
 the end, the installer asks whether to start the optional Bitwarden onboarding.
-The clean flow does not run a system update automatically. Verify everything
-with:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --stage doctor
-```
-
-## Check first
-
-The check mode downloads the published repository into a temporary directory,
-validates the scripts and changes nothing on the system:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/shubinlab/zenbook-omarchy/main/sh.sh | bash -s -- --check
-```
-
-The installer prints the exact source branch and commit used for the run. A
-reviewed branch or tag can be selected with `OMARCHY_REF=NAME`; an existing
-checkout on another branch is refused instead of being silently rewritten.
+The clean flow does not run a system update automatically. Verification is
+performed automatically at the end. The installer prints the exact source
+branch and commit used for the run; an existing modified checkout or unexpected
+remote is refused instead of being silently rewritten.
 
 ## What you get
 
@@ -67,7 +52,7 @@ checkout on another branch is refused instead of being silently rewritten.
 | **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; Silero VAD, spoken punctuation, OSD, start/stop sounds and `language=auto`; optional local technical profile |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
-| **Diagnostics** | Optional hardware tools, installed only with `--stage diagnostics` |
+| **Diagnostics** | Optional hardware tools, kept outside the clean restore |
 | **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |
 | **Privacy** | No background collector or data-logging path is installed |
 
@@ -87,52 +72,9 @@ It opens one small menu. Select any combination of components and confirm once;
 the launcher orders the work and runs verification automatically. If a stage
 ever fails, reopen the same menu and select that component to retry.
 
-<details>
-<summary>Advanced maintenance actions</summary>
-
-These are not needed for normal use. They remain available for support and
-recovery when a specific component must be isolated.
-
-```bash
-zenbook-omarchy voice
-zenbook-omarchy bitwarden
-zenbook-omarchy doctor
-```
-
-</details>
-
-From an existing checkout:
-
-```bash
-./scripts/install-vpn.sh --profile zenbook-um3406ka
-./scripts/install-display.sh --profile zenbook-um3406ka
-./scripts/install-packages.sh --profile zenbook-um3406ka
-./scripts/install-bitwarden.sh --profile zenbook-um3406ka
-./scripts/install-voice.sh --profile zenbook-um3406ka
-./profiles/zenbook-um3406ka/voice/cleanup-unused-models.sh --check
-./scripts/install-terminal.sh --profile zenbook-um3406ka
-./scripts/install-update.sh --profile zenbook-um3406ka
-./scripts/install-diagnostics.sh --profile zenbook-um3406ka
-./scripts/repair-voice-legacy.sh --check
-./scripts/doctor.sh --profile zenbook-um3406ka
-```
-
-Useful safety switches (normally unnecessary):
-
-```text
---check              validate without changing the system
---non-interactive    stop before interactive VPN/Voxtype/Bitwarden onboarding
---no-vpn             do not connect VPN for this run
---no-voice           skip native Voxtype, Lemonade and the NPU voice policy
---no-bitwarden       skip native Wayland Bitwarden setup
---no-terminal        skip terminal settings
---no-monitor         skip the display override
---stage diagnostics  install optional diagnostic packages
-```
-
-For ordinary use, ignore all switches and run the one command under **Quick
-install**. If a stage fails, reopen `zenbook-omarchy` and select that component
-from the menu; no long retry command is needed.
+Если что-то не завершилось, снова открой `zenbook-omarchy` и выбери нужный
+компонент в меню. Ручные параметры и длинные команды для обычной работы не
+нужны.
 
 ## Why this stays native
 
