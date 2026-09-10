@@ -1,0 +1,10 @@
+[Groups/0]
+# Group Name
+Name=Default
+# Layout
+Default Layout=
+# Default Input Method
+DefaultIM=
+
+[GroupOrder]
+0=Default
