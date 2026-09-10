@@ -80,11 +80,10 @@ else
   bad 'omarchy-default-agent is unavailable'
 fi
 
-if grep -q '^hl\.unbind("SUPER + SHIFT + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
-   ! grep -Eqi '^[[:space:]]*[^-].*(chatgpt|chat\.openai\.com|openai\.com)' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
-  ok 'ChatGPT web-app shortcut is disabled'
+if ! grep -Eqi '^[[:space:]]*[^-].*(chatgpt|chat\.openai\.com|openai\.com)' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
+  ok 'Profile ChatGPT override is absent'
 else
-  bad 'ChatGPT web-app shortcut is still configured; run profiles/zenbook-um3406ka/terminal/apply.sh --apply'
+  bad 'Profile ChatGPT override is still configured; run profiles/zenbook-um3406ka/terminal/apply.sh --apply'
 fi
 
 printf '\n%s\n' "Summary: $pass passed, $warn warnings, $fail failures"

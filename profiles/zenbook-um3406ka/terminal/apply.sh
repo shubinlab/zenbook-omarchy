@@ -207,9 +207,6 @@ apply_bindings() {
     /^o\.bind\("SUPER \+ SHIFT \+ ALT \+ A", "ChatGPT", \{ webapp = "https:\/\/chatgpt\.com" \}\)$/ { next }
     { print }
   ' "${target}" >"${temporary}"
-  if ! grep -Fqx -- 'hl.unbind("SUPER + SHIFT + A")' "${temporary}"; then
-    printf '\n-- Disable Omarchy\x27s default ChatGPT webapp shortcut.\nhl.unbind("SUPER + SHIFT + A")\n' >>"${temporary}"
-  fi
   if ! cmp -s "${temporary}" "${target}"; then
     backup_once
     install -m0644 "${temporary}" "${target}"

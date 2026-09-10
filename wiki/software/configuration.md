@@ -17,7 +17,7 @@ updates.
 | User file | Stock behavior | This host's difference |
 |---|---|---|
 | `~/.config/hypr/monitors.lua` | Stock monitor setup | External LG `DP-1` 1440p/240/10-bit/sRGB/VRR/scale 1.6 |
-| `~/.config/hypr/bindings.lua` | Stock Omarchy bindings and web-app shortcut | ChatGPT web-app shortcut disabled; native Bitwarden launcher overrides retained |
+| `~/.config/hypr/bindings.lua` | Stock Omarchy bindings and web-app shortcut | No profile ChatGPT override; native Bitwarden launcher overrides retained |
 | `~/.config/hypr/input.lua` | Stock input defaults | No active override; Fcitx5 remains `keyboard-us` |
 | `~/.config/foot/foot.ini` | Stock Foot settings | `sixel=yes` appended; other Foot settings retained |
 | `~/.config/omarchy/shell.json` | Stock bar and clock defaults | Clock format is `ddd d MMM HH:mm`; idle 150/300 seconds retained |
