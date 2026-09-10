@@ -36,7 +36,7 @@ explicit optional stages. Check it first with:
 | **External display** | LG DisplayPort at 2560×1440, 239.97/240 Hz, 10-bit, sRGB, VRR on, scale 1.6 |
 | **Internal display** | Managed by the profile and Omarchy display layer; no global Hyprland replacement |
 | **Voice** | Native Voxtype capture/service/bindings and `wtype` output; local Lemonade FLM Whisper inference on AMD XDNA2 NPU; automatic language detection, OSD and feedback |
-| **Terminal** | Foot Sixel, ble.sh/fzf integration, image preview and managed ChatGPT shortcut |
+| **Terminal** | Foot Sixel, ble.sh/fzf integration, image preview and disabled stock ChatGPT shortcut |
 | **Network** | Official AdGuard VPN CLI before network-dependent install stages |
 | **Recovery** | Timestamped user backups before profile-owned replacements |
 

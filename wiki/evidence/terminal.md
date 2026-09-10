@@ -10,7 +10,7 @@ It provides:
   an existing user installation unless an explicit update is requested;
 - Bash ghost text and the upstream ble.sh/fzf integration;
 - explicit native Foot Sixel support;
-- a ChatGPT web-app override for `Super+Shift+Alt+A`;
+- an explicit unbind for Omarchy's stock ChatGPT web-app shortcut at `Super+Shift+A`;
 - a read-only `terminal-doctor` command.
 
 The extension writes only user-owned files. It appends managed blocks to

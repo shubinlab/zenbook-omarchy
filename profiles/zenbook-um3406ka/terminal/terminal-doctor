@@ -80,14 +80,11 @@ else
   bad 'omarchy-default-agent is unavailable'
 fi
 
-chatgpt_binding_count=$(grep -Fc 'o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })' "$HOME/.config/hypr/bindings.lua" 2>/dev/null || true)
-if ! grep -q '^hl\.unbind("SUPER + SHIFT + CTRL + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
-   grep -q '^hl\.unbind("SUPER + SHIFT + ALT + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
-   [[ ${chatgpt_binding_count} -eq 1 ]] &&
-   grep -Fq 'zenbook-omarchy ChatGPT shortcut (managed)' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
-  ok 'Agent default and ChatGPT shortcut overrides are correct'
+if grep -q '^hl\.unbind("SUPER + SHIFT + A")' "$HOME/.config/hypr/bindings.lua" 2>/dev/null &&
+   ! grep -Eqi '^[[:space:]]*[^-].*(chatgpt|chat\.openai\.com|openai\.com)' "$HOME/.config/hypr/bindings.lua" 2>/dev/null; then
+  ok 'ChatGPT web-app shortcut is disabled'
 else
-  bad 'Agent default or ChatGPT shortcut override is incorrect; run profiles/zenbook-um3406ka/terminal/apply.sh --apply'
+  bad 'ChatGPT web-app shortcut is still configured; run profiles/zenbook-um3406ka/terminal/apply.sh --apply'
 fi
 
 printf '\n%s\n' "Summary: $pass passed, $warn warnings, $fail failures"

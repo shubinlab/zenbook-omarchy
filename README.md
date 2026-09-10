@@ -50,7 +50,7 @@ remote is refused instead of being silently rewritten.
 | **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
 | **Bitwarden** | Optional final stage with guided onboarding; native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; manual official-extension setup by default; optional Chromium policy install; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
 | **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; Silero VAD, spoken punctuation, OSD, start/stop sounds and `language=auto`; optional local technical profile |
-| **Terminal** | Foot Sixel, pinned ble.sh/fzf integration, preview helper and tested ChatGPT shortcut |
+| **Terminal** | Foot Sixel, pinned ble.sh/fzf integration and preview helper; the stock ChatGPT shortcut is disabled |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
 | **Diagnostics** | Optional hardware tools, kept outside the clean restore |
 | **Recovery** | User changes are backed up under `~/.local/state/omarchy-profiles/` |

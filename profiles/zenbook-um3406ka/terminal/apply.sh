@@ -191,38 +191,31 @@ apply_foot() {
 
 apply_bindings() {
   local target=${CONFIG_HOME}/hypr/bindings.lua
-  local block='-- >>> zenbook-omarchy ChatGPT shortcut (managed) >>>
-hl.unbind("SUPER + SHIFT + ALT + A")
-o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })
--- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<'
+  local temporary
   mkdir -p "$(dirname -- "${target}")"
-  if grep -Fqx -- '  -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<' "${target}" 2>/dev/null; then
+  [[ -e ${target} ]] || : >"${target}"
+
+  temporary="$(mktemp "${target}.tmp.XXXXXX")"
+  awk '
+    /^-- >>> zenbook-omarchy ChatGPT shortcut \(managed\) >>>$/ { skip=1; next }
+    skip && /^-- <<< zenbook-omarchy ChatGPT shortcut \(managed\) <<<$/{ skip=0; next }
+    skip { next }
+    /^-- Use ChatGPT instead of the preinstalled Grok web app shortcut\.$/ { legacy=1; next }
+    legacy && /^o\.bind\("SUPER \+ SHIFT \+ ALT \+ A", "ChatGPT", \{ webapp = "https:\/\/chatgpt\.com" \}\)$/ { legacy=0; next }
+    legacy { next }
+    /^hl\.unbind\("SUPER \+ SHIFT \+ ALT \+ A"\)$/ { next }
+    /^o\.bind\("SUPER \+ SHIFT \+ ALT \+ A", "ChatGPT", \{ webapp = "https:\/\/chatgpt\.com" \}\)$/ { next }
+    { print }
+  ' "${target}" >"${temporary}"
+  if ! grep -Fqx -- 'hl.unbind("SUPER + SHIFT + A")' "${temporary}"; then
+    printf '\n-- Disable Omarchy\x27s default ChatGPT webapp shortcut.\nhl.unbind("SUPER + SHIFT + A")\n' >>"${temporary}"
+  fi
+  if ! cmp -s "${temporary}" "${target}"; then
     backup_once
-    local marker_temporary
-    marker_temporary="$(mktemp "${target}.tmp.XXXXXX")"
-    awk '{ if ($0 == "  -- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<") print "-- <<< zenbook-omarchy ChatGPT shortcut (managed) <<<"; else print }' \
-      "${target}" >"${marker_temporary}"
-    install -m0644 "${marker_temporary}" "${target}"
-    rm -f -- "${marker_temporary}"
+    install -m0644 "${temporary}" "${target}"
     BINDINGS_CHANGED=1
   fi
-  if grep -Fqx -- '-- Use ChatGPT instead of the preinstalled Grok web app shortcut.' "${target}" 2>/dev/null &&
-     grep -Fqx -- 'hl.unbind("SUPER + SHIFT + ALT + A")' "${target}" &&
-     grep -Fqx -- 'o.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https://chatgpt.com" })' "${target}"; then
-    backup_once
-    local legacy_temporary
-    legacy_temporary="$(mktemp "${target}.tmp.XXXXXX")"
-    sed '/^-- Use ChatGPT instead of the preinstalled Grok web app shortcut\.$/,/^o\.bind("SUPER + SHIFT + ALT + A", "ChatGPT", { webapp = "https:\/\/chatgpt\.com" })$/d' \
-      "${target}" >"${legacy_temporary}"
-    install -m0644 "${legacy_temporary}" "${target}"
-    rm -f -- "${legacy_temporary}"
-    BINDINGS_CHANGED=1
-  fi
-  if ! grep -Fq -- 'zenbook-omarchy ChatGPT shortcut (managed)' "${target}" 2>/dev/null; then
-    backup_once
-    append_block "${target}" "${block}" 'zenbook-omarchy ChatGPT shortcut (managed)'
-    BINDINGS_CHANGED=1
-  fi
+  rm -f -- "${temporary}"
 }
 
 apply_profile() {

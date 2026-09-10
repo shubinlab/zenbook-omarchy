@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Disabled the stock ChatGPT web-app shortcut and removed the profile's former
+  ChatGPT binding override; the terminal apply and doctor flows now enforce the
+  disabled state.
 - Fixed CI origin checks for GitHub Actions checkouts, scanned both staged and
   working-tree content for public-data leaks, and added live Zenbook display
   profile drift detection to the read-only doctor.
