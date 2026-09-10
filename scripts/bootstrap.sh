@@ -13,6 +13,7 @@ PROFILE_ENABLE_VPN=0
 PROFILE_INSTALL_VPN_CLI=0
 PROFILE_LOGIN_AFTER_VPN_INSTALL=0
 PROFILE_MONITOR_CONFIG=""
+PROFILE_DISPLAY_DOCTOR=""
 PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
@@ -30,6 +31,7 @@ BITWARDEN_PACKAGE_SOURCES=()
 DIAGNOSTIC_SOURCES=()
 COMPONENTS_REQUEST=""
 MONITOR_SOURCE=""
+DISPLAY_DOCTOR=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
 BITWARDEN_SOURCE=""
@@ -149,6 +151,9 @@ detect_profile() {
   done
   if [[ -n "$PROFILE_MONITOR_CONFIG" ]]; then
     MONITOR_SOURCE="$PROFILE_DIR/$PROFILE_MONITOR_CONFIG"
+  fi
+  if [[ -n "$PROFILE_DISPLAY_DOCTOR" ]]; then
+    DISPLAY_DOCTOR="$PROFILE_DIR/$PROFILE_DISPLAY_DOCTOR"
   fi
   if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
     TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
@@ -400,6 +405,9 @@ check_profile() {
     [[ -f "$MONITOR_SOURCE" ]] || die "missing monitor profile: $MONITOR_SOURCE"
     grep -q 'hl.monitor' "$MONITOR_SOURCE" || die "monitor rules are missing"
   fi
+  if [[ -n "$DISPLAY_DOCTOR" ]]; then
+    [[ -x "$DISPLAY_DOCTOR" ]] || die "missing display doctor: $DISPLAY_DOCTOR"
+  fi
   if [[ -n "$TERMINAL_SOURCE" ]]; then
     [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
     "$TERMINAL_SOURCE" --check
@@ -626,14 +634,21 @@ run_doctor_compact() {
       COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
     fi
   fi
+  if [[ -n "$DISPLAY_DOCTOR" ]]; then
+    compact_check 'Display' "$DISPLAY_DOCTOR"
+  fi
   if command -v hyprctl >/dev/null 2>&1; then
-    errors="$(hyprctl configerrors 2>/dev/null || true)"
-    if [[ -z "$errors" ]]; then
-      printf '  ✓ Hyprland configuration\n'
+    if errors="$(hyprctl configerrors 2>/dev/null)"; then
+      if [[ -z "$errors" ]]; then
+        printf '  ✓ Hyprland configuration\n'
+      else
+        printf '  ✗ Hyprland configuration\n'
+        printf '%s\n' "$errors" | head -n 4 | sed 's/^/    /'
+        COMPACT_FAILURES=$((COMPACT_FAILURES + 1))
+      fi
     else
-      printf '  ✗ Hyprland configuration\n'
-      printf '%s\n' "$errors" | head -n 4 | sed 's/^/    /'
-      COMPACT_FAILURES=$((COMPACT_FAILURES + 1))
+      printf '  ! Hyprland session is unavailable\n'
+      COMPACT_WARNINGS=$((COMPACT_WARNINGS + 1))
     fi
   else
     printf '  ! Hyprland check unavailable\n'
@@ -716,13 +731,25 @@ run_doctor() {
     fi
   fi
 
-  if command -v hyprctl >/dev/null 2>&1; then
-    errors="$(hyprctl configerrors 2>/dev/null || true)"
-    if [[ -z "$errors" ]]; then
-      printf '%sOK%s Hyprland configuration\n' "$C_GREEN" "$C_RESET"
+  if [[ -n "$DISPLAY_DOCTOR" ]]; then
+    if "$DISPLAY_DOCTOR"; then
+      printf '%sOK%s display profile\n' "$C_GREEN" "$C_RESET"
     else
-      printf '%sFAIL%s Hyprland configuration errors:\n%s\n' "$C_RED" "$C_RESET" "$errors"
+      printf '%sFAIL%s display profile\n' "$C_RED" "$C_RESET"
       failures=$((failures + 1))
+    fi
+  fi
+
+  if command -v hyprctl >/dev/null 2>&1; then
+    if errors="$(hyprctl configerrors 2>/dev/null)"; then
+      if [[ -z "$errors" ]]; then
+        printf '%sOK%s Hyprland configuration\n' "$C_GREEN" "$C_RESET"
+      else
+        printf '%sFAIL%s Hyprland configuration errors:\n%s\n' "$C_RED" "$C_RESET" "$errors"
+        failures=$((failures + 1))
+      fi
+    else
+      printf 'WARN Hyprland session is not available; skipped compositor check\n'
     fi
   else
     printf 'WARN Hyprland session is not available; skipped compositor check\n'

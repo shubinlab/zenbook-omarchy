@@ -47,6 +47,23 @@ The installer never edits `/usr/share/omarchy`. It uses native Omarchy commands,
 keeps user changes under `~/.config`, and stores recoverable backups under
 `~/.local/state/omarchy-profiles/`.
 
+Do not use `omarchy refresh hyprland` as a routine update: that Omarchy command
+intentionally replaces every user Hyprland Lua file, including
+`~/.config/hypr/monitors.lua`. If it is necessary, restore the tested display
+profile afterward with:
+
+```bash
+./scripts/install-display.sh --profile zenbook-um3406ka --no-vpn
+```
+
+That refresh also removes the profile's user-scoped terminal binding. Restore it
+and verify the complete profile with:
+
+```bash
+./profiles/zenbook-um3406ka/terminal/apply.sh --apply
+./scripts/doctor.sh --profile zenbook-um3406ka --no-vpn --no-bitwarden --no-voice
+```
+
 ## Native Bitwarden
 
 The Zenbook profile installs only the Wayland path: `rbw`, `rofi-rbw`, `fuzzel`,
@@ -108,7 +125,8 @@ The read-only live check runs automatically after a multi-component selection.
 The clean restore does not update the operating system automatically. Choose
 the optional update action in the `zenbook-omarchy` menu only when you want
 Omarchy to own the snapshot, migrations and package update. Reopen the menu
-afterward so the profile can be checked against the new Omarchy defaults.
+afterward, run the Display stage, and then run Doctor so profile drift is
+detected before continuing work.
 
 Older Zenbook installs have a separate legacy repair path, but it is never
 called by a clean install.

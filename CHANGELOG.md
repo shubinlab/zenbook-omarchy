@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Fixed CI origin checks for GitHub Actions checkouts, scanned both staged and
+  working-tree content for public-data leaks, and added live Zenbook display
+  profile drift detection to the read-only doctor.
 - Hardened shared Hyprland binding migration and rollback so Bitwarden and
   terminal changes cannot erase each other's managed blocks; legacy duplicate
   bindings are removed safely.

@@ -22,7 +22,7 @@ expect_reject() {
   pass "$label rejected"
 }
 
-bash -n install.sh scripts/*.sh tools/*.sh profiles/*/voice/*.sh \
+bash -n install.sh scripts/*.sh tools/*.sh profiles/*/display-doctor.sh profiles/*/voice/*.sh \
   profiles/*/tools/*.sh profiles/*/terminal/*.sh profiles/*/bitwarden/*.sh
 pass 'shell syntax'
 
@@ -31,7 +31,10 @@ expect_reject 'path-like OMARCHY_REF' env OMARCHY_REF='../main' ./install.sh --p
 expect_reject 'range-like OMARCHY_REF' env OMARCHY_REF='main..evil' ./install.sh --plan
 
 origin="$(git remote get-url origin 2>/dev/null || true)"
-[[ "$origin" == https://github.com/shubinlab/zenbook-omarchy.git ]] ||
+# GitHub Actions checkout omits the optional .git suffix from the remote URL,
+# while a normal clone commonly keeps it. Treat both spellings identically.
+origin="${origin%.git}"
+[[ "$origin" == https://github.com/shubinlab/zenbook-omarchy ]] ||
   fail "unexpected repository origin: ${origin:-missing}"
 pass 'repository origin is allow-listed'
 
