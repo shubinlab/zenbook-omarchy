@@ -165,6 +165,13 @@
 - OSINT basis: [nvme-cli error-log documentation](https://github.com/linux-nvme/nvme-cli/blob/master/Documentation/nvme-error-log.txt) and [NVMe Base Specification field definition](https://nvmexpress.org/wp-content/uploads/NVM-Express_1_4c-2021.06.28-Ratified.pdf).
 - Decision: retain the counter as historical evidence and monitor for a future increase together with non-zero entries or kernel errors.
 
+### 2026-09-12 — clarification of earlier cleanup claim
+
+- A review of the available Git history, saved raw-evidence references, memory index, and shell history found no recorded execution of a standard NVMe error-log clearing command on this host.
+- The earlier cleanup work did include unrelated user caches/build artifacts and diagnostic evidence handling; those operations must not be conflated with clearing controller-lifetime NVMe fields.
+- A prior vendor-specific `clear-pcie-correctable-errors` action would, if it had been used, affect only that separate PCIe counter and would not reset `error_log_entries=14`. No evidence of that command was found either.
+- Current correction: the evidence supports “the NVMe lifetime counter was read and monitored,” not “the standard NVMe counter was erased.”
+
 ## Decision log
 
 | Decision | Reason | Rollback |
