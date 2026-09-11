@@ -18,7 +18,7 @@
 | Storage | `fwupd`, `smartmontools`, `nvme-cli` установлены; fwupd не предлагает обновлений; в ядре нет свежих timeout/reset/AER/I/O error | драйверная авария не подтверждена |
 | NVMe | SMART ранее `PASSED`, media/data errors `0`; `unsafe shutdowns=125` и `error log entries=14` — lifetime-счётчики, не текущие ошибки | нужен свежий привилегированный re-read и наблюдение, но не паническая замена диска |
 | Quickshell | две разные исторические сигнатуры: GLib/GVFS `SIGABRT` и Qt/QML `SIGSEGV`; новых core после контролируемого restart не появилось | containment работает, root cause остаётся открытой |
-| Protected stack | Hermes→SearXNG read-only search, Camofox, Voxtype, Telegram transport, Chromium isolated test — положительно; Telegram message E2E не выполнялся | основной стек оставлен |
+| Protected stack | Hermes→SearXNG read-only search, Camofox, Voxtype, Telegram transport, Chromium isolated test — положительно; synthetic Telegram alert доставлен gateway, client receipt не подтверждён | основной стек оставлен |
 | Hygiene | pacman orphans/foreign packages `0`, failed units `0`; Zen residue уже убран в recoverable runtime backup | удалять пакеты вслепую нечего |
 | LocalSearch | остановка user-unit дала примерно 70 MiB дополнительной available RAM в A/B; пакет нужен Nautilus | кандидат на пользовательский профиль, не «мусор» |
 
@@ -107,7 +107,7 @@
 - Совпадение локального стека с upstream issue — корреляция, не минимальная воспроизводимая причина именно в профиле Omarchy.
 - Кнопка/поверхность Codex Browser в текущей сессии недоступна; Chromium проверен изолированным локальным запуском, это не следует выдавать за UI-тест подключённого CUA-браузера.
 - Десять доменов прошли транспортный тест через текущий VPN, но challenge/login/privacy-wall всё равно является функциональной блокировкой для агента.
-- Telegram проверен на транспортный reconnect, но сообщение в Telegram намеренно не отправлялось.
+- Telegram проверен на транспортный reconnect; synthetic alert дошёл до Hermes delivery boundary, но отображение на клиенте Telegram не подтверждено пользователем.
 - Lifetime `unsafe shutdowns` не датирует события и не доказывает текущую неисправность SSD.
 
 ## Источники
@@ -176,7 +176,9 @@ NVMe Error Information log и SMART lifetime counter нельзя смешива
 - источник: новые `smartd` и kernel NVMe/Btrfs/AER записи после последнего запуска;
 - здоровое состояние даёт пустой stdout и не отправляет сообщение.
 
-Manual run в здоровом состоянии завершился `succeeded` без Telegram-сообщения. Self-test скрипта также прошёл. Это не новый daemon и не прямой Bot API: Hermes переиспользует существующую Telegram-конфигурацию. Если Hermes gateway остановлен, доставка невозможна в этот момент, но `smartd` продолжает писать evidence в journal; после восстановления Hermes следующий cron tick снова проверит окно.
+Manual run в здоровом состоянии завершился `succeeded` без Telegram-сообщения. Затем отдельный временный `no-agent` cron прогнал явно помеченный `TEST ONLY` alert: Hermes execution database отметила запуск как `completed`, а scheduler log — `delivered to telegram`. CLI в момент ручного запуска кратко показала `failed`, что оказалось гонкой статуса: итоговая execution-запись и delivery-запись положительные. Self-test скрипта также прошёл. Это не новый daemon и не прямой Bot API: Hermes переиспользует существующую Telegram-конфигурацию. Временные job и script удалены; production job остался единственным активным.
+
+Это подтверждает доставку до Telegram со стороны Hermes, но не факт отображения на конкретном Telegram-клиенте без пользовательского подтверждения. Если Hermes gateway остановлен, доставка невозможна в этот момент, но `smartd` продолжает писать evidence в journal; после восстановления Hermes следующий cron tick снова проверит окно.
 
 ### Итоговое решение
 

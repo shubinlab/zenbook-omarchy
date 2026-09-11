@@ -25,7 +25,7 @@
 | APST | OBSERVE | enabled by default; no timeout/reset evidence justifying a change |
 | fstrim | PASS/PARTIAL | weekly timer is healthy; `/boot` trims, but encrypted root deliberately rejects discard |
 | Quickshell | UNRESOLVED | recent SIGSEGV/SIGABRT coredumps remain |
-| Hermes/Telegram | PARTIAL | units active; Telegram end-to-end connection not yet proven |
+| Hermes/Telegram | PARTIAL/PASS | units active; Hermes gateway delivered a synthetic alert, client receipt remains unverified |
 | SearXNG | PARTIAL/PASS | loopback health and Google-only domain-safe route pass; engine redundancy is intentionally not enabled after Bing/Brave/Qwant failures |
 | Camofox | PASS | fresh Codex-style session opened CBR, snapshot contained page content, and session cleanup left zero active tabs/sessions |
 | Voxtype | PASS | real recording, remote transcription, and paste observed |
@@ -205,7 +205,16 @@
 - Manual healthy run completed successfully with empty output, so no Telegram message was sent. The script self-test and shell syntax checks passed.
 - Alert policy: notify only on Critical Warning, media/data error, retained device-related NVMe error, high temperature, NVMe timeout/reset/I/O, Btrfs error, or AER error. Do not notify for the historical baseline `14` or normal suspend queue recreation.
 - Failure boundary: `smartd` remains the independent storage monitor; if Hermes is down, journal evidence accumulates and delivery resumes on the next healthy Hermes tick. No automatic reset, reboot, firmware flash, or APST change is wired to Telegram alerts.
-- Task status: local storage monitoring `PASS`; Hermes-to-Telegram alert path `PASS` for healthy silent delivery, alert delivery remains intentionally unforced to avoid sending a synthetic external message.
+- Task status: local storage monitoring `PASS`; healthy Hermes-to-Telegram path `PASS`, synthetic alert delivery pending the separate test below.
+
+### 2026-09-12 — synthetic Hermes-to-Telegram alert test
+
+- The production filter was rechecked in the healthy state and remained silent (`0` output bytes), so the normal 15-minute job does not generate false alerts.
+- A temporary one-shot `no-agent` Hermes cron job printed a clearly marked `TEST ONLY` alert and the Hermes scheduler log recorded delivery to the configured Telegram target. No NVMe error, SMART value, kernel journal entry, controller reset, or firmware action was injected.
+- The CLI initially reported the manually triggered run as `failed`, but the execution database marked it `completed` and the scheduler recorded `delivered to telegram`; this is a CLI race/status-reporting discrepancy, not a production alert failure.
+- The temporary cron job self-removed after `repeat=1`, and its test script was deleted. The permanent `zenbook-nvme-telegram-alerts` job remains the only active job on `every 15m`.
+- This proves Hermes-side delivery to Telegram; actual rendering/receipt on the user's Telegram client remains unverified until the user confirms seeing the marked test message.
+- Task status: alert pipeline `PASS` at the Hermes gateway boundary; client receipt `UNVERIFIED`.
 
 ## Decision log
 
@@ -226,5 +235,5 @@ The first documentation checkpoint is `a6811e9`, created after repository-bounda
 - `a13944f` — raw evidence moved outside Git after repository ignore-boundary review.
 - `acd2118` — Quickshell/kDrive crash classification with coredump and OSINT evidence; result `PARTIAL`.
 - `bf47069` — controlled Omarchy shell restart and recovery check; result `PASS` for recovery, not root-cause resolution.
-- Pending next checkpoint: this SearXNG/Camofox checkpoint, after `git diff --check`, Markdown checks, bridge tests, healthcheck, and protected-service verification.
+- `PENDING` — synthetic Hermes-to-Telegram test checkpoint; checks: production healthy silence, gateway delivery log, temporary-job cleanup, `git diff --check`, and repository CI.
 - `PENDING` — fresh OSINT options report and ledger entry; checks: Markdown validation, `git diff --check`, and repository CI.
