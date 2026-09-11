@@ -58,6 +58,17 @@
 - OSINT basis: [WD SMART field definitions](https://support-en.wd.com/app/answers/detailweb/a_id/12163/~/s.m.a.r.t.-self-monitoring-analysis-and-reporting-technology), [ASUS UM3406KA BIOS support](https://www.asus.com/uk/laptops/for-home/zenbook/asus-zenbook-14-oled-um3406/helpdesk_bios?model2Name=UM3406KA), [Linux NVMe driver policy](https://github.com/torvalds/linux/blob/master/Documentation/nvme/feature-and-quirk-policy.rst), and [Arch NVMe power guidance](https://wiki.archlinux.org/title/Solid_state_drive/NVMe).
 - Task status: `PARTIAL`; remaining gate is an interactive privileged storage read plus root-filesystem trim coverage.
 
+### 2026-09-11 — crash root-cause checkpoint
+
+- Memory pressure is not supported as the cause: the live system reports about 20 GiB available RAM and 60 GiB free swap, with no OOM-kill record in the inspected period.
+- The latest Omarchy Quickshell core is `/usr/bin/quickshell -n -p /usr/share/omarchy/shell`, signal `SIGSEGV`, with the stack entering `__dynamic_cast` and then Qt QML object finalization. The installed versions are `quickshell 0.3.1-1`, `qt6-base 6.11.2-3`, and `qt6-declarative 6.11.2-1`.
+- A prior Quickshell `SIGABRT` is a different signature: GLib allocation/assertion code while a GVFS/GIO D-Bus directory-monitor request is being built. These are not yet proven to share one root cause.
+- OSINT comparison found current upstream Quickshell reports with the same family of Qt 6.11/QML incubation and `__dynamic_cast`/IpcHandler failures, including [issue 983](https://github.com/quickshell-mirror/quickshell/issues/983) and [issue 956](https://github.com/quickshell-mirror/quickshell/issues/956). This raises the likelihood of an upstream Quickshell/Qt defect, but does not prove that the Omarchy shell graph triggers the same path until a controlled reproduction is run.
+- The repeated `SIGBUS` cores around 21:38–21:57 belong to a kDrive AppImage `crashpad_handler` under `/tmp/.mount_kDrive...`; the command line included kDrive's Sentry crash database and the stack entered the AppImage-bundled LDAP library. No kDrive process is currently running. These crashes are separate from NVMe and Quickshell and are now a distinct containment decision.
+- The live memory sample also showed a high Quickshell RSS and a substantial Voxtype Quickshell RSS; this is an observation only, not yet a memory regression result.
+- Red-team conclusion: removing or tuning NVMe/APST would not address these desktop/AppImage crashes. First isolate Quickshell/Qt and kDrive Crashpad separately.
+- Task status: `PARTIAL`; root-cause classification is substantially improved, but controlled reproduction and a safe upstream/package containment decision remain.
+
 ## Decision log
 
 | Decision | Reason | Rollback |

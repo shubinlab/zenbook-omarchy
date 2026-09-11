@@ -41,7 +41,8 @@ Telegram autostart, Hermes gateway, Camofox/Node, Voxtype, SearXNG, Chromium, th
 - Kernel journals inspected so far contain no NVMe timeout, controller reset, AER, or I/O error; suspend uses `s2idle`.
 - APST is enabled with the kernel default latency budget; no APST change is justified by current evidence.
 - `rog-control-center` is removed; `asusctl/asusd` remains intentionally active.
-- Quickshell still has recent coredumps and is unresolved.
+- Quickshell still has recent coredumps and is unresolved. The newest stack reaches `__dynamic_cast` during Qt QML object finalization on `quickshell 0.3.1` with Qt `6.11.2`, matching current upstream reports for this package/Qt family.
+- Repeated `SIGBUS` coredumps belong to kDrive's AppImage `crashpad_handler`, not the NVMe driver. kDrive is not a protected workload; it is a separate keep/contain/remove decision and must not be conflated with the Quickshell or storage diagnosis.
 - SearXNG/Camofox/Chromium paths have partial or historical positive tests, but direct multi-agent readiness and a durable ten-site matrix remain acceptance gates.
 
 ## Acceptance gates

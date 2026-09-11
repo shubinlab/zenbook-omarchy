@@ -181,11 +181,11 @@ Each task follows this loop:
 
 - [ ] **Step 2: Separate crash classes**
 
-  Classify `/usr/bin/quickshell`, Voxtype’s `qs`, Nautilus, and `crashpad_handler` separately. Do not treat all SIGBUS/SIGABRT events as NVMe failures.
+  Classify `/usr/bin/quickshell`, Voxtype’s `qs`, Nautilus, kDrive's AppImage `crashpad_handler`, and any browser Crashpad process separately. Do not treat all SIGBUS/SIGABRT events as NVMe failures. kDrive is not a protected workload; do not remove or disable it in this task unless a separate user-approved decision is recorded.
 
 - [ ] **Step 3: Compare with recent changes and working paths**
 
-  Compare current package versions, Omarchy shell config, theme changes, Chromium restarts, Voxtype activity, and suspend/resume boundaries. Use one hypothesis at a time.
+  Compare current package versions, Omarchy shell config, theme changes, Chromium restarts, Voxtype activity, kDrive AppImage launches, and suspend/resume boundaries. Use one hypothesis at a time. Record whether Quickshell's stack matches an existing upstream issue before changing packages.
 
 - [ ] **Step 4: Reproduce safely**
 
@@ -197,7 +197,7 @@ Each task follows this loop:
 
 - [ ] **Step 6: Verify, red-team, and commit**
 
-  Require no new relevant coredump during the stress sequence, recovery after a component restart, clean systemd state, and a recorded rollback. Commit only the sanitized ledger and any deliberately changed user config.
+  Require no new relevant coredump during the stress sequence, recovery after a component restart, clean systemd state, and a recorded rollback. Compare the Quickshell stack with current upstream reports such as [Qt 6.11.2 QML binding crash](https://github.com/quickshell-mirror/quickshell/issues/983) and [IpcHandler dynamic-cast crash](https://github.com/quickshell-mirror/quickshell/issues/956); compare kDrive findings with its [current upstream issue list](https://github.com/Infomaniak/desktop-kDrive/issues). Commit only the sanitized ledger and any deliberately changed user config.
 
 ### Task 4: Validate shutdown, suspend/resume, and APST with controlled experiments
 
