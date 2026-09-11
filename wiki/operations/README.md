@@ -35,6 +35,9 @@
 | Repair an older voice setup | `./scripts/repair-voice-legacy.sh --check` then `--apply` |
 | Restore terminal settings | `./scripts/install-terminal.sh --profile zenbook-um3406ka` |
 | Run Omarchy update | `./scripts/install-update.sh --profile zenbook-um3406ka` |
+| Install NVMe watchdog and Hermes Telegram alerts | `./scripts/watchdog.sh --install` |
+| Check NVMe watchdog installation | `./scripts/watchdog.sh --check` |
+| Remove watchdog and restore its previous state | `./scripts/watchdog.sh --uninstall` |
 | Test monitor/VRR safely | [Protected experiment](experiments.md) |
 
 ## What doctor checks
