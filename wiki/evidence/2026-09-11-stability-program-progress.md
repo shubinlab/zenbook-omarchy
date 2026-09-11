@@ -113,6 +113,15 @@
 - Red-team conclusion: the current VPN egress reaches these domains from this host, but this must not be generalized to every Russian ISP, ASN, or U.S. network. A page rendering is not proof of useful access, and a challenge/login wall remains a functional block for an unauthenticated agent.
 - Task status: `PASS` for this host's Camofox/Chromium transport control; `PARTIAL` for the broader geo-blocking question and authenticated-content usability.
 
+### 2026-09-12 — fresh OSINT options checkpoint
+
+- Current upstream evidence strengthens, but does not prove, the Quickshell/Qt hypothesis: issue 983 documents a Qt 6.11.2 QML binding crash with a minimal reproduction that works on Qt 6.11.1; issue 956 independently documents the local-looking `__dynamic_cast`/`QQmlObjectCreator::finalize` teardown family. Arch currently ships `quickshell 0.3.1-1` against the installed Qt 6.11.2 set.
+- Current Infomaniak issue activity shows several Linux/AppImage compatibility reports, while the project support matrix names Ubuntu rather than Arch. The local kDrive Crashpad SIGBUS class is therefore treated as a separate unsupported-AppImage risk, not as NVMe evidence.
+- OSINT confirms that weekly `fstrim.timer` is the normal policy and that dm-crypt discards are disabled by default with an explicit information-leak tradeoff for `allow_discards`. Root trim remains intentionally unavailable; no boot or mapper change was made.
+- GNOME LocalSearch documentation confirms it is an optional background desktop indexer. The local reversible A/B supports offering a profile choice, but not removing it blindly because Nautilus requires the package.
+- Decision options, risks, rollback paths, source links, and blind spots are recorded in [the fresh OSINT options report](../../docs/reports/2026-09-12-fresh-osint-stability-options.md). No runtime state changed in this checkpoint.
+- Task status remains `PARTIAL`: the research decision gates are clearer, but NVMe privileged re-read, controlled suspend coverage, Quickshell causal A/B, and the LocalSearch/kDrive user choices remain open.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
@@ -133,3 +142,4 @@ The first documentation checkpoint is `a6811e9`, created after repository-bounda
 - `acd2118` — Quickshell/kDrive crash classification with coredump and OSINT evidence; result `PARTIAL`.
 - `bf47069` — controlled Omarchy shell restart and recovery check; result `PASS` for recovery, not root-cause resolution.
 - Pending next checkpoint: this SearXNG/Camofox checkpoint, after `git diff --check`, Markdown checks, bridge tests, healthcheck, and protected-service verification.
+- `PENDING` — fresh OSINT options report and ledger entry; checks: Markdown validation, `git diff --check`, and repository CI.
