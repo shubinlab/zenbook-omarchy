@@ -26,8 +26,8 @@
 | fstrim | PASS/PARTIAL | timer and latest service run succeeded; root-filesystem coverage remains to be confirmed |
 | Quickshell | UNRESOLVED | recent SIGSEGV/SIGABRT coredumps remain |
 | Hermes/Telegram | PARTIAL | units active; Telegram end-to-end connection not yet proven |
-| SearXNG | PARTIAL | local HTML/JSON and Chromium route work; direct multi-agent acceptance remains |
-| Camofox | PARTIAL | historical live sessions worked; idle `browserConnected=false` is expected but needs fresh session proof |
+| SearXNG | PARTIAL/PASS | loopback health and Google-only domain-safe route pass; engine redundancy is intentionally not enabled after Bing/Brave/Qwant failures |
+| Camofox | PASS | fresh Codex-style session opened CBR, snapshot contained page content, and session cleanup left zero active tabs/sessions |
 | Voxtype | PASS | real recording, remote transcription, and paste observed |
 | Ten-site red team | PARTIAL | prior report exists; current rerun and full route matrix remain |
 | Memory/bloat | UNMEASURED | protected services have not yet been compared with a final budget |
@@ -71,6 +71,18 @@
 - The same restart journal included a Telegram `QDBusTrayIcon` `ServiceUnknown` warning. It did not stop Telegram autostart, but it is a separate tray-integration risk for the protected workload.
 - Task status: `PARTIAL`; root-cause classification is substantially improved and normal shell restart recovers, but controlled trigger reproduction and a safe upstream/package containment decision remain.
 
+### 2026-09-12 — Camofox, SearXNG, and browser-route checkpoint
+
+- Camofox positive test passed through its local OpenAPI: a fresh isolated session opened the Bank of Russia key-rate page, returned the expected title and accessibility snapshot, and the session was deleted. The post-cleanup API reported zero active tabs and sessions; the browser process then shut down on its normal idle timer. No credentials, cookies, clicks, or external state changes were used.
+- SearXNG local health remained `200 OK`, and Hermes' bounded healthcheck continued to report `camofox=ok`, `searxng=ok`, and `hermes_gateway=ok` after two controlled SearXNG container recreations.
+- Red-team query testing disproved the previous assumption that a healthy JSON endpoint implies useful search quality. Bing returned unrelated results for `site:` queries and varied with locale/User-Agent; Google was initially CAPTCHA-suspended, then recovered after a container restart; Brave hit a request-rate suspension; Qwant returned CAPTCHA. The bridge's post-filter correctly returned zero instead of leaking unrelated domains.
+- Production decision: keep only the verified Google engine in the SearXNG `keep_only` pool. Bing, Brave, and Qwant were tested but are not enabled by default. The runtime settings were backed up outside the repository before each change; no firmware, package, agent policy, or protected service was changed by this experiment.
+- Positive domain checks passed for `cbr.ru`, `cisa.gov`, `omarchy.org`, and `telegram.org` through `searxng-search --engine google --domain ...`; the bridge also rejected URL-shaped domains, raw mode combined with `--domain`, and empty queries.
+- Browser comparison: the connected CUA surface exposed no Chromium/Codex Browser tab in this session, so the comparison used installed Chromium 152 with a temporary isolated profile. Chromium saw the same Google-only SearXNG response and the same `www.cbr.ru` host set. This is independent HTML/network validation, not a claim that the unavailable CUA UI was tested.
+- OSINT basis: current [SearXNG settings documentation](https://docs.searxng.org/admin/settings/settings.html), [search syntax documentation](https://docs.searxng.org/user/search-syntax.html), [configured engine matrix](https://docs.searxng.org/user/configured_engines.html), and the current engine-specific CAPTCHA/rate-limit behavior observed locally.
+- Hermes/Telegram remains `PARTIAL`: the OS can resolve and reach `api.telegram.org` over the VPN, but the long-running Hermes process still has historical reconnect warnings and no fresh end-to-end message test was authorized. No Telegram message was sent.
+- Task status: `PARTIAL/PASS`; Camofox path is accepted, SearXNG is fail-closed and usable through the verified engine, and engine redundancy remains an explicit open risk rather than hidden failure.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
@@ -79,8 +91,15 @@
 | Do not install a WD Linux driver | NVMe support is provided by the kernel driver; `nvme-cli` is management tooling | No extra driver installed |
 | Preserve `asusctl/asusd` | Hardware backend is distinct from removed ROG GUI | Reinstall only through approved Omarchy package path if later needed |
 | Treat Camofox idle browser as expected state | Service supports on-demand browser lifecycle | Create/close a real session to verify readiness |
+| Keep SearXNG on Google-only until another engine passes quality tests | Bing, Brave, and Qwant produced incorrect or blocked results in this VPN/session | Restore the timestamped settings backup and recreate the stack |
 | Keep protected workloads | Explicit user requirement | Any tuning must be measured and reversible |
 
 ## Checkpoint commits
 
 The first documentation checkpoint is `a6811e9`, created after repository-boundary checks, Markdown file checks, placeholder scan, and `git diff --check`. Subsequent commits will be listed here with task name, verification command, and pass/partial result.
+
+- `c71a499` — storage/firmware refresh evidence; checks: `fwupdmgr refresh`, device update inventory, kernel/NVMe journal review; result `PARTIAL` for privileged SMART re-read and root trim coverage.
+- `a13944f` — raw evidence moved outside Git after repository ignore-boundary review.
+- `acd2118` — Quickshell/kDrive crash classification with coredump and OSINT evidence; result `PARTIAL`.
+- `bf47069` — controlled Omarchy shell restart and recovery check; result `PASS` for recovery, not root-cause resolution.
+- Pending next checkpoint: this SearXNG/Camofox checkpoint, after `git diff --check`, Markdown checks, bridge tests, healthcheck, and protected-service verification.
