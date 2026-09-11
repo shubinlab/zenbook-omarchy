@@ -67,7 +67,9 @@
 - The repeated `SIGBUS` cores around 21:38–21:57 belong to a kDrive AppImage `crashpad_handler` under `/tmp/.mount_kDrive...`; the command line included kDrive's Sentry crash database and the stack entered the AppImage-bundled LDAP library. No kDrive process is currently running. These crashes are separate from NVMe and Quickshell and are now a distinct containment decision.
 - The live memory sample also showed a high Quickshell RSS and a substantial Voxtype Quickshell RSS; this is an observation only, not yet a memory regression result.
 - Red-team conclusion: removing or tuning NVMe/APST would not address these desktop/AppImage crashes. First isolate Quickshell/Qt and kDrive Crashpad separately.
-- Task status: `PARTIAL`; root-cause classification is substantially improved, but controlled reproduction and a safe upstream/package containment decision remain.
+- Controlled positive test: `omarchy restart shell` exited the old shell through its IPC path, launched a new Omarchy shell, loaded configuration, and left `systemctl --failed` empty. The Quickshell coredump count remained unchanged at two. This proves recovery from a normal restart, not that the underlying crash is fixed.
+- The same restart journal included a Telegram `QDBusTrayIcon` `ServiceUnknown` warning. It did not stop Telegram autostart, but it is a separate tray-integration risk for the protected workload.
+- Task status: `PARTIAL`; root-cause classification is substantially improved and normal shell restart recovers, but controlled trigger reproduction and a safe upstream/package containment decision remain.
 
 ## Decision log
 
