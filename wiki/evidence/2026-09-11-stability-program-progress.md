@@ -40,7 +40,23 @@
 - Repository was already on `main` with pre-existing user modifications; those paths are explicitly excluded from this program’s staging.
 - Created the program spec, execution plan, and this progress ledger.
 - No runtime configuration, package state, firmware, boot parameter, or service state was changed while creating the documentation.
-- Next gate: commit the three program documents, then run the fresh storage/firmware baseline.
+- Checkpoint commit: `a6811e9` (`docs(zenbook): add stability program and evidence ledger`).
+- Markdown validation and `git diff --check` passed before the commit; pre-existing user changes remain unstaged.
+- Next gate: run the fresh storage/firmware baseline.
+
+### 2026-09-11 — storage, firmware, and power baseline
+
+- Fresh baseline captured under `runs/2026-09-11-stability-program/storage/`; raw output remains outside Git.
+- Live versions confirmed: Arch kernel `7.2.3`, `linux-firmware` and `amd-ucode` from the current installed set, `fwupd`, `smartmontools`, and `nvme-cli` installed.
+- BIOS confirmed as `UM3406KA.306`; no BIOS change was made.
+- `fwupdmgr refresh` completed successfully. After refresh, `WD BLACK SN850X 2000GB` and `System Firmware` report no available update. No firmware was flashed.
+- Current kernel journal again contains NVMe discovery and successful suspend/resume messages, but no NVMe timeout, controller reset, AER, or I/O-error signature.
+- APST remains enabled with the existing kernel default; `s2idle` remains the only exposed system sleep mode. No boot parameter or power-management setting was changed.
+- `fstrim.timer` is enabled/active and its last run succeeded; the observed run reports `/boot` trimming. Root-filesystem trim coverage remains a separate verification item.
+- A fresh privileged SMART/NVMe read was attempted through Polkit but did not produce output in the agent terminal; the earlier privileged read remains the evidence for `PASSED`, 44°C, zero media errors, and zero current error entries. This sub-check is `PARTIAL`, not silently marked passed.
+- Red-team conclusion: historical counters alone do not justify disabling APST or PCIe power management.
+- OSINT basis: [WD SMART field definitions](https://support-en.wd.com/app/answers/detailweb/a_id/12163/~/s.m.a.r.t.-self-monitoring-analysis-and-reporting-technology), [ASUS UM3406KA BIOS support](https://www.asus.com/uk/laptops/for-home/zenbook/asus-zenbook-14-oled-um3406/helpdesk_bios?model2Name=UM3406KA), [Linux NVMe driver policy](https://github.com/torvalds/linux/blob/master/Documentation/nvme/feature-and-quirk-policy.rst), and [Arch NVMe power guidance](https://wiki.archlinux.org/title/Solid_state_drive/NVMe).
+- Task status: `PARTIAL`; remaining gate is an interactive privileged storage read plus root-filesystem trim coverage.
 
 ## Decision log
 
@@ -54,4 +70,4 @@
 
 ## Checkpoint commits
 
-The first documentation checkpoint is created after the repository boundary and Markdown syntax are verified. Subsequent commits will be listed here with task name, verification command, and pass/partial result.
+The first documentation checkpoint is `a6811e9`, created after repository-boundary checks, Markdown file checks, placeholder scan, and `git diff --check`. Subsequent commits will be listed here with task name, verification command, and pass/partial result.
