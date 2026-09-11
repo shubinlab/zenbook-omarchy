@@ -156,6 +156,15 @@
 - This materially weakens the hypothesis that routine AC suspend/resume or APST is causing the unsafe-shutdown history. Battery suspend coverage remains untested; no APST or sleep-policy change is justified.
 - Task status: suspend/APST `PASS` for five AC cycles; `OBSERVE` for battery cycles.
 
+### 2026-09-12 — NVMe error-counter clearing investigation
+
+- The request to clear the NVMe errors was checked against current `nvme-cli 2.16` behavior and the NVMe specification. The standard `error-log` command is read-only; local help exposes no standard clear operation.
+- The SMART field `Number of Error Information Log Entries=14` is a controller-lifetime counter, not a count of current failures. The current log entries inspected locally all report `error_count=0` and successful completion status.
+- The WDC plugin's `clear-pcie-correctable-errors` command targets a different vendor-specific PCIe counter; it does not clear the standard NVMe lifetime error-entry counter and is not justified when the current PCIe/error evidence is clean.
+- No controller reset, namespace format, sanitize, vendor command, or firmware operation was used. Those would either not clear the requested lifetime field or would create unnecessary data-loss/diagnostic risk.
+- OSINT basis: [nvme-cli error-log documentation](https://github.com/linux-nvme/nvme-cli/blob/master/Documentation/nvme-error-log.txt) and [NVMe Base Specification field definition](https://nvmexpress.org/wp-content/uploads/NVM-Express_1_4c-2021.06.28-Ratified.pdf).
+- Decision: retain the counter as historical evidence and monitor for a future increase together with non-zero entries or kernel errors.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
