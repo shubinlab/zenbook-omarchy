@@ -10,6 +10,12 @@ Use `--raw` when the caller needs the upstream SearXNG JSON shape:
 
     searxng-search --raw --category news --time-range day "query"
 
-Supported controls are `--category`, `--language`, `--time-range`, `--page`, `--limit`, `--timeout`, and `--url`.
+Supported controls are `--category`, `--language`, `--time-range`, `--page`, `--limit`, `--timeout`, `--engine`, `--domain`, and `--url`.
+
+For higher-confidence OSINT, select an engine and require a hostname. The normalized output drops results outside the requested domain:
+
+    searxng-search --engine google --domain cisa.gov "Known Exploited Vulnerabilities Catalog"
+
+`--domain` is intentionally incompatible with `--raw`; raw mode preserves the upstream response and is not a domain-safety boundary.
 
 The bridge does not open result pages or claim that snippets are verified evidence. Use Camofox or another browser/fetch layer to inspect selected source URLs.

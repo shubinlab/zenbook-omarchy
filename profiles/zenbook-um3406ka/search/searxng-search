@@ -40,6 +40,22 @@ def validate_query(query):
     return value
 
 
+def validate_domain(domain):
+    value = domain.strip().lower().rstrip(".")
+    if not value or "://" in value or any(char in value for char in "/?#") or any(char.isspace() for char in value):
+        raise ValueError("domain must be a hostname without a scheme or path")
+    if "." not in value or value.startswith(".") or value.endswith("."):
+        raise ValueError("domain must be a hostname such as cisa.gov")
+    return value
+
+
+def validate_engine(engine):
+    value = engine.strip().lower()
+    if not value or not value.replace("-", "").replace("_", "").isalnum():
+        raise ValueError("engine must contain only letters, numbers, '-' or '_'")
+    return value
+
+
 def parse_payload(data):
     if len(data) > MAX_RESPONSE_BYTES:
         raise ResponseLimitError("upstream response exceeds 2 MiB")
@@ -52,11 +68,12 @@ def parse_payload(data):
     return payload
 
 
-def normalize_payload(payload, query, category, language, time_range, limit, instance):
+def normalize_payload(payload, query, category, language, time_range, limit, instance, domains=None):
     raw_results = payload.get("results")
     if not isinstance(raw_results, list):
         raise UpstreamResponseError("upstream JSON has no results array")
 
+    domains = list(domains or [])
     results = []
     seen_urls = set()
     for raw in raw_results:
@@ -65,6 +82,12 @@ def normalize_payload(payload, query, category, language, time_range, limit, ins
         url = raw.get("url")
         if not isinstance(url, str) or not url:
             continue
+        if domains:
+            hostname = urlparse(url).hostname
+            if not hostname or not any(
+                hostname == domain or hostname.endswith("." + domain) for domain in domains
+            ):
+                continue
         if url in seen_urls:
             continue
         seen_urls.add(url)
@@ -86,6 +109,7 @@ def normalize_payload(payload, query, category, language, time_range, limit, ins
         "category": category,
         "language": language,
         "time_range": time_range,
+        "domains": domains,
         "requested_at": datetime.now(timezone.utc).isoformat(),
         "instance": instance.rstrip("/"),
         "results_count": len(results),
@@ -128,6 +152,8 @@ def make_parser():
     parser.add_argument("--page", type=int, default=1)
     parser.add_argument("--limit", type=int, default=10)
     parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--engine", action="append", default=[])
+    parser.add_argument("--domain", action="append", default=[])
     parser.add_argument("--url", default=os.environ.get("SEARXNG_URL", DEFAULT_URL))
     return parser
 
@@ -145,7 +171,14 @@ def main(argv=None):
             raise ValueError(f"limit must be between 1 and {MAX_RESULTS}")
         if not 1 <= args.timeout <= 60:
             raise ValueError("timeout must be between 1 and 60 seconds")
-        url = build_url(args.url, query, args.category, args.language, args.time_range, args.page)
+        engines = [validate_engine(engine) for engine in args.engine]
+        domains = [validate_domain(domain) for domain in args.domain]
+        if args.raw and domains:
+            raise ValueError("--domain requires normalized output; omit --raw")
+        modifiers = [f"!{engine}" for engine in engines]
+        modifiers.extend(f"site:{domain}" for domain in domains)
+        upstream_query = " ".join(modifiers + [query])
+        url = build_url(args.url, upstream_query, args.category, args.language, args.time_range, args.page)
         payload = fetch_payload(url, args.timeout)
         if args.raw:
             output = payload
@@ -158,6 +191,7 @@ def main(argv=None):
                 time_range=args.time_range,
                 limit=args.limit,
                 instance=args.url,
+                domains=domains,
             )
         print(json.dumps(output, ensure_ascii=False, separators=(",", ":")))
         return 0

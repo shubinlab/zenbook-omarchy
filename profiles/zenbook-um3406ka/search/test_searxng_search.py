@@ -34,6 +34,38 @@ else:
 
 
 class SearxngSearchTests(unittest.TestCase):
+    def test_normalize_filters_results_to_requested_domains(self):
+        payload = {
+            "results": [
+                {"url": "https://cisa.gov/kev"},
+                {"url": "https://www.cisa.gov/kev"},
+                {"url": "https://facebook.com/"},
+                {"url": "https://notcisa.gov/"},
+            ]
+        }
+
+        result = MODULE.normalize_payload(
+            payload,
+            query="kev",
+            category="general",
+            language="en",
+            time_range=None,
+            limit=10,
+            instance="http://127.0.0.1:8080",
+            domains=["cisa.gov"],
+        )
+
+        self.assertEqual(result["domains"], ["cisa.gov"])
+        self.assertEqual([item["url"] for item in result["results"]], [
+            "https://cisa.gov/kev",
+            "https://www.cisa.gov/kev",
+        ])
+
+    def test_validate_domain_rejects_urls_and_normalizes_hostnames(self):
+        self.assertEqual(MODULE.validate_domain(" CISA.GOV. "), "cisa.gov")
+        with self.assertRaises(ValueError):
+            MODULE.validate_domain("https://cisa.gov")
+
     def test_normalize_deduplicates_urls_and_preserves_provenance(self):
         payload = {
             "query": "omarchy",
