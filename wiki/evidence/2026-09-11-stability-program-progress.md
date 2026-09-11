@@ -216,6 +216,23 @@
 - This proves Hermes-side delivery to Telegram; actual rendering/receipt on the user's Telegram client remains unverified until the user confirms seeing the marked test message.
 - Task status: alert pipeline `PASS` at the Hermes gateway boundary; client receipt `UNVERIFIED`.
 
+### 2026-09-12 — standalone watchdog installer
+
+- Added `scripts/watchdog.sh` as a separate opt-in installer with `--plan`,
+  `--check`, `--install`, and `--uninstall` modes. It restores the tested
+  `fwupd`/`smartmontools`/`nvme-cli` package set through Omarchy, the
+  journal-only `smartd` configuration, and the existing Hermes Telegram job.
+- Added the sanitized source alert script at
+  `scripts/zenbook-smartd-alert.sh`; the installer copies it with mode `0700`
+  and never stores tokens, chat IDs, serials, or raw journals in Git.
+- The real host run of `./scripts/watchdog.sh --install` completed: smartd
+  one-shot validation exited `0`, Hermes job matching remained idempotent, the
+  self-test passed, and the final installer check returned `RESULT PASS`.
+- The installer created its runtime rollback backup outside Git under the
+  user's state directory. It did not send a Telegram message or change NVMe,
+  firmware, APST, or fstrim policy.
+- Red-team checks and repository CI passed after the installer addition.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
