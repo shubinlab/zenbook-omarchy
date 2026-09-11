@@ -165,6 +165,19 @@ NVMe Error Information log и SMART lifetime counter нельзя смешива
 - **Подтверждённый power/controller failure:** только после повторения timeout/reset/I/O выполняется отдельный A/B с ограниченным APST threshold; `pcie_aspm=off`, `pcie_port_pm=off`, firmware flash и замена SSD не применяются автоматически.
 - **Откат мониторинга:** отключить `smartd.service`, удалить host-specific `/etc/smartd-zenbook.conf` и восстановить прежний `SMARTD_ARGS`; SSD и его counters от этого не меняются.
 
+### Telegram-сторожок через Hermes
+
+Для доставки уведомлений подключён штатный Hermes `cron` без LLM:
+
+- script: `~/.hermes/scripts/zenbook-smartd-alert.sh`;
+- schedule: `every 15m`;
+- mode: `no-agent`;
+- delivery: настроенный Telegram home target;
+- источник: новые `smartd` и kernel NVMe/Btrfs/AER записи после последнего запуска;
+- здоровое состояние даёт пустой stdout и не отправляет сообщение.
+
+Manual run в здоровом состоянии завершился `succeeded` без Telegram-сообщения. Self-test скрипта также прошёл. Это не новый daemon и не прямой Bot API: Hermes переиспользует существующую Telegram-конфигурацию. Если Hermes gateway остановлен, доставка невозможна в этот момент, но `smartd` продолжает писать evidence в journal; после восстановления Hermes следующий cron tick снова проверит окно.
+
 ### Итоговое решение
 
 Нового драйвера или утилиты, которая безопасно «лечит» текущие значения, не найдено. Текущее состояние — не неисправность SSD: исторические counters стабильны, актуальные entries чистые, firmware доступно в актуальном проверенном состоянии, а power-management эксперимент не воспроизвёл ошибку.

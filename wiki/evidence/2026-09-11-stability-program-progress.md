@@ -198,6 +198,15 @@
 - OSINT basis: [smartd.conf NVMe monitoring semantics](https://man.archlinux.org/man/smartd.conf.5) and [smartd persistent state behavior](https://man.archlinux.org/man/extra/smartmontools/smartd.8.en).
 - Task status: monitoring `PASS`; prevention remains `OBSERVE` because the historical lifetime counter cannot be reset and no current storage failure is present.
 
+### 2026-09-12 — Hermes Telegram alert bridge
+
+- Added `~/.hermes/scripts/zenbook-smartd-alert.sh`, a minimal no-agent filter. It reads only new `smartd` and kernel journal lines, redacts serial-shaped text, and remains silent when healthy.
+- Created Hermes cron job `zenbook-nvme-telegram-alerts` on `every 15m`, `no-agent`, delivery `telegram`. It uses Hermes' existing configured home target; no bot token or chat ID was copied into the script.
+- Manual healthy run completed successfully with empty output, so no Telegram message was sent. The script self-test and shell syntax checks passed.
+- Alert policy: notify only on Critical Warning, media/data error, retained device-related NVMe error, high temperature, NVMe timeout/reset/I/O, Btrfs error, or AER error. Do not notify for the historical baseline `14` or normal suspend queue recreation.
+- Failure boundary: `smartd` remains the independent storage monitor; if Hermes is down, journal evidence accumulates and delivery resumes on the next healthy Hermes tick. No automatic reset, reboot, firmware flash, or APST change is wired to Telegram alerts.
+- Task status: local storage monitoring `PASS`; Hermes-to-Telegram alert path `PASS` for healthy silent delivery, alert delivery remains intentionally unforced to avoid sending a synthetic external message.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
