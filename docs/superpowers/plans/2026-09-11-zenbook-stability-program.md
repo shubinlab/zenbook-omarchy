@@ -10,6 +10,21 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-11-zenbook-stability-program.md`
 
+## Live execution status — 2026-09-12
+
+| Task | Status | Current result / remaining gate |
+| --- | --- | --- |
+| 1. Evidence ledger | DONE | Sanitized progress ledger and narrow Git checkpoints are active; raw evidence stays outside Git. |
+| 2. Storage/firmware/power | PARTIAL | Firmware/tools/current NVMe evidence is fresh; root trim is deliberately blocked by LUKS discard policy; no APST change. |
+| 3. Crash diagnosis | PARTIAL | Quickshell/Qt and kDrive AppImage signatures are separated; upstream/package containment remains open. |
+| 4. Suspend/APST experiments | OBSERVE | No timeout/reset/AER evidence justifies a risky power-policy change; controlled suspend coverage remains to be extended. |
+| 5. Protected workloads | PARTIAL/PASS | Camofox live session, SearXNG bridge, Hermes healthcheck, Voxtype, Telegram transport, and Chromium control were checked; Telegram application-level delivery was not attempted. |
+| 6. Ten-site OSINT/red team | PARTIAL | Prior OONI/Camofox/Chromium matrix is recorded; current Google-only SearXNG engine quality is verified for selected official domains. |
+| 7. Hygiene audit | PARTIAL | No pacman orphans/foreign packages and no failed units; cache and GNOME indexing/account candidates need measured reversible trials or explicit retention. |
+| 8. Release verification | NOT READY | Release requires resolving the trim policy choice, completing remaining red-team/suspend checks, and recording final protected-service evidence. |
+
+This status is updated alongside `wiki/evidence/2026-09-11-stability-program-progress.md`; the task checklists below remain the detailed execution contract.
+
 ## Global Constraints
 
 - Preserve Telegram autostart, Hermes, Camofox/Node, Voxtype, SearXNG, Chromium, Codex extension, `asusctl/asusd`, and VPN.
