@@ -23,7 +23,7 @@
 | NVMe current error log | PASS | inspected slots contain zero error counts/status |
 | BIOS/driver | PASS | BIOS 306; current Arch kernel and in-tree NVMe driver present |
 | APST | OBSERVE | enabled by default; no timeout/reset evidence justifying a change |
-| fstrim | PASS/PARTIAL | timer and latest service run succeeded; root-filesystem coverage remains to be confirmed |
+| fstrim | PASS/PARTIAL | weekly timer is healthy; `/boot` trims, but encrypted root deliberately rejects discard |
 | Quickshell | UNRESOLVED | recent SIGSEGV/SIGABRT coredumps remain |
 | Hermes/Telegram | PARTIAL | units active; Telegram end-to-end connection not yet proven |
 | SearXNG | PARTIAL/PASS | loopback health and Google-only domain-safe route pass; engine redundancy is intentionally not enabled after Bing/Brave/Qwant failures |
@@ -82,6 +82,18 @@
 - OSINT basis: current [SearXNG settings documentation](https://docs.searxng.org/admin/settings/settings.html), [search syntax documentation](https://docs.searxng.org/user/search-syntax.html), [configured engine matrix](https://docs.searxng.org/user/configured_engines.html), and the current engine-specific CAPTCHA/rate-limit behavior observed locally.
 - Hermes/Telegram remains `PARTIAL`: the OS can resolve and reach `api.telegram.org` over the VPN, but the long-running Hermes process still has historical reconnect warnings and no fresh end-to-end message test was authorized. No Telegram message was sent.
 - Task status: `PARTIAL/PASS`; Camofox path is accepted, SearXNG is fail-closed and usable through the verified engine, and engine redundancy remains an explicit open risk rather than hidden failure.
+
+### 2026-09-12 — trim and Hermes reconnect checkpoint
+
+- `fstrim.timer` is enabled and active with the stock weekly `fstrim.service`; the last run exited successfully and trimmed `/boot`.
+- The root filesystem is Btrfs on `/dev/mapper/root`, backed by LUKS2. The mapper exposes `DISC-GRAN=0B`, and a privileged direct `fstrim /` reports `discard operation is not supported`; this explains why the stock timer logs only `/boot`.
+- Current boot uses Limine and the `encrypt` initramfs hook with `cryptdevice=...:root`. Enabling root trim would require a boot/initramfs change such as `:allow-discards` and carries the dm-crypt metadata-leak tradeoff documented by ArchWiki and cryptsetup. No such security-sensitive change was made. Current decision: keep the secure default and mark root trim intentionally unavailable until the user explicitly chooses the tradeoff.
+- Hermes gateway was restarted once under systemd. The old process exited with status 1 during normal shutdown, systemd started the new process, and it remained active with `NRestarts=0`. After reconnect, the process held established HTTPS sockets to Telegram's IPv6 API address; this is a fresh transport-level positive check, not proof of application-level message delivery. No Telegram message was sent.
+- Post-restart healthcheck still reports `camofox=ok`, `searxng=ok`, and `hermes_gateway=ok`; no system or user failed units are present.
+- Package hygiene audit found zero pacman orphan packages and zero foreign packages. A memory sample is not a tuning baseline because several Codex/CUA sessions were active; notable resident consumers included Telegram, Omarchy/Voxtype Quickshell, LocalSearch, Camofox, Hermes, and three rclone mounts. No service was disabled based on this single sample.
+- The next measured-hygiene gate is to classify enabled user services and cache growth, then test only reversible candidates such as unused indexing/online-account integrations. Protected Telegram, Hermes, Camofox, Voxtype, cloud mounts, and local speech services remain preserved.
+- OSINT basis: [ArchWiki dm-crypt discard guidance](https://wiki.archlinux.org/title/Dm-crypt/Specialties), [cryptsetup refresh warning](https://man.archlinux.org/man/cryptsetup-refresh.8.en), and [crypttab discard option](https://man.archlinux.org/man/crypttab.5).
+- Task status: `PARTIAL`; the trim behavior is explained and safe, Hermes transport recovered, but end-to-end Telegram application confirmation and root-trim policy choice remain open.
 
 ## Decision log
 
