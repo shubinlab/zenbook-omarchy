@@ -36,6 +36,26 @@ Russian ISP blocks every request. The current host did not reproduce a hard
 transport block for these domains. HTTP 200 was not treated as proof of useful
 content; login, privacy, and challenge walls were kept visible to the agent.
 
+## Chromium comparison channel
+
+The same ten URLs were opened in a separate real `/usr/bin/chromium` process
+using a fresh temporary profile and the active VPN egress. All ten rendered an
+HTTP page; the observable differences were content, login/privacy walls, or
+thin client-side rendering, not a transport error. This is a control result for
+the current egress, not evidence that the sites are reachable from every ISP.
+
+Two complex read-only tasks were then repeated through both routes:
+
+| Task | SearXNG | Camofox | Chromium control |
+| --- | --- | --- | --- |
+| Bank of Russia key-rate page | official `cbr.ru` result with current 14.00% data | accessibility snapshot contained the key-rate page | rendered title and current 14.00% rows |
+| CISA KEV catalog | official `cisa.gov` result | accessibility snapshot contained catalog and CVE entries | rendered catalog, search controls, and CVE entries |
+
+The Codex CUA browser connector was unavailable in this session, so the
+Chromium control used the locally launched real Chromium process over its
+loopback debugging interface. The temporary profile was removed after the
+test. No proxy, cookie, credential, or anti-bot bypass was added.
+
 ## Red-team conditions
 
 - SearXNG without an engine/domain constraint returned unrelated Facebook and
