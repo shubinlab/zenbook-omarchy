@@ -1,0 +1,179 @@
+#!/usr/bin/env python3
+"""Bounded local SearXNG JSON client for user-owned agents."""
+
+import argparse
+import hashlib
+import json
+import os
+import sys
+from datetime import datetime, timezone
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode, urlparse
+from urllib.request import Request, urlopen
+
+
+DEFAULT_URL = "http://127.0.0.1:8080"
+DEFAULT_TIMEOUT = 15
+MAX_QUERY_LENGTH = 1000
+MAX_RESULTS = 50
+MAX_RESPONSE_BYTES = 2 * 1024 * 1024
+
+
+class UpstreamResponseError(ValueError):
+    """The SearXNG response is not a supported JSON response."""
+
+
+class ResponseLimitError(ValueError):
+    """The upstream response exceeded the safety limit."""
+
+
+class SearchUnavailable(RuntimeError):
+    """SearXNG could not be reached or returned an HTTP error."""
+
+
+def validate_query(query):
+    value = query.strip()
+    if not value:
+        raise ValueError("query must not be empty")
+    if len(value) > MAX_QUERY_LENGTH:
+        raise ValueError(f"query exceeds {MAX_QUERY_LENGTH} characters")
+    return value
+
+
+def parse_payload(data):
+    if len(data) > MAX_RESPONSE_BYTES:
+        raise ResponseLimitError("upstream response exceeds 2 MiB")
+    try:
+        payload = json.loads(data.decode("utf-8"))
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise UpstreamResponseError("upstream response is not valid JSON") from exc
+    if not isinstance(payload, dict):
+        raise UpstreamResponseError("upstream JSON root is not an object")
+    return payload
+
+
+def normalize_payload(payload, query, category, language, time_range, limit, instance):
+    raw_results = payload.get("results")
+    if not isinstance(raw_results, list):
+        raise UpstreamResponseError("upstream JSON has no results array")
+
+    results = []
+    seen_urls = set()
+    for raw in raw_results:
+        if not isinstance(raw, dict):
+            continue
+        url = raw.get("url")
+        if not isinstance(url, str) or not url:
+            continue
+        if url in seen_urls:
+            continue
+        seen_urls.add(url)
+        results.append(
+            {
+                "title": raw.get("title"),
+                "url": url,
+                "content": raw.get("content"),
+                "engine": raw.get("engine"),
+                "publishedDate": raw.get("publishedDate"),
+                "dedup_key": hashlib.sha256(url.encode("utf-8")).hexdigest(),
+            }
+        )
+        if len(results) >= limit:
+            break
+
+    return {
+        "query": query,
+        "category": category,
+        "language": language,
+        "time_range": time_range,
+        "requested_at": datetime.now(timezone.utc).isoformat(),
+        "instance": instance.rstrip("/"),
+        "results_count": len(results),
+        "results": results,
+    }
+
+
+def build_url(base_url, query, category, language, time_range, page):
+    parsed = urlparse(base_url)
+    if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+        raise ValueError("url must be an absolute HTTP(S) URL")
+    params = {"q": query, "format": "json", "pageno": str(page)}
+    if category and category != "general":
+        params["categories"] = category
+    if language and language != "all":
+        params["language"] = language
+    if time_range:
+        params["time_range"] = time_range
+    return base_url.rstrip("/") + "/search?" + urlencode(params)
+
+
+def fetch_payload(url, timeout):
+    request = Request(url, headers={"Accept": "application/json"})
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            return parse_payload(response.read(MAX_RESPONSE_BYTES + 1))
+    except ResponseLimitError:
+        raise
+    except (HTTPError, URLError, TimeoutError, OSError) as exc:
+        raise SearchUnavailable("SearXNG endpoint is unavailable") from exc
+
+
+def make_parser():
+    parser = argparse.ArgumentParser(description="Query the local SearXNG instance")
+    parser.add_argument("query", nargs="?", help="search query")
+    parser.add_argument("--raw", action="store_true", help="return upstream JSON")
+    parser.add_argument("--category", default="general")
+    parser.add_argument("--language", default="all")
+    parser.add_argument("--time-range", choices=("day", "month", "year"))
+    parser.add_argument("--page", type=int, default=1)
+    parser.add_argument("--limit", type=int, default=10)
+    parser.add_argument("--timeout", type=float, default=DEFAULT_TIMEOUT)
+    parser.add_argument("--url", default=os.environ.get("SEARXNG_URL", DEFAULT_URL))
+    return parser
+
+
+def main(argv=None):
+    parser = make_parser()
+    args = parser.parse_args(argv)
+    try:
+        if args.query is None:
+            raise ValueError("query is required")
+        query = validate_query(args.query)
+        if not 1 <= args.page <= 100:
+            raise ValueError("page must be between 1 and 100")
+        if not 1 <= args.limit <= MAX_RESULTS:
+            raise ValueError(f"limit must be between 1 and {MAX_RESULTS}")
+        if not 1 <= args.timeout <= 60:
+            raise ValueError("timeout must be between 1 and 60 seconds")
+        url = build_url(args.url, query, args.category, args.language, args.time_range, args.page)
+        payload = fetch_payload(url, args.timeout)
+        if args.raw:
+            output = payload
+        else:
+            output = normalize_payload(
+                payload,
+                query=query,
+                category=args.category,
+                language=args.language,
+                time_range=args.time_range,
+                limit=args.limit,
+                instance=args.url,
+            )
+        print(json.dumps(output, ensure_ascii=False, separators=(",", ":")))
+        return 0
+    except ResponseLimitError as exc:
+        print(f"searxng-search: {exc}", file=sys.stderr)
+        return 5
+    except UpstreamResponseError as exc:
+        print(f"searxng-search: {exc}", file=sys.stderr)
+        return 4
+    except SearchUnavailable as exc:
+        print(f"searxng-search: {exc}", file=sys.stderr)
+        return 3
+    except ValueError as exc:
+        print(f"searxng-search: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
