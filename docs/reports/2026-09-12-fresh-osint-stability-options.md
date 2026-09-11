@@ -146,7 +146,9 @@ NVMe Error Information log и SMART lifetime counter нельзя смешива
 - `smartmontools` — SMART/health и температурный контроль;
 - `fwupd` — только проверка поддержанных LVFS-обновлений.
 
-`smartd` уже присутствует, но выключен. Включать его сейчас не стал: это добавит постоянный system service без подтверждённого события и без настроенного канала уведомлений. Его можно включить позже как health monitor, если появится повторяемый ненулевой error entry или рост температуры.
+`smartd` уже присутствовал, поэтому вместо нового скрипта включён один минимальный system service: только `/dev/nvme0`, проверка раз в 30 минут, journal-only, без почты и без автоматических reset/firmware/power changes. Конфигурация использует `-H -l error -W 5,70,80`; one-shot validation прошла с exit `0`, сервис active, memory около `1.5 MiB`.
+
+Актуальная [smartd.conf documentation](https://man.archlinux.org/man/smartd.conf.5) подтверждает нужную реакцию для NVMe: `-H` отслеживает Critical Warning, `-l error` — рост `Number of Error Information Log Entries` и отличает сохранившуюся device-related ошибку от исчезнувшей/invalid-команды, `-W` задаёт температурные пороги. Состояние baseline хранится smartd в persistent state files, поэтому исторические `14` не превращаются в повторяющиеся тревоги.
 
 ### Что действительно снижает шанс новых событий
 
@@ -155,6 +157,13 @@ NVMe Error Information log и SMART lifetime counter нельзя смешива
 3. Сохранять еженедельный `fstrim.timer`; он не связан с обнулением error counter и уже работает корректно.
 4. Избегать hard power-off/forced reset; именно такие события наиболее правдоподобно увеличивают `unsafe_shutdowns`. Программные suspend/resume циклы сами по себе счётчик не увеличили.
 5. Проверять SMART/NVMe после будущего реального сбоя, а не пытаться очищать историю. Тревожная комбинация: рост `14` + ненулевой `error_count` + kernel timeout/reset/I/O или Btrfs error.
+
+### Как происходит реакция
+
+- **Информационный уровень:** счётчик вырос, но новые записи уже исчезли после reset/power-cycle или относятся к invalid/unsupported command. smartd пишет событие в journal; автоматического вмешательства нет.
+- **Критический уровень:** Critical Warning, media/data errors, температура выше критического порога или сохранившаяся device-related Error Information entry. Я сохраняю `smartctl`, `nvme error-log`, kernel journal и Btrfs evidence, затем останавливаю рискованные изменения.
+- **Подтверждённый power/controller failure:** только после повторения timeout/reset/I/O выполняется отдельный A/B с ограниченным APST threshold; `pcie_aspm=off`, `pcie_port_pm=off`, firmware flash и замена SSD не применяются автоматически.
+- **Откат мониторинга:** отключить `smartd.service`, удалить host-specific `/etc/smartd-zenbook.conf` и восстановить прежний `SMARTD_ARGS`; SSD и его counters от этого не меняются.
 
 ### Итоговое решение
 

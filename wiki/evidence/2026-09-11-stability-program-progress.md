@@ -188,6 +188,16 @@
 - Prevention decision: keep the in-tree NVMe driver, `nvme-cli`, `smartmontools`, `fwupd`, weekly fstrim, and current APST/NOPPM; monitor after real failures; change power policy only after a reproduced timeout/reset/I/O/Btrfs event.
 - Full source comparison and action matrix are in [the updated NVMe OSINT report](../../docs/reports/2026-09-12-fresh-osint-stability-options.md). No runtime change was made in this research stage.
 
+### 2026-09-12 — minimal NVMe monitor enabled
+
+- The existing `smartmontools` package was used; no new package or vendor driver was installed. A host-specific `/etc/smartd-zenbook.conf` now monitors only `/dev/nvme0` with `-H -l error -W 5,70,80`.
+- `smartd.service` is enabled and active with a 30-minute interval. It writes to the system journal only; no mail transport, firmware action, controller reset, APST change, or automatic remediation is configured.
+- One-shot validation completed with exit `0`; the daemon identified one NVMe device and the forced immediate check produced no critical/error/warning event. The service uses about `1.5 MiB` resident memory.
+- Reaction contract: informational journal entry for a counter increase that is no longer present or is command-related; preserve evidence and stop automatic changes for a device-related persistent error, Critical Warning, media error, critical temperature, or kernel timeout/reset/I/O/Btrfs signature.
+- Rollback is bounded: restore the previous `/etc/conf.d/smartd`, remove `/etc/smartd-zenbook.conf`, and disable the unit. No SSD data or controller counters are affected by the monitor.
+- OSINT basis: [smartd.conf NVMe monitoring semantics](https://man.archlinux.org/man/smartd.conf.5) and [smartd persistent state behavior](https://man.archlinux.org/man/extra/smartmontools/smartd.8.en).
+- Task status: monitoring `PASS`; prevention remains `OBSERVE` because the historical lifetime counter cannot be reset and no current storage failure is present.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
