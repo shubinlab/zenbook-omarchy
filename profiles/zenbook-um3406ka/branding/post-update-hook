@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -u
+
+CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
+DATA_HOME="${XDG_DATA_HOME:-${HOME}/.local/share}"
+BRANDING_CONFIG="${CONFIG_HOME}/omarchy/branding"
+BRANDING_DATA="${DATA_HOME}/zenbook-omarchy/branding"
+PLYMOUTH_LOGO="/usr/share/plymouth/themes/omarchy/logo.png"
+SDDM_LOGO="/usr/share/sddm/themes/omarchy/logo.png"
+failure=0
+
+warn() { printf 'branding-omarchy hook: %s\n' "$*" >&2; failure=1; }
+
+for asset in about.txt screensaver.txt boot-login.png; do
+  [[ -r "${BRANDING_DATA}/${asset}" ]] || {
+    warn "missing installed asset: ${BRANDING_DATA}/${asset}"
+    exit "$failure"
+  }
+done
+
+mkdir -p "$BRANDING_CONFIG"
+install -m 0644 "${BRANDING_DATA}/screensaver.txt" "${BRANDING_CONFIG}/screensaver.txt" || warn 'could not restore screensaver.txt'
+install -m 0644 "${BRANDING_DATA}/about.txt" "${BRANDING_CONFIG}/about.txt" || warn 'could not restore about.txt'
+
+if command -v sudo >/dev/null 2>&1; then
+  sudo -n install -m 0644 "${BRANDING_DATA}/boot-login.png" "$PLYMOUTH_LOGO" ||
+    warn 'could not restore Plymouth logo without prompting'
+  sudo -n install -m 0644 "${BRANDING_DATA}/boot-login.png" "$SDDM_LOGO" ||
+    warn 'could not restore SDDM logo without prompting'
+else
+  warn 'sudo is unavailable; system logos were not restored'
+fi
+
+exit "$failure"

@@ -14,6 +14,7 @@ PROFILE_INSTALL_VPN_CLI=0
 PROFILE_LOGIN_AFTER_VPN_INSTALL=0
 PROFILE_MONITOR_CONFIG=""
 PROFILE_DISPLAY_DOCTOR=""
+PROFILE_BRANDING_EXTENSION=""
 PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
@@ -32,6 +33,7 @@ DIAGNOSTIC_SOURCES=()
 COMPONENTS_REQUEST=""
 MONITOR_SOURCE=""
 DISPLAY_DOCTOR=""
+BRANDING_SOURCE=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
 BITWARDEN_SOURCE=""
@@ -154,6 +156,9 @@ detect_profile() {
   fi
   if [[ -n "$PROFILE_DISPLAY_DOCTOR" ]]; then
     DISPLAY_DOCTOR="$PROFILE_DIR/$PROFILE_DISPLAY_DOCTOR"
+  fi
+  if [[ -n "$PROFILE_BRANDING_EXTENSION" ]]; then
+    BRANDING_SOURCE="$PROFILE_DIR/$PROFILE_BRANDING_EXTENSION"
   fi
   if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
     TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
@@ -408,6 +413,10 @@ check_profile() {
   if [[ -n "$DISPLAY_DOCTOR" ]]; then
     [[ -x "$DISPLAY_DOCTOR" ]] || die "missing display doctor: $DISPLAY_DOCTOR"
   fi
+  if [[ -n "$BRANDING_SOURCE" ]]; then
+    [[ -x "$BRANDING_SOURCE" ]] || die "missing branding extension: $BRANDING_SOURCE"
+    "$BRANDING_SOURCE" --check
+  fi
   if [[ -n "$TERMINAL_SOURCE" ]]; then
     [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
     "$TERMINAL_SOURCE" --check
@@ -515,6 +524,7 @@ print_plan() {
     printf '  Update: not included\n'
   fi
   printf '  Native boundary: no edits to /usr/share/omarchy; native installers/services/bindings stay authoritative\n'
+  [[ -n "$BRANDING_SOURCE" ]] && printf '  Branding: install SHUBIN screensaver, About, Plymouth, SDDM and post-update hook\n'
   printf '  Recovery: user-file backups go under %s\n' "$BACKUP_ROOT"
   if [[ "$STAGE" == all || "$STAGE" == selected ]]; then
     printf '  Verify: read-only doctor runs after a multi-stage install\n'
@@ -528,6 +538,7 @@ print_run_summary() {
   local step
   ((DO_VPN)) && steps+=(VPN)
   ((DO_MONITOR)) && steps+=(Display)
+  [[ -n "$BRANDING_SOURCE" ]] && steps+=(Branding)
   ((DO_VOICE)) && steps+=(Voice/NPU)
   ((DO_TERMINAL)) && steps+=(Terminal)
   ((DO_BITWARDEN)) && steps+=(Bitwarden)
@@ -846,6 +857,13 @@ apply_terminal() {
     printf 'bootstrap: terminal extension not configured; skipped\n'
   fi
 }
+apply_branding() {
+  if [[ -n "$BRANDING_SOURCE" ]]; then
+    "$BRANDING_SOURCE" --apply
+  else
+    printf 'bootstrap: branding extension not configured; skipped\n'
+  fi
+}
 
 apply_update() {
   need_command omarchy
@@ -935,6 +953,8 @@ run_stage() {
       if ((DO_VPN_CLI_UPDATE)); then update_vpn_cli; fi
       stage_note 'display' 'Display settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
+      stage_note 'branding' 'SHUBIN Omarchy branding'
+      apply_branding
       if ((${#PACKAGE_SOURCES[@]})); then
         stage_note 'packages' 'Base runtime dependencies'
         install_packages
