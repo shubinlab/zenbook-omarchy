@@ -121,3 +121,41 @@
 - [Linux kernel dm-crypt discard documentation](https://docs.kernel.org/admin-guide/device-mapper/dm-crypt.html)
 - [GNOME LocalSearch overview](https://gnome.pages.gitlab.gnome.org/localsearch/overview.html)
 - [GNOME LocalSearch service/command-line documentation](https://gnome.pages.gitlab.gnome.org/localsearch/commandline.html)
+
+## Дополнение: NVMe — очистка и профилактика
+
+### Два разных счётчика
+
+NVMe Error Information log и SMART lifetime counter нельзя смешивать:
+
+- Error Information log содержит последние записи об ошибках; спецификация допускает его очистку при controller reset или power cycle. На этой машине актуальные записи уже не содержат ошибок: `error_count=0`, успешный status.
+- `Number of Error Information Log Entries=14` — накопительный идентификатор/счётчик за жизнь контроллера. Его нельзя штатно обнулить через `nvme-cli`, reset или обычную перезагрузку. Обнуление этого числа не было бы исправлением.
+
+Источники: [NVMe 1.3c, Error Information log](https://nvmexpress.org/wp-content/uploads/NVM-Express-1_3c-2018.05.24-Ratified.pdf) и [NVMe management/logging summary](https://nvmexpress.org/wp-content/uploads/June-2020-NVMe%E2%84%A2-SSD-Management-Error-Reporting-and-Logging-Capabilities.pdf).
+
+### Текущий SN850X и доступные инструменты
+
+Локально подтверждены: firmware `620361WD`, BIOS `UM3406KA.306`, APST enabled, NOPPM enabled, `/sys/.../power/control=on`, `nvme-cli 2.16`, `smartmontools 7.5`, `fwupd 2.1.7`. `fwupdmgr` не предлагает обновления для SSD или System Firmware.
+
+Официальная страница [WD_BLACK SN850X](https://support-en.wd.com/app/products/detail/p/8695) предупреждает, что firmware updates доступны только если поддержаны соответствующим software tool; актуальная страница [SanDisk product support](https://support-en.sandisk.com/app/products/product-detailweb/p/8695) направляет к SanDisk Dashboard, а спецификация WD указывает Windows-only Dashboard. Это не основание ставить случайный `.fluf` или vendor-драйвер под Linux.
+
+Правильный Linux-набор уже установлен:
+
+- in-tree Linux `nvme` driver — драйвер устройства;
+- `nvme-cli` — диагностика, features, firmware log и error log;
+- `smartmontools` — SMART/health и температурный контроль;
+- `fwupd` — только проверка поддержанных LVFS-обновлений.
+
+`smartd` уже присутствует, но выключен. Включать его сейчас не стал: это добавит постоянный system service без подтверждённого события и без настроенного канала уведомлений. Его можно включить позже как health monitor, если появится повторяемый ненулевой error entry или рост температуры.
+
+### Что действительно снижает шанс новых событий
+
+1. Оставить APST и NOPPM как есть: пять реальных AC `s2idle` циклов прошли без timeout/reset/I/O/Btrfs ошибок. Не добавлять `nvme_core.default_ps_max_latency_us=0`, `pcie_aspm=off` или `pcie_port_pm=off` без воспроизведения отказа.
+2. Оставить runtime NVMe power control `on`; это уже консервативнее, чем разрешённый autosuspend.
+3. Сохранять еженедельный `fstrim.timer`; он не связан с обнулением error counter и уже работает корректно.
+4. Избегать hard power-off/forced reset; именно такие события наиболее правдоподобно увеличивают `unsafe_shutdowns`. Программные suspend/resume циклы сами по себе счётчик не увеличили.
+5. Проверять SMART/NVMe после будущего реального сбоя, а не пытаться очищать историю. Тревожная комбинация: рост `14` + ненулевой `error_count` + kernel timeout/reset/I/O или Btrfs error.
+
+### Итоговое решение
+
+Нового драйвера или утилиты, которая безопасно «лечит» текущие значения, не найдено. Текущее состояние — не неисправность SSD: исторические counters стабильны, актуальные entries чистые, firmware доступно в актуальном проверенном состоянии, а power-management эксперимент не воспроизвёл ошибку.

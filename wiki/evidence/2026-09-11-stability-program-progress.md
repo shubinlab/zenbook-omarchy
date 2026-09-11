@@ -179,6 +179,15 @@
 - Immediate red-team verification: SMART remained `PASSED`, `unsafe_shutdowns=125`, `error_log_entries=14`, media/data errors `0`, and no new PCIe/NVMe kernel error appeared.
 - Final result: this particular SN850X firmware does not expose the WDC clear operation through the installed plugin. There is no safe supported clear path for the requested standard counter.
 
+### 2026-09-12 — fresh NVMe prevention OSINT
+
+- Current OSINT distinguishes the clearable Error Information log page from the SMART lifetime counter: controller reset/power-cycle may clear old log-page entries, but `Number of Error Information Log Entries=14` remains historical by design. Local current entries are already zero/invalid and do not need clearing.
+- Official WD/SanDisk support points to the Windows-only Dashboard path for supported firmware management; Linux has no separate WD kernel driver for this NVMe. `fwupd` currently reports no update, and no third-party firmware image was used.
+- Read-only local feature check: APST is enabled with states 3/4 selected, NOPPM is enabled, runtime power control is `on`, and the device firmware is `620361WD`. Five AC suspend/resume cycles produced no storage error, so disabling APST/PCIe power saving would be speculative.
+- `smartd` is installed but disabled. It remains an optional monitor, not an automatic addition: enabling another persistent service without an alert path conflicts with the low-bloat goal and current clean evidence.
+- Prevention decision: keep the in-tree NVMe driver, `nvme-cli`, `smartmontools`, `fwupd`, weekly fstrim, and current APST/NOPPM; monitor after real failures; change power policy only after a reproduced timeout/reset/I/O/Btrfs event.
+- Full source comparison and action matrix are in [the updated NVMe OSINT report](../../docs/reports/2026-09-12-fresh-osint-stability-options.md). No runtime change was made in this research stage.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
