@@ -46,7 +46,7 @@
 
 ### 2026-09-11 — storage, firmware, and power baseline
 
-- Fresh baseline captured under `runs/2026-09-11-stability-program/storage/`; raw output remains outside Git.
+- Fresh baseline captured under an external, user-private raw-evidence directory; raw output was moved out of the repository after discovering that the current `.gitignore` does not ignore arbitrary nested `runs/` files.
 - Live versions confirmed: Arch kernel `7.2.3`, `linux-firmware` and `amd-ucode` from the current installed set, `fwupd`, `smartmontools`, and `nvme-cli` installed.
 - BIOS confirmed as `UM3406KA.306`; no BIOS change was made.
 - `fwupdmgr refresh` completed successfully. After refresh, `WD BLACK SN850X 2000GB` and `System Firmware` report no available update. No firmware was flashed.

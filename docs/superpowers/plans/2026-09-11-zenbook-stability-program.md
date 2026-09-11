@@ -28,9 +28,16 @@
 - Reuse: `docs/superpowers/plans/2026-09-11-searxng-agent-and-omarchy-hardening.md` — SearXNG implementation subplan.
 - Reuse: `docs/superpowers/specs/2026-09-11-searxng-agent-integration-design.md` — SearXNG contract.
 - Reuse: `docs/reports/2026-09-11-codex-searxng-camofox-block-red-team.md` — prior ten-domain evidence and limitations.
-- Create outside Git: `runs/2026-09-11-stability-program/` — raw local output; publish only sanitized summaries.
+- Create outside Git: external raw evidence directory — raw local output; publish only sanitized summaries. The repository's current `.gitignore` covers only selected `runs/` file types, so raw evidence must not be placed under the repository root.
 
 ## Execution Rules
+
+At the start of an execution session, create one user-private raw-evidence root outside the repository and keep its path in the task-local variable `zenbook_raw_root`:
+
+```bash
+zenbook_raw_root="$(mktemp -d -p "${XDG_RUNTIME_DIR:-/tmp}" zenbook-stability.XXXXXX)"
+chmod 700 "$zenbook_raw_root"
+```
 
 Each task follows this loop:
 
@@ -67,8 +74,8 @@ Each task follows this loop:
 - [ ] **Step 2: Create the raw evidence directory outside published documentation**
 
   ```bash
-  mkdir -p runs/2026-09-11-stability-program
-  chmod 700 runs/2026-09-11-stability-program
+  mkdir -p "$zenbook_raw_root/2026-09-11-stability-program"
+  chmod 700 "$zenbook_raw_root/2026-09-11-stability-program"
   ```
 
 - [ ] **Step 3: Write the first progress entry**
@@ -89,7 +96,7 @@ Each task follows this loop:
 
 **Files:**
 - Modify: `wiki/evidence/2026-09-11-stability-program-progress.md`
-- Create outside Git: `runs/2026-09-11-stability-program/storage/`
+- Create outside Git: `$zenbook_raw_root/2026-09-11-stability-program/storage/`
 
 **Interfaces:**
 - Consumes: the live laptop and the storage section of the spec.
@@ -98,7 +105,7 @@ Each task follows this loop:
 - [ ] **Step 1: Capture versions and firmware without serials**
 
   ```bash
-  mkdir -p runs/2026-09-11-stability-program/storage
+  mkdir -p "$zenbook_raw_root/2026-09-11-stability-program/storage"
   uname -srvm
   pacman -Q linux linux-firmware amd-ucode fwupd smartmontools nvme-cli
   cat /sys/class/dmi/id/bios_version
@@ -162,7 +169,7 @@ Each task follows this loop:
 
 **Files:**
 - Modify: `wiki/evidence/2026-09-11-stability-program-progress.md`
-- Create outside Git: `runs/2026-09-11-stability-program/crashes/`
+- Create outside Git: `$zenbook_raw_root/2026-09-11-stability-program/crashes/`
 
 **Interfaces:**
 - Consumes: coredumpctl, package versions, recent boot journals, and the diagnose-crash workflow.
@@ -196,7 +203,7 @@ Each task follows this loop:
 
 **Files:**
 - Modify: `wiki/evidence/2026-09-11-stability-program-progress.md`
-- Create outside Git: `runs/2026-09-11-stability-program/power/`
+- Create outside Git: `$zenbook_raw_root/2026-09-11-stability-program/power/`
 
 **Interfaces:**
 - Consumes: Task 2 baseline and Task 3 crash classification.
@@ -271,7 +278,7 @@ Each task follows this loop:
 **Files:**
 - Create: `docs/reports/2026-09-11-zenbook-agent-route-matrix.md`
 - Modify: `wiki/evidence/2026-09-11-stability-program-progress.md`
-- Create outside Git: `runs/2026-09-11-stability-program/red-team/`
+- Create outside Git: `$zenbook_raw_root/2026-09-11-stability-program/red-team/`
 
 **Interfaces:**
 - Consumes: SearXNG/Camofox/Chromium acceptance from Task 5 and the prior red-team report.
@@ -301,7 +308,7 @@ Each task follows this loop:
 
 **Files:**
 - Modify: `wiki/evidence/2026-09-11-stability-program-progress.md`
-- Create outside Git: `runs/2026-09-11-stability-program/hygiene/`
+- Create outside Git: `$zenbook_raw_root/2026-09-11-stability-program/hygiene/`
 
 **Interfaces:**
 - Consumes: all protected-workload acceptance evidence.
@@ -365,4 +372,3 @@ Each task follows this loop:
 - [ ] **Step 5: Commit the final report**
 
   The final commit must contain only the final Markdown report, ledger update, and any reviewed repository-owned configuration changes. It must not include raw `runs/` output or pre-existing user edits.
-
