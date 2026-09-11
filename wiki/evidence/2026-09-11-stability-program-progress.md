@@ -138,6 +138,16 @@
 - Red-team conclusion: the unsafe-shutdown/error-log counters alone do not justify replacing the SSD, disabling APST, or adding a vendor driver. The remaining useful reliability experiment is controlled suspend/resume observation, not a speculative parameter change.
 - Task status: storage/firmware baseline `PASS`; suspend/resume coverage remains `OBSERVE`.
 
+### 2026-09-12 — controlled suspend/resume smoke test
+
+- One real `s2idle` cycle completed: suspend entry at `00:51:23`, resume at `00:51:51`, with systemd reporting a successful return from the sleep operation.
+- After resume, NVMe queues were recreated normally. A fresh privileged SMART read remained `PASSED`, `44 C`, `100%` spare, `0%` used, media/data errors `0`; lifetime counters were unchanged at `125/14`.
+- No NVMe timeout, controller reset, AER, block-I/O, Btrfs error, or new Quickshell coredump appeared in the cycle window. System and user failed-unit lists remained empty.
+- Protected units recovered as active: Telegram autostart, Hermes gateway, Camofox, Voxtype, and Hermes healthcheck timer.
+- Expected side effects: Telegram transport reconnect during network sleep and two transient NetworkManager P2P warnings after wake. These did not persist as failed units or block the protected stack.
+- Red-team conclusion: this first suspend/resume cycle does not justify changing APST, sleep mode, NVMe driver policy, or Telegram/Hermes configuration. More cycles are useful for confidence, but the immediate failure hypothesis is not reproduced.
+- Task status: suspend/APST `OBSERVE`; first controlled cycle `PASS`.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
