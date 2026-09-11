@@ -129,6 +129,15 @@
 - Trigger for reopening this decision: a new Quickshell core or a reproducible reload/hotplug/resume crash. Then preserve the exact backtrace and reassess a controlled Qt 6.11.1 A/B.
 - Rollback: not applicable; no runtime or package state changed.
 
+### 2026-09-12 — fresh privileged storage re-check
+
+- Read-only `pkexec` checks completed successfully: SMART `PASSED`; temperature `44 C`; available spare `100%`; percentage used `0%`; media/data integrity errors `0`; all inspected NVMe error-log entries have `error_count=0` and successful status.
+- Lifetime counters remain `unsafe shutdowns=125` and `error log entries=14`. They are recorded for observation, not classified as current media/controller failure.
+- `fwupdmgr get-updates` reports no available firmware updates for System Firmware or WD BLACK SN850X. No firmware was flashed.
+- Current power policy remains unchanged: `s2idle` only, NVMe APST default latency `100000`, `force_apst=N`, and NVMe runtime power control `on`. This boot has no NVMe timeout, controller reset, AER, block I/O, or Btrfs error signature.
+- Red-team conclusion: the unsafe-shutdown/error-log counters alone do not justify replacing the SSD, disabling APST, or adding a vendor driver. The remaining useful reliability experiment is controlled suspend/resume observation, not a speculative parameter change.
+- Task status: storage/firmware baseline `PASS`; suspend/resume coverage remains `OBSERVE`.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
