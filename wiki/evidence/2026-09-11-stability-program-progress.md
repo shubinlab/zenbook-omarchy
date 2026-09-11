@@ -122,6 +122,13 @@
 - Decision options, risks, rollback paths, source links, and blind spots are recorded in [the fresh OSINT options report](../../docs/reports/2026-09-12-fresh-osint-stability-options.md). No runtime state changed in this checkpoint.
 - Task status remains `PARTIAL`: the research decision gates are clearer, but NVMe privileged re-read, controlled suspend coverage, Quickshell causal A/B, and the LocalSearch/kDrive user choices remain open.
 
+### 2026-09-12 — interactive decision: Quickshell containment
+
+- User selected option `A1`: keep the current packaged Quickshell/Qt set and existing Omarchy launcher containment; do not downgrade Qt, add a patched build, or alter shell plugins now.
+- Rationale: the upstream match is strong enough to guide the next experiment, but no fresh local core appeared after controlled restart and a shared-Qt downgrade has unnecessary blast radius.
+- Trigger for reopening this decision: a new Quickshell core or a reproducible reload/hotplug/resume crash. Then preserve the exact backtrace and reassess a controlled Qt 6.11.1 A/B.
+- Rollback: not applicable; no runtime or package state changed.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
