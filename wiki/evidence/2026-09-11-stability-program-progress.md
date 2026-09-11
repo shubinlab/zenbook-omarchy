@@ -98,6 +98,14 @@
 - OSINT basis: [ArchWiki dm-crypt discard guidance](https://wiki.archlinux.org/title/Dm-crypt/Specialties), [cryptsetup refresh warning](https://man.archlinux.org/man/cryptsetup-refresh.8.en), and [crypttab discard option](https://man.archlinux.org/man/crypttab.5).
 - Task status: `PARTIAL`; the trim behavior is explained and safe, Hermes transport recovered, but end-to-end Telegram application confirmation and root-trim policy choice remain open.
 
+### 2026-09-12 — ten-domain Camofox/Chromium repeat
+
+- Repeated the existing ten-domain read-only matrix: `instagram.com`, `facebook.com`, `twitter.com`, `linkedin.com`, `bbc.com`, `bsky.app`, `censor.net`, `carnegie.ru`, `amnezia.org`, and `paperpaper.io`.
+- Camofox opened all ten URLs and returned an accessibility snapshot for each. Every isolated session was deleted successfully; the API ended with zero active tabs/sessions and zero consecutive failures. Challenge/login/privacy indicators were recorded as page outcomes, not transport blocks.
+- Installed Chromium 152 rendered all ten URLs with isolated temporary profiles. All ten browser processes exited successfully; challenge/login/privacy indicators varied by site, but no browser-level transport failure occurred.
+- Red-team conclusion: the current VPN egress reaches these domains from this host, but this must not be generalized to every Russian ISP, ASN, or U.S. network. A page rendering is not proof of useful access, and a challenge/login wall remains a functional block for an unauthenticated agent.
+- Task status: `PASS` for this host's Camofox/Chromium transport control; `PARTIAL` for the broader geo-blocking question and authenticated-content usability.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
