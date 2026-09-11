@@ -172,6 +172,13 @@
 - A prior vendor-specific `clear-pcie-correctable-errors` action would, if it had been used, affect only that separate PCIe counter and would not reset `error_log_entries=14`. No evidence of that command was found either.
 - Current correction: the evidence supports “the NVMe lifetime counter was read and monitored,” not “the standard NVMe counter was erased.”
 
+### 2026-09-12 — WD vendor-counter clear attempt
+
+- Because the user explicitly asked whether the separate vendor-specific counter could be cleared, the supported local command was tested: `pkexec nvme wdc clear-pcie-correctable-errors /dev/nvme0`.
+- The WD firmware returned `unsupported device for this command` with exit code `1`; no vendor counter was cleared and no data, namespace, SMART field, or NVMe lifetime counter was modified.
+- Immediate red-team verification: SMART remained `PASSED`, `unsafe_shutdowns=125`, `error_log_entries=14`, media/data errors `0`, and no new PCIe/NVMe kernel error appeared.
+- Final result: this particular SN850X firmware does not expose the WDC clear operation through the installed plugin. There is no safe supported clear path for the requested standard counter.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
