@@ -148,6 +148,14 @@
 - Red-team conclusion: this first suspend/resume cycle does not justify changing APST, sleep mode, NVMe driver policy, or Telegram/Hermes configuration. More cycles are useful for confidence, but the immediate failure hypothesis is not reproduced.
 - Task status: suspend/APST `OBSERVE`; first controlled cycle `PASS`.
 
+### 2026-09-12 — five-cycle AC suspend/resume series
+
+- Because AC was online, four additional cycles were run automatically after the smoke test; the boot journal now contains six matching `suspend entry`/`suspend exit` pairs in total.
+- All five tested AC/s2idle cycles returned successfully. After the series, SMART remained `PASSED`, temperature `42 C`, spare `100%`, used `0%`, media/data errors `0`, and lifetime counters unchanged at `125/14`.
+- Red-team checks found no NVMe timeout/reset/AER/I/O/Btrfs error, no new coredump, no system or user failed unit, and all protected services remained active. The repeated queue-recreation messages are expected for this platform's suspend path, not controller failure.
+- This materially weakens the hypothesis that routine AC suspend/resume or APST is causing the unsafe-shutdown history. Battery suspend coverage remains untested; no APST or sleep-policy change is justified.
+- Task status: suspend/APST `PASS` for five AC cycles; `OBSERVE` for battery cycles.
+
 ## Decision log
 
 | Decision | Reason | Rollback |
