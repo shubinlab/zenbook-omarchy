@@ -42,10 +42,12 @@ else
   bad 'Foot Sixel is not explicitly enabled'
 fi
 
-if grep -Fq 'zenbook-omarchy Foot usability (managed)' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
+if grep -Fq 'zenbook-omarchy Foot input (managed)' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
+   grep -Fq 'clipboard-copy=Control+Insert Control+Shift+c XF86Copy' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
+   grep -Fq '\x1b[13;2u=Shift+Return' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
    grep -Fq 'search-start=F6' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
    grep -Fq 'pipe-command-output=[wl-copy] F8' "$HOME/.config/foot/foot.ini" 2>/dev/null; then
-  ok 'Foot usability bindings are installed'
+  ok 'Foot selection, clipboard and usability bindings are installed'
 else
   bad 'Foot usability bindings are missing'
 fi

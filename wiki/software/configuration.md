@@ -17,9 +17,9 @@ updates.
 | User file | Stock behavior | This host's difference |
 |---|---|---|
 | `~/.config/hypr/monitors.lua` | Stock monitor setup | External LG `DP-1` 1440p/240/10-bit/sRGB/VRR/scale 1.6 |
-| `~/.config/hypr/bindings.lua` | Stock Omarchy bindings and web-app shortcuts | Bitwarden block plus the separate Right Ctrl -> F13 Voxtype binding; language switching stays in XKB input policy; core bindings retained |
+| `~/.config/hypr/bindings.lua` | Stock Omarchy bindings and web-app shortcuts | Layout-safe Super+C/V/X clipboard block, Google settings shortcut and Right Ctrl -> F13 Voxtype binding; language switching stays in XKB input policy; core bindings retained |
 | `~/.config/hypr/input.lua` | Stock input defaults | `us,ru`, generated user XKB keymap and bidirectional Alt+Shift; click-to-focus is explicit; Fcitx5 is not the language-switch owner |
-| `~/.config/foot/foot.ini` | Stock Foot settings | `sixel=yes` plus user-owned search/URL/clipboard-output bindings on F6/F12/F8; other Foot settings retained |
+| `~/.config/foot/foot.ini` | Stock Foot settings | Keyboard selection/copy/paste, layout-safe Control keys, Sixel and search/URL/clipboard-output bindings on F6/F12/F8; other Foot settings retained |
 | `~/.config/tmux/tmux.conf` and `~/.config/omarchy/hooks/theme-set.d/` | Omarchy tmux and theme hooks | Managed theme include and semantic-color tmux palette; complete stock tmux configuration remains intact |
 | `~/.config/omarchy/shell.json` | Stock bar and clock defaults | Transparent shell; clock format `dddd HH:mm`; idle 150/300 seconds retained |
 | `~/.config/omarchy/defaults/agent` | Omarchy default agent | `codex` |

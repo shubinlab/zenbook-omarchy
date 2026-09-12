@@ -194,7 +194,39 @@ apply_foot() {
     backup_once
     printf '\n[tweak]\nsixel=yes\n' >>"${target}"
   fi
-  local block='## >>> zenbook-omarchy Foot usability (managed) >>>
+  local block='## >>> zenbook-omarchy Foot input (managed) >>>
+[main]
+selection-target=both
+
+[key-bindings]
+clipboard-copy=Control+Insert Control+Shift+c XF86Copy
+primary-paste=none
+clipboard-paste=Shift+Insert Control+Shift+v XF86Paste
+
+[text-bindings]
+\x1b[13;2u=Shift+Return
+\x1b[13;4u=Mod1+Shift+Return
+\x01=Control+a
+\x02=Control+b
+\x03=Control+c
+\x04=Control+d
+\x05=Control+e
+\x06=Control+f
+\x07=Control+g
+\x08=Control+h
+\x0b=Control+k
+\x0c=Control+l
+\x0e=Control+n
+\x10=Control+p
+\x12=Control+r
+\x14=Control+t
+\x15=Control+u
+\x16=Control+v
+\x17=Control+w
+\x18=Control+x
+\x19=Control+y
+\x1a=Control+z
+
 [mouse]
 hide-when-typing=yes
 
@@ -205,22 +237,36 @@ font-increase=Control+plus Control+equal Control+KP_Add
 font-decrease=Control+minus Control+KP_Subtract
 font-reset=Control+0 Control+KP_0
 pipe-command-output=[wl-copy] F8
-## <<< zenbook-omarchy Foot usability (managed) <<<'
-  if grep -Fq -- 'zenbook-omarchy Foot usability (managed)' "${target}" 2>/dev/null; then
+## <<< zenbook-omarchy Foot input (managed) <<<'
+  if grep -Fq -- 'zenbook-omarchy Foot input (managed)' "${target}" 2>/dev/null &&
+     grep -Fq -- 'clipboard-copy=Control+Insert Control+Shift+c XF86Copy' "${target}" 2>/dev/null &&
+     grep -Fq -- '\x1b[13;2u=Shift+Return' "${target}" 2>/dev/null; then
+    return 0
+  fi
+  if grep -Fq -- 'zenbook-omarchy Foot input (managed)' "${target}" 2>/dev/null ||
+     grep -Fq -- 'zenbook-omarchy Foot usability (managed)' "${target}" 2>/dev/null ||
+     grep -Fq -- 'clipboard-copy=Control+Insert Control+Shift+c XF86Copy' "${target}" 2>/dev/null; then
     local temporary
     backup_once
     temporary="$(mktemp "${target}.tmp.XXXXXX")"
     awk '
-      /^## >>> zenbook-omarchy Foot usability \(managed\) >>>$/ { skip=1; next }
-      skip && /^## <<< zenbook-omarchy Foot usability \(managed\) <<<$/{ skip=0; next }
+      /^## >>> zenbook-omarchy Foot (input|usability) \(managed\) >>>$/ { skip=1; next }
+      skip && /^## <<< zenbook-omarchy Foot (input|usability) \(managed\) <<<$/{ skip=0; next }
+      /^selection-target=both$/ { next }
+      /^clipboard-copy=Control\+Insert Control\+Shift\+c XF86Copy$/ { next }
+      /^primary-paste=none$/ { next }
+      /^clipboard-paste=Shift\+Insert Control\+Shift\+v XF86Paste$/ { next }
+      /^\\x1b\[13;2u=Shift\+Return$/ { next }
+      /^\\x1b\[13;4u=Mod1\+Shift\+Return$/ { next }
+      /^\\x(01|02|03|04|05|06|07|08|0b|0c|0e|10|12|14|15|16|17|18|19|1a)=Control\+[a-z]$/ { next }
       !skip { print }
     ' "${target}" >"${temporary}"
     install -m0644 "${temporary}" "${target}"
     rm -f -- "${temporary}"
-    append_block "${target}" "${block}" 'zenbook-omarchy Foot usability (managed)'
+    append_block "${target}" "${block}" 'zenbook-omarchy Foot input (managed)'
   else
     backup_once
-    append_block "${target}" "${block}" 'zenbook-omarchy Foot usability (managed)'
+    append_block "${target}" "${block}" 'zenbook-omarchy Foot input (managed)'
   fi
 }
 

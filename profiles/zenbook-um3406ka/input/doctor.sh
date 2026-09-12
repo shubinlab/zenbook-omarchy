@@ -34,6 +34,8 @@ if [[ -f "$FCITX_TARGET" ]]; then
 fi
 if [[ -f "$BINDINGS_TARGET" ]]; then
   if grep -Fq 'toggle-fcitx-layout' "$BINDINGS_TARGET"; then fail 'obsolete Fcitx language binding remains'; else ok 'Fcitx is not used as language-switch owner'; fi
+  grep -Fq 'zenbook-omarchy universal clipboard layout fix (managed)' "$BINDINGS_TARGET" && ok 'universal Super+C/V/X clipboard bindings exist' || fail 'universal clipboard bindings are missing'
+  grep -Fq 'zenbook-omarchy Google settings shortcut (managed)' "$BINDINGS_TARGET" && ok 'Google settings shortcut exists' || fail 'Google settings shortcut is missing'
   grep -Fq 'o.bind("F13"' "$BINDINGS_TARGET" && ok 'Right Ctrl/F13 Voxtype binding exists' || fail 'F13 Voxtype binding is missing'
 fi
 if command -v xkbcli >/dev/null 2>&1 && [[ -f "$KEYMAP_TARGET" ]]; then

@@ -53,6 +53,8 @@ check_files() {
   grep -Fq 'follow_mouse = 0' "$INPUT_TARGET" || fail 'click-to-focus is not configured'
   grep -Fq 'grp:alt_shift_toggle_bidir' "$INPUT_TARGET" || fail 'bidirectional XKB Alt+Shift option is missing'
   grep -Fq 'kb_file' "$INPUT_TARGET" || fail 'input.lua does not declare the Voxtype keymap'
+  grep -Fq 'zenbook-omarchy universal clipboard layout fix (managed)' "$BINDINGS_TARGET" || fail 'managed universal clipboard bindings are missing'
+  grep -Fq 'zenbook-omarchy Google settings shortcut (managed)' "$BINDINGS_TARGET" || fail 'managed Google settings shortcut is missing'
   grep -Fq 'zenbook-omarchy input (managed)' "$BINDINGS_TARGET" || fail 'managed input bindings are missing'
   if grep -vE '^[[:space:]]*--' "$INPUT_TARGET" | grep -Eq 'grp:(alts_toggle|alt_space_toggle)'; then
     fail 'Alt-based XKB switching remains enabled'

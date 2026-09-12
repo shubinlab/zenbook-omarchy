@@ -5,8 +5,20 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-BEGIN = "-- >>> zenbook-omarchy input (managed) >>>"
-END = "-- <<< zenbook-omarchy input (managed) <<<"
+BLOCKS = (
+    (
+        "-- >>> zenbook-omarchy universal clipboard layout fix (managed) >>>",
+        "-- <<< zenbook-omarchy universal clipboard layout fix (managed) <<<",
+    ),
+    (
+        "-- >>> zenbook-omarchy Google settings shortcut (managed) >>>",
+        "-- <<< zenbook-omarchy Google settings shortcut (managed) <<<",
+    ),
+    (
+        "-- >>> zenbook-omarchy input (managed) >>>",
+        "-- <<< zenbook-omarchy input (managed) <<<",
+    ),
+)
 
 
 def main() -> int:
@@ -16,13 +28,16 @@ def main() -> int:
     target, block_file = map(Path, sys.argv[1:])
     text = target.read_text() if target.exists() else ""
     block = block_file.read_text().strip()
-    start = text.find(BEGIN)
-    if start >= 0:
-        end = text.find(END, start)
-        if end < 0:
-            raise SystemExit("managed input block has no end marker")
-        end += len(END)
-        text = text[:start].rstrip() + "\n" + text[end:].lstrip("\n")
+    for begin, end_marker in BLOCKS:
+        while True:
+            start = text.find(begin)
+            if start < 0:
+                break
+            end = text.find(end_marker, start)
+            if end < 0:
+                raise SystemExit(f"managed block has no end marker: {begin}")
+            end += len(end_marker)
+            text = text[:start].rstrip() + "\n" + text[end:].lstrip("\n")
     text = text.rstrip() + "\n\n" + block + "\n"
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(text)

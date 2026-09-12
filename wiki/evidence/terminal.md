@@ -10,7 +10,9 @@ It provides:
   an existing user installation unless an explicit update is requested;
 - Bash ghost text and the upstream ble.sh/fzf integration;
 - explicit native Foot Sixel support;
-- user-owned Foot search, URL, font zoom and clipboard-output bindings;
+- user-owned Foot Shift+Return handling, keyboard selection/copy/paste,
+  layout-safe Control keys, search, URL, font zoom and clipboard-output
+  bindings;
 - an Omarchy `theme-set` hook that regenerates the tmux status/pane palette from
   semantic theme colors;
 - the stock Omarchy web-app shortcut set remains untouched;
