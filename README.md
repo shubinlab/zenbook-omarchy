@@ -116,6 +116,7 @@ profiles/                          executable host profiles
 profiles/zenbook-um3406ka/voice/   native Voxtype policy and doctor
 profiles/zenbook-um3406ka/bitwarden/ native Wayland policy, launcher and onboarding
 profiles/zenbook-um3406ka/terminal/ terminal policy and rollback
+scripts/gmail.sh                  native Google mail, calendar and contacts apps
 scripts/repair-voice-legacy.sh     opt-in migration for older voice setups
 wiki/                              guides, inventories and evidence
 tools/                             CI and publication checks
