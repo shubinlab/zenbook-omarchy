@@ -11,6 +11,9 @@ CONFIG_HOME="${XDG_CONFIG_HOME:-${HOME}/.config}"
 STATE_HOME="${XDG_STATE_HOME:-${HOME}/.local/state}"
 BACKUP_ROOT="${STATE_HOME}/omarchy-profiles/backups/terminal"
 BLE_DIR="${DATA_HOME}/blesh"
+TMUX_CONFIG="${CONFIG_HOME}/tmux/tmux.conf"
+TMUX_THEME="${CONFIG_HOME}/tmux/omarchy-theme.conf"
+THEME_HOOK="${CONFIG_HOME}/omarchy/hooks/theme-set.d/zenbook-terminal-tmux-theme"
 BLE_URL="https://github.com/akinomyoga/ble.sh/releases/download/nightly/ble-nightly-20260907%2B690b315.tar.xz"
 BLE_SHA256="b376301fd63d60e1659ba74dbc3ec91bd4084d8e09b33d5740ae38c5026fe402"
 
@@ -49,6 +52,7 @@ for asset in \
   "${SCRIPT_DIR}/bashrc" \
   "${SCRIPT_DIR}/blerc" \
   "${SCRIPT_DIR}/omarchy-fzf-preview" \
+  "${SCRIPT_DIR}/tmux-theme-hook" \
   "${SCRIPT_DIR}/terminal-doctor"; do
   [[ -r ${asset} ]] || die "missing terminal asset: ${asset}"
 done
@@ -80,6 +84,9 @@ backup_once() {
   backup_target "${HOME}/.bashrc" bashrc
   backup_target "${HOME}/.blerc" blerc
   backup_target "${CONFIG_HOME}/foot/foot.ini" foot.ini
+  backup_target "${TMUX_CONFIG}" tmux.conf
+  backup_target "${TMUX_THEME}" tmux-theme.conf
+  backup_target "${THEME_HOOK}" tmux-theme-hook
   backup_target "${CONFIG_HOME}/hypr/bindings.lua" bindings.lua
   backup_target "${HOME}/.local/bin/omarchy-fzf-preview" fzf-preview
   backup_target "${HOME}/.local/bin/terminal-doctor" terminal-doctor
@@ -187,6 +194,48 @@ apply_foot() {
     backup_once
     printf '\n[tweak]\nsixel=yes\n' >>"${target}"
   fi
+  local block='## >>> zenbook-omarchy Foot usability (managed) >>>
+[mouse]
+hide-when-typing=yes
+
+[key-bindings]
+search-start=F6
+show-urls-launch=F12
+font-increase=Control+plus Control+equal Control+KP_Add
+font-decrease=Control+minus Control+KP_Subtract
+font-reset=Control+0 Control+KP_0
+pipe-command-output=[wl-copy] F8
+## <<< zenbook-omarchy Foot usability (managed) <<<'
+  if grep -Fq -- 'zenbook-omarchy Foot usability (managed)' "${target}" 2>/dev/null; then
+    local temporary
+    backup_once
+    temporary="$(mktemp "${target}.tmp.XXXXXX")"
+    awk '
+      /^## >>> zenbook-omarchy Foot usability \(managed\) >>>$/ { skip=1; next }
+      skip && /^## <<< zenbook-omarchy Foot usability \(managed\) <<<$/{ skip=0; next }
+      !skip { print }
+    ' "${target}" >"${temporary}"
+    install -m0644 "${temporary}" "${target}"
+    rm -f -- "${temporary}"
+    append_block "${target}" "${block}" 'zenbook-omarchy Foot usability (managed)'
+  else
+    backup_once
+    append_block "${target}" "${block}" 'zenbook-omarchy Foot usability (managed)'
+  fi
+}
+
+apply_tmux() {
+  local block='## >>> zenbook-omarchy tmux theme (managed) >>>
+if-shell "[ -r ~/.config/tmux/omarchy-theme.conf ]" "source-file ~/.config/tmux/omarchy-theme.conf"
+## <<< zenbook-omarchy tmux theme (managed) <<<'
+  mkdir -p "${CONFIG_HOME}/tmux"
+  if ! grep -Fq -- 'zenbook-omarchy tmux theme (managed)' "${TMUX_CONFIG}" 2>/dev/null; then
+    backup_once
+    append_block "${TMUX_CONFIG}" "${block}" 'zenbook-omarchy tmux theme (managed)'
+  fi
+  install_if_changed "${SCRIPT_DIR}/tmux-theme-hook" "${THEME_HOOK}" 0755
+  backup_once
+  "${THEME_HOOK}" --write "${TMUX_THEME}"
 }
 
 apply_bindings() {
@@ -229,6 +278,7 @@ apply_profile() {
   apply_bashrc
   apply_blerc
   apply_foot
+  apply_tmux
   apply_bindings
   if ((BINDINGS_CHANGED)) && command -v hyprctl >/dev/null 2>&1; then
     hyprctl reload >/dev/null
@@ -266,6 +316,9 @@ rollback_profile() {
   restore_target "${HOME}/.bashrc" bashrc
   restore_target "${HOME}/.blerc" blerc
   restore_target "${CONFIG_HOME}/foot/foot.ini" foot.ini
+  restore_target "${TMUX_CONFIG}" tmux.conf
+  restore_target "${TMUX_THEME}" tmux-theme.conf
+  restore_target "${THEME_HOOK}" tmux-theme-hook
   # bindings.lua is shared with Bitwarden and other profile components.
   # Restore only this component's managed block instead of replacing the file.
   local target="${CONFIG_HOME}/hypr/bindings.lua" temporary

@@ -16,7 +16,7 @@ die() {
 
 usage() {
   cat <<'EOF'
-Usage: zenbook-omarchy [menu|all|vpn|display|voice|bitwarden|diagnostics|terminal|update|doctor|check]
+Usage: zenbook-omarchy [menu|all|vpn|display|input|voice|bitwarden|diagnostics|terminal|update|doctor|check]
 
 Short launcher for the local GitHub checkout. With no argument it opens a
 small numbered menu. Bitwarden onboarding opens in a visible Foot window.
@@ -46,11 +46,12 @@ choose_components() {
     printf '\nZenbook Omarchy — choose any combination\n\n'
     printf '  1  VPN / network\n'
     printf '  2  Display\n'
-    printf '  3  Voice / NPU transcription\n'
-    printf '  4  Bitwarden passwords\n'
-    printf '  5  Terminal enhancements\n'
-    printf '  6  Diagnostics (optional)\n'
-    printf '  7  Omarchy system update (alone)\n'
+    printf '  3  Keyboard / Fcitx5 input\n'
+    printf '  4  Voice / NPU transcription\n'
+    printf '  5  Bitwarden passwords\n'
+    printf '  6  Terminal enhancements\n'
+    printf '  7  Diagnostics (optional)\n'
+    printf '  8  Omarchy system update (alone)\n'
     printf '\nDoctor verification runs automatically after the installation.\n'
     printf 'Dependencies are added automatically. Enter numbers separated by spaces,\n'
     printf 'or a for recommended restore, q to cancel: '
@@ -58,7 +59,7 @@ choose_components() {
     IFS= read -r choice
     case "${choice}" in
       q|Q) printf 'Cancelled.\n'; exit 0 ;;
-      a|A) SELECTED_COMPONENTS='vpn,display,voice,terminal,bitwarden'; break ;;
+      a|A) SELECTED_COMPONENTS='vpn,display,input,voice,terminal,bitwarden'; break ;;
       *)
         local -a picks=() components=()
         local invalid=0
@@ -67,11 +68,12 @@ choose_components() {
           case "${item}" in
             1) component=vpn ;;
             2) component=display ;;
-            3) component=voice ;;
-            4) component=bitwarden ;;
-            5) component=terminal ;;
-            6) component=diagnostics ;;
-            7) component=update ;;
+            3) component=input ;;
+            4) component=voice ;;
+            5) component=bitwarden ;;
+            6) component=terminal ;;
+            7) component=diagnostics ;;
+            8) component=update ;;
             *) printf 'Unknown menu item: %s\n' "${item}"; invalid=1; component='' ;;
           esac
           [[ -n "${component}" ]] || continue
@@ -128,7 +130,7 @@ else
 fi
 
 case "${stage}" in
-  all|vpn|display|voice|diagnostics|terminal|update|doctor)
+  all|vpn|display|input|voice|diagnostics|terminal|update|doctor)
     exec "${BOOTSTRAP}" --profile auto --stage "${stage}" "$@"
     ;;
   bitwarden)

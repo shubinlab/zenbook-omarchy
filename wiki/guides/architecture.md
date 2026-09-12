@@ -34,8 +34,9 @@ The design review rejected five failure modes:
    the public-repository check.
 
 The default clean-install sequence is deliberately linear: connect the VPN,
-apply the simple tested display override, verify required packages, invoke
-Omarchy's native Voxtype path, apply the terminal extension and run doctor.
+apply the simple tested display override, apply the user-scoped keyboard/Fcitx5
+policy, verify required packages, invoke Omarchy's native Voxtype path, apply
+the terminal extension and run doctor.
 Diagnostics and `omarchy update` are explicit optional menu actions. Individual
 components are selected through the thin local launcher; the underlying stage
 engine remains an internal implementation detail.

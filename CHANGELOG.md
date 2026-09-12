@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-- Removed the profile's former ChatGPT web-app binding override; the terminal
-  apply and doctor flows now leave Omarchy's stock binding ownership unchanged.
+- Added a user-scoped Zenbook input stage for compositor-owned `us,ru`
+  layouts with bidirectional Alt+Shift, an empty Fcitx5 keyboard profile and
+  the separate Right Ctrl/F13 Voxtype workaround, with backup, rollback,
+  doctor and manual real-text verification guidance.
+
 - Fixed CI origin checks for GitHub Actions checkouts, scanned both staged and
   working-tree content for public-data leaks, and added live Zenbook display
   profile drift detection to the read-only doctor.

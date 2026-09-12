@@ -27,7 +27,7 @@ A human must still verify actual text in a Wayland app, the launcher/search,
 and after returning to the desktop. The doctor cannot safely synthesize physical
 modifier events.
 
-## Upstream basis (reviewed 2026-09-10)
+## Upstream basis (reviewed 2026-09-12)
 
 - [Hyprland keyboard layouts](https://wiki.hypr.land/configuring/core/binds/keyboard-layouts/): use XKB layouts/options for normal layout switching; `switchxkblayout` is an alternative mechanism.
 - [Hyprland binds](https://wiki.hypr.land/Configuring/Binds/): modifier-only bindings are not a reliable replacement for an XKB group option.

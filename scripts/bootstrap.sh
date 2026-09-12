@@ -15,6 +15,9 @@ PROFILE_LOGIN_AFTER_VPN_INSTALL=0
 PROFILE_MONITOR_CONFIG=""
 PROFILE_DISPLAY_DOCTOR=""
 PROFILE_BRANDING_EXTENSION=""
+PROFILE_INPUT_INSTALL=0
+PROFILE_INPUT_EXTENSION=""
+PROFILE_INPUT_DOCTOR=""
 PROFILE_TERMINAL_EXTENSION=""
 PROFILE_VOICE_INSTALL=0
 PROFILE_VOICE_EXTENSION=""
@@ -34,6 +37,8 @@ COMPONENTS_REQUEST=""
 MONITOR_SOURCE=""
 DISPLAY_DOCTOR=""
 BRANDING_SOURCE=""
+INPUT_SOURCE=""
+INPUT_DOCTOR=""
 TERMINAL_SOURCE=""
 VOICE_SOURCE=""
 BITWARDEN_SOURCE=""
@@ -46,6 +51,7 @@ VPN_LOCATION="${ADGUARD_VPN_LOCATION:-}"
 ADGUARD_INSTALLER_URL="https://raw.githubusercontent.com/AdguardTeam/AdGuardCLI/release/install.sh"
 DO_PACKAGES=1
 DO_MONITOR=1
+DO_INPUT=0
 DO_VPN=0
 DO_SYSTEM_UPDATE=0
 DO_TERMINAL=1
@@ -55,6 +61,7 @@ DO_DIAGNOSTICS=0
 DO_VPN_CLI_UPDATE=0
 DO_CHECK=0
 VPN_OPTION_SET=0
+INPUT_OPTION_SET=0
 VOICE_OPTION_SET=0
 BITWARDEN_OPTION_SET=0
 STAGE=all
@@ -90,7 +97,7 @@ Options:
   --update-vpn-cli      Update the installed AdGuard VPN CLI.
   --update-system       Run `omarchy update` as a separate explicit stage (opt-in).
   --stage NAME          Run one stage: all, selected, vpn, display, packages,
-                        bitwarden, voice, diagnostics, terminal, update or
+                        input, bitwarden, voice, diagnostics, terminal, update or
                         doctor. Default: all.
   --components LIST     For --stage selected, comma-separated components;
                         dependencies are added automatically.
@@ -99,6 +106,7 @@ Options:
   --verbose             Show detailed component output instead of the compact view.
   --non-interactive     Refuse prompts and stop before interactive setup.
   --no-terminal         Skip the profile's user-scoped terminal extension.
+  --no-input            Skip the profile's user-scoped keyboard/input extension.
   --no-voice            Skip the profile's native Omarchy Voxtype setup.
   --no-bitwarden        Skip the profile's native Wayland Bitwarden setup.
   --check               Validate profile files without changing the system.
@@ -160,6 +168,12 @@ detect_profile() {
   if [[ -n "$PROFILE_BRANDING_EXTENSION" ]]; then
     BRANDING_SOURCE="$PROFILE_DIR/$PROFILE_BRANDING_EXTENSION"
   fi
+  if [[ -n "$PROFILE_INPUT_EXTENSION" ]]; then
+    INPUT_SOURCE="$PROFILE_DIR/$PROFILE_INPUT_EXTENSION"
+  fi
+  if [[ -n "$PROFILE_INPUT_DOCTOR" ]]; then
+    INPUT_DOCTOR="$PROFILE_DIR/$PROFILE_INPUT_DOCTOR"
+  fi
   if [[ -n "$PROFILE_TERMINAL_EXTENSION" ]]; then
     TERMINAL_SOURCE="$PROFILE_DIR/$PROFILE_TERMINAL_EXTENSION"
   fi
@@ -177,6 +191,9 @@ detect_profile() {
   fi
   if ((VPN_OPTION_SET == 0)); then
     DO_VPN="$PROFILE_ENABLE_VPN"
+  fi
+  if ((INPUT_OPTION_SET == 0)); then
+    DO_INPUT="$PROFILE_INPUT_INSTALL"
   fi
   if ((VOICE_OPTION_SET == 0)); then
     DO_VOICE="$PROFILE_VOICE_INSTALL"
@@ -417,6 +434,11 @@ check_profile() {
     [[ -x "$BRANDING_SOURCE" ]] || die "missing branding extension: $BRANDING_SOURCE"
     "$BRANDING_SOURCE" --check
   fi
+  if ((DO_INPUT)); then
+    [[ -n "$INPUT_SOURCE" && -x "$INPUT_SOURCE" ]] || die "missing input extension: $INPUT_SOURCE"
+    [[ -n "$INPUT_DOCTOR" && -x "$INPUT_DOCTOR" ]] || die "missing input doctor: $INPUT_DOCTOR"
+    "$INPUT_SOURCE" --check
+  fi
   if [[ -n "$TERMINAL_SOURCE" ]]; then
     [[ -x "$TERMINAL_SOURCE" ]] || die "missing terminal extension: $TERMINAL_SOURCE"
     "$TERMINAL_SOURCE" --check
@@ -438,15 +460,18 @@ check_profile() {
 }
 
 print_manifest() {
-  local vpn_enabled=false monitor_enabled=false packages_enabled=false bitwarden_enabled=false voice_enabled=false
+  local vpn_enabled=false monitor_enabled=false packages_enabled=false
+  local input_enabled=false bitwarden_enabled=false voice_enabled=false
   ((DO_VPN)) && vpn_enabled=true
   ((DO_MONITOR)) && monitor_enabled=true
+  ((DO_INPUT)) && input_enabled=true
   ((DO_PACKAGES)) && packages_enabled=true
   ((DO_BITWARDEN)) && bitwarden_enabled=true
   ((DO_VOICE)) && voice_enabled=true
   printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
   printf '{"name":"vpn","enabled":%s,"title":"Connect AdGuard VPN","category":"network","needs_user_input":true},' "$vpn_enabled"
   printf '{"name":"display","enabled":%s,"title":"Apply tested display settings","category":"configuration","needs_user_input":false},' "$monitor_enabled"
+  printf '{"name":"input","enabled":%s,"title":"Apply keyboard and Fcitx5 input settings","category":"configuration","needs_user_input":false},' "$input_enabled"
   printf '{"name":"packages","enabled":%s,"title":"Install profile packages and native runtimes","category":"runtime","needs_user_input":false},' "$packages_enabled"
   printf '{"name":"voice","enabled":%s,"requires":["packages"],"title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},' "$voice_enabled"
   printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
@@ -469,13 +494,14 @@ manifest_entry_count() {
 
 print_plan() {
   local plan_title='full restore'
-  local show_monitor=$DO_MONITOR show_voice=$DO_VOICE show_terminal=$DO_TERMINAL
+  local show_monitor=$DO_MONITOR show_input=$DO_INPUT show_voice=$DO_VOICE show_terminal=$DO_TERMINAL
   local show_bitwarden=$DO_BITWARDEN show_diagnostics=$DO_DIAGNOSTICS show_packages=0
   local show_update=$DO_SYSTEM_UPDATE
   [[ "$STAGE" == selected ]] && plan_title='selected components'
   [[ "$STAGE" != all && "$STAGE" != selected ]] && plan_title="$STAGE stage"
   if [[ "$STAGE" != all && "$STAGE" != selected ]]; then
     show_monitor=0
+    show_input=0
     show_voice=0
     show_terminal=0
     show_bitwarden=0
@@ -483,6 +509,7 @@ print_plan() {
     show_update=0
     case "$STAGE" in
       display) show_monitor=1 ;;
+      input) show_input=1 ;;
       voice) show_voice=1 ;;
       terminal) show_terminal=1 ;;
       bitwarden) show_bitwarden=1 ;;
@@ -500,6 +527,7 @@ print_plan() {
     printf '  Network: VPN disabled for this run\n'
   fi
   ((show_monitor)) && printf '  Display: apply tested user monitor layout; back up existing file\n'
+  ((show_input)) && printf '  Input: apply us,ru XKB with bidirectional Alt+Shift, empty Fcitx5 profile and F13 Voxtype workaround\n'
   if ((show_packages)); then
     if ((${#PACKAGE_SOURCES[@]})); then
       printf "  Runtime: install %s base package entries through Omarchy's package helper\n" \
@@ -538,9 +566,10 @@ print_run_summary() {
   local step
   ((DO_VPN)) && steps+=(VPN)
   ((DO_MONITOR)) && steps+=(Display)
-  [[ -n "$BRANDING_SOURCE" ]] && steps+=(Branding)
+  ((DO_INPUT)) && steps+=(Input/Fcitx5)
   ((DO_VOICE)) && steps+=(Voice/NPU)
   ((DO_TERMINAL)) && steps+=(Terminal)
+  [[ -n "$BRANDING_SOURCE" ]] && steps+=(Branding)
   ((DO_BITWARDEN)) && steps+=(Bitwarden)
   ((DO_DIAGNOSTICS)) && steps+=(Diagnostics)
   printf '  Mode: %s\n' "$([[ "$STAGE" == selected ]] && printf 'selected restore' || printf 'full restore')"
@@ -566,7 +595,7 @@ configure_selected_components() {
   IFS=',' read -r -a requested <<<"$COMPONENTS_REQUEST"
   for component in "${requested[@]}"; do
     case "$component" in
-      vpn|display|voice|bitwarden|diagnostics|terminal|update|doctor) ;;
+      vpn|display|input|voice|bitwarden|diagnostics|terminal|update|doctor) ;;
       *) die "unknown selected component: $component" ;;
     esac
   done
@@ -576,6 +605,7 @@ configure_selected_components() {
 
   DO_VPN=0
   DO_MONITOR=0
+  DO_INPUT=0
   DO_PACKAGES=0
   DO_TERMINAL=0
   DO_VOICE=0
@@ -583,6 +613,7 @@ configure_selected_components() {
   DO_DIAGNOSTICS=0
   if selected_component vpn && ((VPN_OPTION_SET == 0)); then DO_VPN=1; fi
   if selected_component display; then DO_MONITOR=1; fi
+  if selected_component input; then DO_INPUT=1; fi
   if selected_component terminal; then DO_TERMINAL=1; fi
   if selected_component voice; then DO_VOICE=1; DO_PACKAGES=1; fi
   if selected_component bitwarden; then DO_BITWARDEN=1; DO_PACKAGES=1; fi
@@ -647,6 +678,9 @@ run_doctor_compact() {
   fi
   if [[ -n "$DISPLAY_DOCTOR" ]]; then
     compact_check 'Display' "$DISPLAY_DOCTOR"
+  fi
+  if ((DO_INPUT)) && [[ -n "$INPUT_DOCTOR" ]]; then
+    compact_check 'Input / Fcitx5' "$INPUT_DOCTOR"
   fi
   if command -v hyprctl >/dev/null 2>&1; then
     if errors="$(hyprctl configerrors 2>/dev/null)"; then
@@ -751,6 +785,15 @@ run_doctor() {
     fi
   fi
 
+  if ((DO_INPUT)) && [[ -n "$INPUT_DOCTOR" ]]; then
+    if "$INPUT_DOCTOR"; then
+      printf '%sOK%s keyboard and Fcitx5 input\n' "$C_GREEN" "$C_RESET"
+    else
+      printf '%sFAIL%s keyboard and Fcitx5 input\n' "$C_RED" "$C_RESET"
+      failures=$((failures + 1))
+    fi
+  fi
+
   if command -v hyprctl >/dev/null 2>&1; then
     if errors="$(hyprctl configerrors 2>/dev/null)"; then
       if [[ -z "$errors" ]]; then
@@ -802,6 +845,7 @@ while (($#)); do
     --verbose) export OMARCHY_VERBOSE=1 ;;
     --non-interactive) NON_INTERACTIVE=1 ;;
     --no-terminal) DO_TERMINAL=0 ;;
+    --no-input) DO_INPUT=0; INPUT_OPTION_SET=1 ;;
     --no-voice) DO_VOICE=0; VOICE_OPTION_SET=1 ;;
     --no-bitwarden) DO_BITWARDEN=0; BITWARDEN_OPTION_SET=1 ;;
     --check) DO_CHECK=1 ;;
@@ -857,11 +901,20 @@ apply_terminal() {
     printf 'bootstrap: terminal extension not configured; skipped\n'
   fi
 }
+
 apply_branding() {
   if [[ -n "$BRANDING_SOURCE" ]]; then
     "$BRANDING_SOURCE" --apply
   else
     printf 'bootstrap: branding extension not configured; skipped\n'
+  fi
+}
+
+apply_input() {
+  if ((DO_INPUT)) && [[ -n "$INPUT_SOURCE" ]]; then
+    "$INPUT_SOURCE" --apply
+  else
+    printf 'bootstrap: input extension not configured; skipped\n'
   fi
 }
 
@@ -955,6 +1008,8 @@ run_stage() {
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
       stage_note 'branding' 'SHUBIN Omarchy branding'
       apply_branding
+      stage_note 'input' 'Keyboard and Fcitx5 input'
+      if ((DO_INPUT)); then apply_input; else printf 'bootstrap: input stage skipped\n'; fi
       if ((${#PACKAGE_SOURCES[@]})); then
         stage_note 'packages' 'Base runtime dependencies'
         install_packages
@@ -986,6 +1041,11 @@ run_stage() {
       stage_note '1/1' 'Display: tested user settings'
       ((DO_MONITOR)) || die 'display stage is disabled by --no-monitor'
       backup_and_install_monitor
+      ;;
+    input)
+      stage_note '1/1' 'Input: keyboard and Fcitx5'
+      ((DO_INPUT)) || die 'input stage is disabled by --no-input or this profile'
+      apply_input
       ;;
     packages)
       stage_note 'packages' 'Base runtime dependencies'
@@ -1051,6 +1111,8 @@ run_stage() {
       fi
       stage_note 'display' 'Display settings'
       if ((DO_MONITOR)); then backup_and_install_monitor; else printf 'bootstrap: display stage skipped\n'; fi
+      stage_note 'input' 'Keyboard and Fcitx5 input'
+      if ((DO_INPUT)); then apply_input; else printf 'bootstrap: input stage skipped\n'; fi
       if ((${#PACKAGE_SOURCES[@]})); then
         stage_note 'packages' 'Base runtime dependencies'
         install_packages
@@ -1073,7 +1135,7 @@ run_stage() {
       run_doctor
       ;;
     *)
-      die "unknown stage: $STAGE (use all, vpn, display, packages, diagnostics, voice, terminal, update or doctor)"
+      die "unknown stage: $STAGE (use all, vpn, display, input, packages, diagnostics, voice, terminal, update or doctor)"
       ;;
   esac
 }

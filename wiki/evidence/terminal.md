@@ -10,14 +10,17 @@ It provides:
   an existing user installation unless an explicit update is requested;
 - Bash ghost text and the upstream ble.sh/fzf integration;
 - explicit native Foot Sixel support;
-- no profile override for Omarchy's stock ChatGPT web-app shortcut;
+- user-owned Foot search, URL, font zoom and clipboard-output bindings;
+- an Omarchy `theme-set` hook that regenerates the tmux status/pane palette from
+  semantic theme colors;
+- the stock Omarchy web-app shortcut set remains untouched;
 - a read-only `terminal-doctor` command.
 
 The extension writes only user-owned files. It appends managed blocks to
-`.bashrc`, `.blerc` and Hyprland bindings, and creates backups under
+`.bashrc`, `.blerc`, `foot.ini`, `tmux.conf` and Hyprland bindings, writes the
+small generated tmux palette under `~/.config/tmux/`, and creates backups under
 `~/.local/state/omarchy-profiles/backups/terminal/` before changes. It does not
-copy `tmux.conf`: the current Omarchy tmux configuration already provides the
-tested passthrough and clipboard settings.
+replace Omarchy's complete Foot or tmux configuration.
 
 Run from the repository root:
 

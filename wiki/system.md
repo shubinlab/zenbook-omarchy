@@ -6,7 +6,7 @@ refreshed after an Omarchy update.
 | Layer | Current value | Role |
 |---|---|---|
 | Distribution | Omarchy, Arch-compatible | Base operating system and Omarchy user experience |
-| Omarchy | `4.0.2-1` | Stock commands, defaults, migrations and package policy |
+| Omarchy | `4.0.3-1` | Stock commands, defaults, migrations and package policy |
 | Kernel | `7.2.3-arch1-3`, x86_64, PREEMPT_DYNAMIC | Hardware drivers, DRM, USB, input, networking and storage |
 | Firmware packages | `linux-firmware 20260810-2`, `amd-ucode 20260810-2` | GPU, Wi-Fi, Bluetooth and CPU firmware |
 | Desktop | Hyprland `0.56.2-2` under UWSM | Wayland compositor and window management |
@@ -22,17 +22,17 @@ refreshed after an Omarchy update.
 2. Linux loads `amdgpu`, USB, NVMe, network, audio and sensor drivers.
 3. UWSM starts Hyprland and Omarchy's default Lua/QML configuration.
 4. Hyprland loads Omarchy defaults first, then `~/.config/hypr/*.lua`.
-5. The Zenbook profile supplies the monitor override and optional user services.
+5. The Zenbook profile supplies monitor, keyboard/Fcitx5 and optional user services.
 6. PipeWire and Voxtype use user-session configuration; optional package
    installation is handled by `omarchy-pkg-add` and updates by `omarchy update`.
 
 ## Stock versus this host
 
-Stock Omarchy provides the default Hyprland, Foot, Fcitx5, Voxtype, PipeWire,
-tmux, fzf and application stack. This host adds a tested external-display
-rule, a native Voxtype frontend policy with a local FLM NPU backend, a terminal
-extension, optional diagnostic packages and stock web-app bindings. It retains Omarchy's stock
-Hyprland loader, default bindings, input defaults, theme system, tmux setup and
-package helper.
+Stock Omarchy provides the default Hyprland, Foot, Fcitx5, Voxtype, PipeWire.
+This host adds a tested external-display rule, a native Voxtype frontend policy
+with a local FLM NPU backend, a terminal extension, optional diagnostic
+packages and the tested keyboard/Fcitx5 policy. It retains Omarchy's stock
+Hyprland loader, default bindings outside managed blocks, input framework,
+theme system, tmux setup and package helper.
 
 The exact file comparison is in [configuration layers](software/configuration.md).

@@ -18,7 +18,7 @@ The installer clones or updates the repository, selects the profile from DMI
 and runs the supported stages in this order:
 
 ```text
-VPN → display → NPU packages → native Voxtype → Lemonade model → terminal → optional Bitwarden onboarding → doctor
+VPN → display → keyboard/Fcitx5 input → NPU packages → native Voxtype → Lemonade model → terminal → optional Bitwarden onboarding → doctor
 ```
 
 On the first run, expect the official AdGuard login, Omarchy's native Voxtype

@@ -27,6 +27,7 @@ check_cmd foot
 check_cmd fzf
 check_cmd chafa
 check_cmd tmux
+check_cmd wl-copy
 
 if foot --check-config >/dev/null 2>&1; then
   ok 'Foot configuration is valid'
@@ -39,6 +40,22 @@ if grep -Eq '^[[:space:]]*sixel[[:space:]]*=[[:space:]]*yes[[:space:]]*$' \
   ok 'Foot Sixel is explicitly enabled'
 else
   bad 'Foot Sixel is not explicitly enabled'
+fi
+
+if grep -Fq 'zenbook-omarchy Foot usability (managed)' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
+   grep -Fq 'search-start=F6' "$HOME/.config/foot/foot.ini" 2>/dev/null &&
+   grep -Fq 'pipe-command-output=[wl-copy] F8' "$HOME/.config/foot/foot.ini" 2>/dev/null; then
+  ok 'Foot usability bindings are installed'
+else
+  bad 'Foot usability bindings are missing'
+fi
+
+if [[ -x $HOME/.config/omarchy/hooks/theme-set.d/zenbook-terminal-tmux-theme ]] &&
+   [[ -r $HOME/.config/tmux/omarchy-theme.conf ]] &&
+   grep -Fq 'zenbook-omarchy tmux theme (managed)' "$HOME/.config/tmux/tmux.conf" 2>/dev/null; then
+  ok 'Omarchy theme-set hook and tmux theme override are installed'
+else
+  bad 'Omarchy theme-set hook or tmux theme override is missing'
 fi
 
 if [[ -r $HOME/.local/share/blesh/ble.sh ]]; then

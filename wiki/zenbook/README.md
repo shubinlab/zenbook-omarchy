@@ -20,9 +20,10 @@ The profile is selected automatically by DMI. To select it explicitly:
 ./scripts/bootstrap.sh --profile zenbook-um3406ka
 ```
 
-The same clean-install flow applies VPN, display, native Voxtype, terminal
-settings and doctor. Diagnostics and the supported Omarchy update remain
-explicit optional stages. Check it first with:
+The same clean-install flow applies VPN, display, the user-scoped keyboard/
+Fcitx5 policy, native Voxtype, terminal settings and doctor. Diagnostics and
+the supported Omarchy update remain explicit optional stages. Check it first
+with:
 
 ```bash
 ./scripts/bootstrap.sh --profile zenbook-um3406ka --check
@@ -36,6 +37,7 @@ explicit optional stages. Check it first with:
 | **External display** | LG DisplayPort at 2560×1440, 239.97/240 Hz, 10-bit, sRGB, VRR on, scale 1.6 |
 | **Internal display** | Managed by the profile and Omarchy display layer; no global Hyprland replacement |
 | **Voice** | Native Voxtype capture/service/bindings and `wtype` output; local Lemonade FLM Whisper inference on AMD XDNA2 NPU; automatic language detection, OSD and feedback |
+| **Input** | Hyprland/XKB `us,ru` with bidirectional Alt+Shift; Fcitx5 has no declared keyboard layouts; Right Ctrl -> F13 Voxtype workaround |
 | **Terminal** | Foot Sixel, ble.sh/fzf integration, image preview and no profile ChatGPT override |
 | **Network** | Official AdGuard VPN CLI before network-dependent install stages |
 | **Recovery** | Timestamped user backups before profile-owned replacements |
