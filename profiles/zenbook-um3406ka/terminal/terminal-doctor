@@ -48,6 +48,14 @@ else
   bad 'ble.sh is missing from ~/.local/share/blesh'
 fi
 
+if [[ -r $HOME/.local/share/zenbook-omarchy/blerc ]] &&
+   grep -Fq 'zenbook-omarchy Bash selection (managed)' "$HOME/.local/share/zenbook-omarchy/blerc" &&
+   grep -Fq "ble-bind -m emacs -f \$'raw:\\e[1;2D'" "$HOME/.local/share/zenbook-omarchy/blerc"; then
+  ok 'keyboard selection bindings are installed'
+else
+  bad 'keyboard selection bindings are missing; rerun the terminal profile apply'
+fi
+
 if grep -q 'integration/fzf-completion' "$HOME/.blerc" 2>/dev/null &&
    grep -q 'integration/fzf-key-bindings' "$HOME/.blerc" 2>/dev/null; then
   ok 'ble.sh/fzf integration is configured'
@@ -65,6 +73,12 @@ if [[ -r $HOME/.bashrc ]] && grep -q 'zenbook-omarchy terminal' "$HOME/.bashrc" 
   ok 'Bash integration is sourced from ~/.bashrc'
 else
   bad 'Bash integration marker is missing'
+fi
+
+if grep -Fq 'grp:alt_shift_toggle_bidir' "$HOME/.config/hypr/input.lua" 2>/dev/null; then
+  ok 'Keyboard switching remains compositor-owned Alt+Shift XKB'
+else
+  bad 'Keyboard switching ownership or Alt+Shift policy changed'
 fi
 
 if command -v omarchy-default-agent >/dev/null 2>&1; then

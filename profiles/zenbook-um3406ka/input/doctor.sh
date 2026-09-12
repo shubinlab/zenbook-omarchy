@@ -20,9 +20,10 @@ warn() { printf 'WARN input: %s\n' "$*"; }
 
 if [[ -f "$INPUT_TARGET" ]]; then
   grep -Fq 'kb_layout = "us,ru"' "$INPUT_TARGET" && ok 'Hyprland layout is us,ru' || fail 'Hyprland layout is not us,ru'
-  grep -Fq 'grp:ctrl_shift_toggle_bidir' "$INPUT_TARGET" && ok 'bidirectional XKB Ctrl+Shift is configured' || fail 'bidirectional XKB Ctrl+Shift is missing'
+  grep -Fq 'follow_mouse = 0' "$INPUT_TARGET" && ok 'click-to-focus is configured' || fail 'focus still follows mouse'
+  grep -Fq 'grp:alt_shift_toggle_bidir' "$INPUT_TARGET" && ok 'bidirectional XKB Alt+Shift is configured' || fail 'bidirectional XKB Alt+Shift is missing'
   grep -Fq 'kb_file' "$INPUT_TARGET" && ok 'custom Voxtype keymap is configured' || fail 'custom Voxtype keymap is not configured'
-  if grep -vE '^[[:space:]]*--' "$INPUT_TARGET" | grep -Eq 'grp:(alts_toggle|alt_space_toggle)'; then fail 'Alt-based group switching is enabled'; else ok 'Alt-based group switching is disabled'; fi
+  if grep -vE '^[[:space:]]*--' "$INPUT_TARGET" | grep -Eq 'grp:(alts_toggle|alt_space_toggle)'; then fail 'legacy Alt group-switching option is enabled'; else ok 'legacy Alt group-switching options are disabled'; fi
 fi
 if [[ -f "$FCITX_TARGET" ]]; then
   if grep -Eq '^Name=keyboard-(us|ru)$' "$FCITX_TARGET"; then

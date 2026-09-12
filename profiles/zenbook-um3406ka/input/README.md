@@ -6,11 +6,11 @@ This component is user-scoped and keeps one compositor-owned XKB state:
 us <-> ru
 ```
 
-The stock `grp:ctrl_shift_toggle_bidir` option handles both:
+The stock `grp:alt_shift_toggle_bidir` option handles both:
 
 ```text
-Left Ctrl -> Left Shift
-Left Shift -> Left Ctrl
+Alt -> Shift
+Shift -> Alt
 ```
 
 Fcitx5 remains available for Omarchy's XCompose service, but its profile is
@@ -19,8 +19,9 @@ intentionally empty of declared keyboard layouts. Fcitx5 may create a runtime
 paired with a `keyboard-ru` item or a second toggle script. The generated
 keymap only adds the separate Right Ctrl -> F13 Voxtype workaround.
 
-The active config must not contain `us,ru,us`, `grp:alts_toggle`,
-`grp:alt_space_toggle`, or a language binding for modifier-only keys.
+The active config must not contain `us,ru,us`, `grp:ctrl_shift_toggle_bidir`,
+`grp:alts_toggle`, `grp:alt_space_toggle`, or a language binding for
+modifier-only keys.
 
 A human must still verify actual text in a Wayland app, the launcher/search,
 and after returning to the desktop. The doctor cannot safely synthesize physical

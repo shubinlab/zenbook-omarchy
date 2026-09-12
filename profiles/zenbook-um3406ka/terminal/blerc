@@ -2,3 +2,21 @@
 _ble_contrib_fzf_base=/usr/share/fzf
 ble-import -d integration/fzf-completion
 ble-import -d integration/fzf-key-bindings
+
+## >>> zenbook-omarchy Bash selection (managed) >>>
+# Keyboard selection for the current ble.sh-edited command line.
+ble-bind -m emacs -f 'M-SP' 'set-mark'
+ble-bind -m emacs -f 'S-left' '@marked backward-char'
+ble-bind -m emacs -f 'S-right' '@marked forward-char'
+ble-bind -m emacs -f 'S-C-left' '@marked backward-cword'
+ble-bind -m emacs -f 'S-C-right' '@marked forward-cword'
+ble-bind -m emacs -f 'S-home' '@marked beginning-of-line'
+ble-bind -m emacs -f 'S-end' '@marked end-of-line'
+
+# Foot/xterm emits modified cursor keys as CSI 1;... sequences. ble.sh's
+# symbolic keymap does not always resolve those sequences from xterm-256color.
+ble-bind -m emacs -f $'raw:\e[1;2D' '@marked backward-char'
+ble-bind -m emacs -f $'raw:\e[1;2C' '@marked forward-char'
+ble-bind -m emacs -f $'raw:\e[1;6D' '@marked backward-cword'
+ble-bind -m emacs -f $'raw:\e[1;6C' '@marked forward-cword'
+## <<< zenbook-omarchy Bash selection (managed) <<<

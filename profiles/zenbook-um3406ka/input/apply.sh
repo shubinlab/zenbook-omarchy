@@ -13,7 +13,7 @@ usage() {
 Usage: profiles/<id>/input/apply.sh [--check|--apply|--rollback]
 
 Installs the user-scoped Zenbook keyboard policy: global us <-> ru XKB
-switching with bidirectional Left Ctrl + Left Shift and the separate Right Ctrl
+switching with bidirectional Alt + Shift and the separate Right Ctrl
 -> F13 Voxtype workaround. The default is a read-only check.
 EOF
 }
@@ -50,7 +50,8 @@ check_files() {
   [[ -f "$INPUT_TARGET" ]] || fail "missing $INPUT_TARGET"
   [[ -x "$TOGGLE_TARGET" ]] && warn 'obsolete Fcitx toggle script remains; it is not used' || true
   grep -Fq 'kb_layout = "us,ru"' "$INPUT_TARGET" || fail 'input.lua does not declare us,ru'
-  grep -Fq 'grp:ctrl_shift_toggle_bidir' "$INPUT_TARGET" || fail 'bidirectional XKB Ctrl+Shift option is missing'
+  grep -Fq 'follow_mouse = 0' "$INPUT_TARGET" || fail 'click-to-focus is not configured'
+  grep -Fq 'grp:alt_shift_toggle_bidir' "$INPUT_TARGET" || fail 'bidirectional XKB Alt+Shift option is missing'
   grep -Fq 'kb_file' "$INPUT_TARGET" || fail 'input.lua does not declare the Voxtype keymap'
   grep -Fq 'zenbook-omarchy input (managed)' "$BINDINGS_TARGET" || fail 'managed input bindings are missing'
   if grep -vE '^[[:space:]]*--' "$INPUT_TARGET" | grep -Eq 'grp:(alts_toggle|alt_space_toggle)'; then
@@ -123,7 +124,7 @@ raw="$(mktemp "$KEYMAP_TARGET.raw.XXXXXX")"
 final="$(mktemp "$KEYMAP_TARGET.tmp.XXXXXX")"
 trap 'rm -f "$raw" "$final"' EXIT
 xkbcli compile-keymap --layout us,ru --variant ',' \
-  --options 'compose:caps,grp:ctrl_shift_toggle_bidir' >"$raw"
+  --options 'compose:caps,grp:alt_shift_toggle_bidir' >"$raw"
 python3 "$SCRIPT_DIR/build-keymap.py" <"$raw" >"$final"
 install -m 0644 "$final" "$KEYMAP_TARGET"
 
