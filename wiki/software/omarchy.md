@@ -29,7 +29,7 @@ user configuration under `~/.config`.
 - mirror toggle disabled after a reproducible mode-drift interaction;
 - clock format and bar layout stored in `~/.config/omarchy/shell.json`;
 - default agent set to `codex`;
-- ChatGPT replaces the stock web-app shortcut at `Super+Shift+Alt+A`;
+- the profile does not override Omarchy's ChatGPT web-app shortcut;
 - Foot Sixel, ble.sh/fzf and image preview helpers;
 - native Voxtype frontend with `language=auto`, using local Lemonade FLM NPU
   inference (`whisper-v3-turbo-FLM`);

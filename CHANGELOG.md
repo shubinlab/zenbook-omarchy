@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Removed the profile's former ChatGPT web-app binding override; the terminal
+  apply and doctor flows now leave Omarchy's stock binding ownership unchanged.
 - Fixed CI origin checks for GitHub Actions checkouts, scanned both staged and
   working-tree content for public-data leaks, and added live Zenbook display
   profile drift detection to the read-only doctor.

@@ -31,7 +31,7 @@ refreshed after an Omarchy update.
 Stock Omarchy provides the default Hyprland, Foot, Fcitx5, Voxtype, PipeWire,
 tmux, fzf and application stack. This host adds a tested external-display
 rule, a native Voxtype frontend policy with a local FLM NPU backend, a terminal
-extension, optional diagnostic packages and a ChatGPT binding. It retains Omarchy's stock
+extension, optional diagnostic packages and stock web-app bindings. It retains Omarchy's stock
 Hyprland loader, default bindings, input defaults, theme system, tmux setup and
 package helper.
 
