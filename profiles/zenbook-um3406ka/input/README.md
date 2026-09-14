@@ -27,7 +27,19 @@ A human must still verify actual text in a Wayland app, the launcher/search,
 and after returning to the desktop. The doctor cannot safely synthesize physical
 modifier events.
 
-## Upstream basis (reviewed 2026-09-12)
+## Upstream basis (reviewed 2026-09-14)
+
+- [Omarchy 4 dotfiles](https://github.com/omacom/omarchy/blob/quattro/manual/31-dotfiles.md)
+  defines `~/.config` as the user-owned override space; `/usr/share/omarchy`
+  remains package-owned and is never edited by this profile.
+- [Omarchy 4 keyboard manual](https://github.com/omacom/omarchy/blob/quattro/manual/34-keyboard-mouse-trackpad.md)
+  assigns ordinary layout selection to `~/.config/hypr/input.lua` while
+  retaining Fcitx5 for XCompose and non-Latin input methods.
+- [Upstream Omarchy issue #9552](https://github.com/omacom/omarchy/issues/9552)
+  documents a possible Fcitx/XKB layout mismatch. This profile red-teams the
+  native Fcitx unit ownership and rejects duplicate keyboard engines, but a
+  human physical-layout acceptance remains required per application. Do not
+  start a second `fcitx5` process or use a raw `fcitx5 -rd` workaround.
 
 - [Hyprland keyboard layouts](https://wiki.hypr.land/configuring/core/binds/keyboard-layouts/): use XKB layouts/options for normal layout switching; `switchxkblayout` is an alternative mechanism.
 - [Hyprland binds](https://wiki.hypr.land/Configuring/Binds/): modifier-only bindings are not a reliable replacement for an XKB group option.
