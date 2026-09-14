@@ -1,0 +1,10 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Chromium Input Acceptance</title>
+<input id="input" autofocus aria-label="Wayland Chromium input">
+<script>
+  const input = document.getElementById("input");
+  input.addEventListener("input", () => {
+    document.title = `Chromium Input Acceptance ${input.value}`;
+  });
+</script>

@@ -1,8 +1,7 @@
 __pycache__/
 *.pyc
 .env
-runs/*.json
-runs/*.md
-!.gitkeep
+**/runs/*
+!**/runs/.gitkeep
 *.log
 *.zip

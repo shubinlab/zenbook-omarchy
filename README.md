@@ -49,7 +49,7 @@ remote is refused instead of being silently rewritten.
 | **Omarchy** | Native commands and defaults remain the source of truth |
 | **Zenbook display** | Tested external LG DisplayPort mode: 2560×1440, 240 Hz, 10-bit, sRGB, VRR and scale 1.6 |
 | **Bitwarden** | Optional final stage with guided onboarding; native Wayland `rbw` + `rofi-rbw` + Fuzzel launcher; manual official-extension setup by default; optional Chromium policy install; `wl-copy` clipboard with 30-second clearing; `wtype` autotyping; one `Super + Shift + /` hotkey; no Electron/X11/XWayland client |
-| **Voice** | Native Voxtype capture/service/bindings and `wtype` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; Silero VAD, spoken punctuation, OSD, start/stop sounds and `language=auto`; optional local technical profile |
+| **Voice** | Native Voxtype capture/service/bindings with explicit `pipewire` capture and `paste` output; active Whisper inference through local Lemonade FLM on the AMD XDNA2 NPU; Silero VAD, spoken punctuation, OSD, start/stop sounds and `language=auto`; optional local technical profile |
 | **Terminal** | Foot Sixel, pinned ble.sh/fzf integration and preview helper; no profile ChatGPT override |
 | **Network** | Official AdGuard VPN CLI is installed and connected before network-dependent stages |
 | **Diagnostics** | Optional hardware tools, kept outside the clean restore |
@@ -104,6 +104,8 @@ page that matches the question:
 | Tune or diagnose voice | [Native voice evidence](wiki/evidence/voice.md) |
 | Restore a previous state | [Recovery guide](wiki/guides/recovery.md) |
 | Add another host | [Profiles guide](wiki/profiles.md) |
+| Follow the current Omarchy 4 work | [Unified improvement plan](docs/superpowers/plans/2026-09-14-omarchy4-unified-improvement-and-github-sync.md), [host audit](docs/reports/2026-09-14-host-and-repository-audit.md) |
+| Understand native ownership boundaries | [Omarchy 4 extension contract](docs/omarchy-4-native-extension-contract.md) |
 
 ## Repository map
 

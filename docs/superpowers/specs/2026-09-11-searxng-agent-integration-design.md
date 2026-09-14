@@ -79,7 +79,7 @@ Each stage follows the same gate: capture baseline, make one bounded change, run
 2. **SearXNG core:** repair configuration ownership/maintenance flow, validate JSON/API settings, add readiness behavior, test Valkey, and pin the tested image.
 3. **Agent bridge:** add the user-scoped normalized/raw CLI, unit tests for parsing and limits, and live integration tests against `127.0.0.1:8080`.
 4. **Hermes path:** verify that Hermes's existing SearXNG backend uses the same endpoint and that startup does not produce a false failure; do not alter gateway policy.
-5. **Codex/local agents:** document and test shell invocation from the current trusted `/home/totem/Work` environment. Evaluate MCP only after the CLI passes its acceptance tests.
+5. **Codex/local agents:** document and test shell invocation from the current trusted `$WORKTREE` environment. Evaluate MCP only after the CLI passes its acceptance tests.
 6. **Protected workloads:** measure Telegram, Hermes gateway, Camofox/Node, and Voxtype under idle and representative use; apply only reversible, user-approved tuning.
 7. **System hygiene:** perform the separately approved `rog-control-center` removal, install `fwupd`, `smartmontools`, and `nvme-cli`, configure `fstrim.timer`, and then re-test Quickshell and the desktop service set.
 

@@ -25,6 +25,8 @@ them.
 | Tune native voice transcription | [Voice evidence](evidence/voice.md) |
 | Roll back a change | [Recovery guide](guides/recovery.md) |
 | Add another machine | [Profiles guide](profiles.md) |
+| Follow the current improvement work | [Unified Omarchy 4 plan](../docs/superpowers/plans/2026-09-14-omarchy4-unified-improvement-and-github-sync.md) |
+| Understand vendor ownership | [Native extension contract](../docs/omarchy-4-native-extension-contract.md) |
 
 ## One-screen architecture
 

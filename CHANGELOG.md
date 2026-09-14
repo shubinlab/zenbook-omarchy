@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Made the native Voxtype audio and output policy explicit (`pipewire` plus
+  `paste`) and made type-delay checks conditional on the selected output mode.
+- Added a portable, root-owned SearXNG systemd lifecycle owner with rendered
+  path validation, readiness checks and CI contract coverage.
+- Expanded public-repository scanning to include non-ignored worktree files,
+  indexed private-path patterns and nested `runs/` artifacts.
+- Added a Markdown local-link gate and published the Omarchy 4 plan, native
+  extension contract, host audit and input regression map as one linked set.
+
 - Added a user-scoped Zenbook input stage for compositor-owned `us,ru`
   layouts with bidirectional Alt+Shift, an empty Fcitx5 keyboard profile and
   the separate Right Ctrl/F13 Voxtype workaround, with backup, rollback,

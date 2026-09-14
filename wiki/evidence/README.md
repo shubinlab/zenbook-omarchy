@@ -24,6 +24,9 @@ intent so a future Omarchy update can be reviewed without guessing.
 | External source list | [Research](research.md) |
 | Cross-repository search map | [Repository map](repository-map.md) |
 | Native voice evidence | [Voice](voice.md) |
+| Current host/repository audit | [2026-09-14 audit](../../docs/reports/2026-09-14-host-and-repository-audit.md) |
+| Omarchy 4 ownership contract | [Native extension contract](../../docs/omarchy-4-native-extension-contract.md) |
+| Input regression plan | [Native input plan](../../docs/superpowers/plans/2026-09-14-omarchy4-native-input-regression.md) |
 
 ## How to read the pages
 

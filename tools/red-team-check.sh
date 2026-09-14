@@ -13,6 +13,8 @@ pass() {
   printf 'red-team-check: PASS: %s\n' "$*"
 }
 
+command -v rg >/dev/null 2>&1 || fail 'rg is required'
+
 expect_reject() {
   local label="$1"
   shift
@@ -22,7 +24,7 @@ expect_reject() {
   pass "$label rejected"
 }
 
-bash -n install.sh scripts/*.sh tools/*.sh profiles/*/display-doctor.sh profiles/*/voice/*.sh \
+bash -n install.sh scripts/*.sh tools/*.sh profiles/*/display-doctor.sh profiles/*/input/*.sh profiles/*/search/*.sh profiles/*/voice/*.sh \
   profiles/*/tools/*.sh profiles/*/terminal/*.sh profiles/*/bitwarden/*.sh
 pass 'shell syntax'
 
@@ -58,6 +60,12 @@ while IFS= read -r manifest; do
   done < <(sed -e 's/[[:space:]]*#.*$//' -e '/^[[:space:]]*$/d' "$manifest")
 done < <(find profiles -type f -path '*/packages/*.txt' -print)
 pass 'package manifests contain only safe package tokens'
+
+./profiles/zenbook-um3406ka/input/test_input_policy.sh
+./profiles/zenbook-um3406ka/search/test_unit_contract.sh
+./tools/test-voice-policy.sh
+./tools/test-markdown-links.sh
+expect_reject 'unsafe SearXNG path' env SEARXNG_DIR='/tmp/bad path' ./profiles/zenbook-um3406ka/search/apply.sh --check
 
 ./tools/check-public-repo.sh
 pass 'public repository scan'

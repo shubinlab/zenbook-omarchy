@@ -30,17 +30,17 @@ Spec: docs/superpowers/specs/2026-09-11-searxng-agent-integration-design.md
 
 Files:
 - Create: runs/2026-09-11-searxng-omarchy-baseline/ (ignored runtime evidence only)
-- Read: /home/totem/.local/share/searxng/docker-compose.yml
-- Read: /home/totem/.local/share/searxng/.env
-- Read: /home/totem/.local/bin/hermes-healthcheck
-- Read: /home/totem/.hermes/config.yaml
+- Read: $HOME/.local/share/searxng/docker-compose.yml
+- Read: $HOME/.local/share/searxng/.env
+- Read: $HOME/.local/bin/hermes-healthcheck
+- Read: $HOME/.hermes/config.yaml
 
 Interfaces:
 - Produces package versions, service states, ports, process RSS, SearXNG HTTP behavior, Compose metadata, and ownership/mode metadata without secrets.
 
 - [ ] Step 1: Capture package and service state.
 
-    mkdir -p /home/totem/Work/zenbook-omarchy/runs/2026-09-11-searxng-omarchy-baseline
+    mkdir -p "$WORKTREE/runs/2026-09-11-searxng-omarchy-baseline"
     pacman -Q asusctl rog-control-center fwupd smartmontools nvme-cli 2>&1
     systemctl --failed --no-pager
     systemctl is-enabled fstrim.timer; systemctl is-active fstrim.timer
@@ -55,7 +55,7 @@ Expected: protected services are active; fwupd, smartmontools, and nvme-cli are 
     curl --fail --silent --show-error --max-time 10 http://127.0.0.1:8080/ -o /dev/null -w 'root_http=%{http_code} latency=%{time_total}\n'
     curl --fail --silent --show-error --max-time 15 'http://127.0.0.1:8080/search?q=omarchy&format=json' | jq -e '.query == "omarchy" and (.results | type == "array")' >/dev/null
     ps -eo user,pid,rss,cmd --sort=-rss | rg -i 'telegram|hermes|camofox|voxtype|quickshell|searxng|valkey' | head -80
-    stat -c '%U %G %a %n' /home/totem/.local/share/searxng/.env /home/totem/.local/share/searxng/core-config-final3/settings.yml
+    stat -c '%U %G %a %n' "$HOME/.local/share/searxng/.env" "$HOME/.local/share/searxng/core-config-final3/settings.yml"
 
 Expected: root and JSON endpoints return 200, JSON has a result array, and no credentials are copied into evidence.
 
@@ -63,7 +63,7 @@ Expected: root and JSON endpoints return 200, JSON has a result array, and no cr
 
     curl --fail --max-time 3 http://127.0.0.1:8080/healthz >/dev/null
     ! curl --silent --max-time 3 http://127.0.0.1:8081/healthz >/dev/null
-    ! rg -n -i 'secret|token|password|api[_-]?key' /home/totem/Work/zenbook-omarchy/runs/2026-09-11-searxng-omarchy-baseline
+    ! rg -n -i 'secret|token|password|api[_-]?key' "$WORKTREE/runs/2026-09-11-searxng-omarchy-baseline"
 
 Expected: the known endpoint works, an unused endpoint fails, and the evidence directory has no secret-bearing lines.
 
@@ -74,12 +74,12 @@ Expected: the known endpoint works, an unused endpoint fails, and the evidence d
 ### Task 2: Make SearXNG maintainable and startup-aware
 
 Files:
-- Modify: /home/totem/.local/share/searxng/docker-compose.yml
-- Modify: /home/totem/.local/share/searxng/.env
-- Migrate: /home/totem/.local/share/searxng/core-config-final3/settings.yml only after backup
-- Modify: /home/totem/.local/bin/hermes-healthcheck
-- Read: /home/totem/.local/bin/hermes-start-searxng
-- Read: /home/totem/.local/bin/hermes-refresh-searxng
+- Modify: $HOME/.local/share/searxng/docker-compose.yml
+- Modify: $HOME/.local/share/searxng/.env
+- Migrate: $HOME/.local/share/searxng/core-config-final3/settings.yml only after backup
+- Modify: $HOME/.local/bin/hermes-healthcheck
+- Read: $HOME/.local/bin/hermes-start-searxng
+- Read: $HOME/.local/bin/hermes-refresh-searxng
 
 Interfaces:
 - Consumes Task 1 ownership, image, and readiness evidence.
@@ -134,7 +134,7 @@ Files:
 - Create: profiles/zenbook-um3406ka/search/README.md
 - Create: profiles/zenbook-um3406ka/search/doctor.sh
 - Modify: scripts/bootstrap.sh only if the existing profile installation pattern requires registration
-- Install target: /home/totem/.local/bin/searxng-search
+- Install target: $HOME/.local/bin/searxng-search
 
 Interfaces:
 - Consumes GET /search JSON from Task 2.
@@ -159,10 +159,10 @@ Interfaces:
 ### Task 4: Repair and verify the Hermes search path
 
 Files:
-- Modify: /home/totem/.local/bin/hermes-healthcheck
-- Read: /home/totem/.hermes/config.yaml
-- Read: /home/totem/.config/systemd/user/hermes-healthcheck.service
-- Read: /home/totem/.config/systemd/user/hermes-healthcheck.timer
+- Modify: $HOME/.local/bin/hermes-healthcheck
+- Read: $HOME/.hermes/config.yaml
+- Read: $HOME/.config/systemd/user/hermes-healthcheck.service
+- Read: $HOME/.config/systemd/user/hermes-healthcheck.timer
 
 Interfaces:
 - Consumes stable SearXNG health and CLI behavior from Tasks 2–3.
@@ -188,10 +188,10 @@ Expected: all three services report ok when ready.
 ### Task 5: Measure protected workloads and apply only reversible tuning
 
 Files:
-- Read/possibly modify after evidence: /home/totem/.config/voxtype/config.toml
-- Read/possibly modify after evidence: /home/totem/.config/systemd/user/camofox.service
-- Read/possibly modify after evidence: /home/totem/.config/systemd/user/hermes-gateway.service
-- Read-only verify: /home/totem/.config/autostart/org.telegram.desktop.desktop
+- Read/possibly modify after evidence: $HOME/.config/voxtype/config.toml
+- Read/possibly modify after evidence: $HOME/.config/systemd/user/camofox.service
+- Read/possibly modify after evidence: $HOME/.config/systemd/user/hermes-gateway.service
+- Read-only verify: $HOME/.config/autostart/org.telegram.desktop.desktop
 
 Interfaces:
 - Produces before/after resource evidence and narrowly scoped tuning while preserving requested functionality.

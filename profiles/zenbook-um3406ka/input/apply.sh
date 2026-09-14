@@ -62,8 +62,11 @@ check_files() {
   if grep -Fq 'toggle-fcitx-layout' "$BINDINGS_TARGET"; then
     fail 'obsolete Fcitx language binding remains'
   fi
-  if grep -Eq '^Name=keyboard-(us|ru)$' "$FCITX_TARGET"; then
-    fail 'Fcitx profile still declares a keyboard layout'
+  fcitx_layouts="$(grep -E '^Name=keyboard-[[:alnum:]_-]+$' "$FCITX_TARGET" || true)"
+  if [[ -n "$fcitx_layouts" && "$fcitx_layouts" != 'Name=keyboard-us' ]]; then
+    fail 'Fcitx profile declares a non-native or duplicate keyboard layout'
+  elif [[ "$(wc -l <<<"$fcitx_layouts")" -gt 1 ]]; then
+    fail 'Fcitx profile declares a duplicate keyboard layout'
   fi
   if command -v xkbcli >/dev/null 2>&1; then
     xkbcli compile-keymap --from-xkb "$KEYMAP_TARGET" >/dev/null || fail 'generated XKB keymap does not compile'
