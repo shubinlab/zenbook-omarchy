@@ -6,6 +6,11 @@ set -euo pipefail
 root="$(git rev-parse --show-toplevel)"
 cd "$root"
 
+command -v rg >/dev/null 2>&1 || {
+  printf '%s\n' 'public-repo-check: rg is required' >&2
+  exit 2
+}
+
 secret_pattern='(-----BEGIN (RSA|OPENSSH|EC|PGP) PRIVATE KEY-----|gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}|xox[baprs]-[A-Za-z0-9-]{20,}|sk-[A-Za-z0-9]{20,})'
 private_path_pattern='/(home|root)/[[:alnum:]_.-]+([/]|$)'
 

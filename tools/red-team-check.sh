@@ -13,6 +13,8 @@ pass() {
   printf 'red-team-check: PASS: %s\n' "$*"
 }
 
+command -v rg >/dev/null 2>&1 || fail 'rg is required'
+
 expect_reject() {
   local label="$1"
   shift
