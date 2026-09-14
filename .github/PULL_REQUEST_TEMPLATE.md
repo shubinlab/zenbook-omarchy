@@ -6,6 +6,7 @@
 
 - [ ] `./tools/ci-check.sh`
 - [ ] `./tools/check-public-repo.sh` after staging
+- [ ] `./tools/test-markdown-links.sh`
 - [ ] `git diff --cached --check`
 - [ ] Hardware-specific tests were run only when the affected hardware was available.
 

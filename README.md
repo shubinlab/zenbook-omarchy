@@ -104,6 +104,8 @@ page that matches the question:
 | Tune or diagnose voice | [Native voice evidence](wiki/evidence/voice.md) |
 | Restore a previous state | [Recovery guide](wiki/guides/recovery.md) |
 | Add another host | [Profiles guide](wiki/profiles.md) |
+| Follow the current Omarchy 4 work | [Unified improvement plan](docs/superpowers/plans/2026-09-14-omarchy4-unified-improvement-and-github-sync.md), [host audit](docs/reports/2026-09-14-host-and-repository-audit.md) |
+| Understand native ownership boundaries | [Omarchy 4 extension contract](docs/omarchy-4-native-extension-contract.md) |
 
 ## Repository map
 

@@ -6,6 +6,7 @@ cd "$root"
 
 bash -n install.sh scripts/*.sh tools/*.sh profiles/*/display-doctor.sh profiles/*/input/*.sh profiles/*/voice/*.sh profiles/*/search/*.sh profiles/*/tools/*.sh profiles/*/terminal/*.sh profiles/*/terminal/omarchy-fzf-preview profiles/*/terminal/terminal-doctor profiles/*/bitwarden/*.sh profiles/*/bitwarden/launcher profiles/*/branding/*.sh profiles/*/branding/post-update-hook
 python -m py_compile profiles/*/input/*.py profiles/*/search/*.py profiles/*/tools/*.py tools/update-package-wiki.py
+./tools/test-markdown-links.sh
 ./profiles/zenbook-um3406ka/input/test_input_policy.sh
 ./tools/check-public-repo.sh
 ./tools/red-team-check.sh

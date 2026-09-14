@@ -17,6 +17,11 @@
 | Choose or add a host profile | [Profiles](../profiles.md) |
 | Understand public-data rules | [Security policy](../../SECURITY.md) |
 
+The current execution source of truth is the [Omarchy 4 unified improvement
+plan](../../docs/superpowers/plans/2026-09-14-omarchy4-unified-improvement-and-github-sync.md),
+with the [native extension contract](../../docs/omarchy-4-native-extension-contract.md)
+defining the vendor/user ownership boundary.
+
 The [Zenbook section](../zenbook/README.md) contains the tested hardware,
 configuration, display, voice and terminal pages. The [evidence index](../evidence/README.md)
 contains measurements, research and incident records.

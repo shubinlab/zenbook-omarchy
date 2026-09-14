@@ -62,6 +62,7 @@ pass 'package manifests contain only safe package tokens'
 ./profiles/zenbook-um3406ka/input/test_input_policy.sh
 ./profiles/zenbook-um3406ka/search/test_unit_contract.sh
 ./tools/test-voice-policy.sh
+./tools/test-markdown-links.sh
 expect_reject 'unsafe SearXNG path' env SEARXNG_DIR='/tmp/bad path' ./profiles/zenbook-um3406ka/search/apply.sh --check
 
 ./tools/check-public-repo.sh
