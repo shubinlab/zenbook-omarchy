@@ -33,6 +33,15 @@ cat >"$TEST_ROOT/bin/hyprctl" <<'EOF'
 #!/usr/bin/env bash
 exit 0
 EOF
+cat >"$TEST_ROOT/bin/systemctl" <<'EOF'
+#!/usr/bin/env bash
+case " $* " in
+  *' is-enabled omarchy-fcitx5.service '*) printf '%s\n' enabled ;;
+  *' is-active omarchy-fcitx5.service '*) printf '%s\n' active ;;
+  *' show omarchy-fcitx5.service '* ) printf '%s\n' '/usr/bin/fcitx5 --disable notificationitem' ;;
+  *) exit 1 ;;
+esac
+EOF
 chmod +x "$TEST_ROOT/bin"/*
 export PATH="$TEST_ROOT/bin:$PATH"
 

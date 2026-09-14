@@ -25,5 +25,9 @@ package_plan="$(./scripts/bootstrap.sh --profile zenbook-um3406ka --stage packag
   --plan --no-vpn)"
 ! grep -q '^  Display:' <<<"$package_plan"
 ! grep -q '^  Terminal:' <<<"$package_plan"
+! grep -q '^  Branding:' <<<"$package_plan"
+doctor_plan="$(./scripts/bootstrap.sh --profile zenbook-um3406ka --stage doctor \
+  --plan --no-vpn)"
+grep -q '^  Verify: run the selected profile doctor checks$' <<<"$doctor_plan"
 
 printf '%s\n' 'ci-check: PASS'

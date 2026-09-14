@@ -38,6 +38,8 @@ SEARXNG_DIR="$HOME/.local/share/searxng" \
 ```
 
 `--apply` uses visible `pkexec` authentication, backs up an existing unit in
-user state, validates the rendered unit, enables Docker and waits for the
-loopback `/healthz` endpoint. Use the profile doctor as the acceptance check;
-do not create a second manual `docker compose` lifecycle owner.
+user state, validates the rendered unit, enables only `searxng.service` and
+lets its `Requires=docker.service` dependency start Docker when needed. It
+then waits for the loopback `/healthz` endpoint. Use the profile doctor as the
+acceptance check; do not create a second manual `docker compose` lifecycle
+owner.

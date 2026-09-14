@@ -35,6 +35,16 @@ if [[ -f "$FCITX_TARGET" ]]; then
     ok 'Fcitx profile has no conflicting keyboard layouts'
   fi
 fi
+if command -v systemctl >/dev/null 2>&1; then
+  fcitx_unit_enabled="$(systemctl --user is-enabled omarchy-fcitx5.service 2>/dev/null || true)"
+  [[ "$fcitx_unit_enabled" == enabled ]] && ok 'native omarchy-fcitx5.service is enabled' || fail "native omarchy-fcitx5.service is $fcitx_unit_enabled"
+  fcitx_unit_active="$(systemctl --user is-active omarchy-fcitx5.service 2>/dev/null || true)"
+  [[ "$fcitx_unit_active" == active ]] && ok 'native omarchy-fcitx5.service is active' || fail "native omarchy-fcitx5.service is $fcitx_unit_active"
+  fcitx_exec="$(systemctl --user show omarchy-fcitx5.service -p ExecStart --value 2>/dev/null || true)"
+  [[ "$fcitx_exec" == *'/usr/bin/fcitx5'* ]] && ok 'native Fcitx5 executable is authoritative' || fail 'Fcitx5 executable is not the native service command'
+else
+  warn 'systemctl unavailable; native Fcitx service ownership check skipped'
+fi
 if [[ -f "$BINDINGS_TARGET" ]]; then
   if grep -Fq 'toggle-fcitx-layout' "$BINDINGS_TARGET"; then fail 'obsolete Fcitx language binding remains'; else ok 'Fcitx is not used as language-switch owner'; fi
   grep -Fq 'zenbook-omarchy universal clipboard layout fix (managed)' "$BINDINGS_TARGET" && ok 'universal Super+C/V/X clipboard bindings exist' || fail 'universal clipboard bindings are missing'

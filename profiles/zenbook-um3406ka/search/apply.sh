@@ -40,6 +40,8 @@ trap cleanup EXIT
 [[ -r "${UNIT_SOURCE}" ]] || fail "missing unit template: ${UNIT_SOURCE}"
 [[ "${SEARXNG_DIR}" =~ ^/[A-Za-z0-9._/@+-]+$ ]] ||
   fail 'SEARXNG_DIR must be an absolute path without whitespace or unit metacharacters'
+[[ -f "${SEARXNG_DIR}/docker-compose.yml" ]] ||
+  fail "missing Compose file: ${SEARXNG_DIR}/docker-compose.yml"
 
 RENDERED_UNIT="$(mktemp --suffix=.service)"
 VERIFY_OUTPUT="$(mktemp)"
@@ -83,7 +85,6 @@ fi
 
 pkexec install -D -m 0644 "${RENDERED_UNIT}" "${UNIT_TARGET}"
 pkexec systemctl daemon-reload
-pkexec systemctl enable --now docker.service
 pkexec systemctl enable --now "${UNIT_NAME}"
 
 for _ in $(seq 1 60); do
