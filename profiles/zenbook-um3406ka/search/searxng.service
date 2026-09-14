@@ -1,0 +1,21 @@
+[Unit]
+Description=Local SearXNG Compose stack
+Documentation=https://docs.searxng.org/admin/installation-docker.html
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+PartOf=docker.service
+ConditionPathExists=@SEARXNG_DIR@/docker-compose.yml
+
+[Service]
+Type=oneshot
+WorkingDirectory=@SEARXNG_DIR@
+ExecStartPre=/usr/bin/docker compose config --quiet
+ExecStart=/usr/bin/docker compose up -d --wait --remove-orphans
+ExecStop=-/usr/bin/docker compose down
+RemainAfterExit=yes
+TimeoutStartSec=180
+TimeoutStopSec=60
+
+[Install]
+WantedBy=multi-user.target

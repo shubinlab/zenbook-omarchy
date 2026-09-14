@@ -16,14 +16,15 @@ physical PipeWire default microphone
   -> localhost Lemonade API
   -> whisper-v3-turbo-FLM through FastFlowLM
   -> AMD XDNA2 NPU
-  -> native wtype keyboard typing into the focused field
+  -> native Voxtype paste output through the focused field
 ```
 
 Native Voxtype OSD and start/stop audio feedback remain enabled. Native Silero
 VAD is enabled to reject silence-only recordings before they reach the remote
-transcriber. The profile does not switch to clipboard paste, install a second
-typing tool, change the default sink, or add a global echo-cancel filter. The
-former virtual microphone is intentionally not part of the clean baseline.
+transcriber. The tested host policy uses Voxtype's native `paste` output with
+`shift+insert`; it does not install a second typing tool, change the default
+sink, or add a global echo-cancel filter. The former virtual microphone is
+intentionally not part of the clean baseline.
 Legacy cleanup is available only through the explicit voice-repair command.
 
 The packaged Omarchy bindings remain the source of truth: `Super+Ctrl+X`
@@ -42,9 +43,10 @@ is modified.
 - The endpoint is loopback-only (`127.0.0.1`); no cloud transcription path is
   configured, Lemonade LAN broadcast discovery is disabled, and the profile
   refuses to proceed if Lemonade telemetry is on.
-- Native `type` output uses `wtype` under Hyprland and leaves the normal
-  clipboard path untouched. Clipboard fallback is disabled for this profile so
-  a failed native insertion cannot turn into a misleading clipboard error.
+- Native `paste` output uses Voxtype's own paste path with `shift+insert` and
+  leaves clipboard fallback disabled, so a failed insertion cannot turn into a
+  misleading clipboard error. `type` remains a supported override for hosts
+  that need direct Wayland keystrokes.
 - Native Silero VAD is installed with `voxtype setup vad` and enabled with the
   `whisper` VAD backend at threshold `0.5`. It rejects silence-only captures;
   it does not replace Whisper or perform language translation.
@@ -57,10 +59,9 @@ is modified.
   approximately -6.9 dBFS peak and -19.7 dBFS RMS without clipping. The global
   output sink is not changed, so feedback follows the user's normal Omarchy
   audio route.
-- `output.pre_type_delay_ms = 300` gives the focused Wayland field time to
-  attach before the first keystroke. `type_delay_ms = 10` is the smallest
-  stable value measured on this Zenbook's GTK/wtype path; it only slows native
-  keystroke delivery and does not introduce a second output mechanism.
+- `output.pre_type_delay_ms = 300` gives the focused field time to attach before
+  native output. `type_delay_ms = 10` is retained for the optional `type`
+  override and is not required by the canonical `paste` policy.
 - The profile is user-scoped and creates a timestamped backup before changing
   Voxtype or audio defaults. No raw audio, credentials or model weights are
   stored in Git.

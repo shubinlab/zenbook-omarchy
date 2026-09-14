@@ -60,6 +60,8 @@ source "${PROFILE_FILE}"
 : "${VOICE_MODE:=remote}"
 : "${VOICE_REMOTE_ENDPOINT:=http://127.0.0.1:13305}"
 : "${VOICE_REMOTE_MODEL:=whisper-v3-turbo-FLM}"
+: "${VOICE_AUDIO_DEVICE:=default}"
+: "${VOICE_OUTPUT_MODE:=type}"
 : "${VOICE_SOURCE_VOLUME_PERCENT:=60}"
 : "${VOICE_VAD_ENABLED:=true}"
 : "${VOICE_VAD_BACKEND:=whisper}"
@@ -71,6 +73,8 @@ source "${PROFILE_FILE}"
 [[ "${VOICE_VAD_THRESHOLD}" =~ ^(0(\.[0-9]+)?|1(\.0+)?)$ ]] || die 'VOICE_VAD_THRESHOLD must be between 0 and 1'
 [[ "${VOICE_MODE}" == remote ]] || die 'this profile requires the Lemonade remote mode'
 [[ "${VOICE_REMOTE_ENDPOINT}" == http://127.0.0.1:* ]] || die 'Lemonade endpoint must stay on localhost'
+[[ "${VOICE_AUDIO_DEVICE}" =~ ^[A-Za-z0-9_.:-]+$ ]] || die 'VOICE_AUDIO_DEVICE contains unsafe characters'
+[[ "${VOICE_OUTPUT_MODE}" == type || "${VOICE_OUTPUT_MODE}" == paste ]] || die 'VOICE_OUTPUT_MODE must be type or paste'
 
 safe_name() {
   [[ "$1" =~ ^[A-Za-z0-9_.:-]+$ ]] || die "unsafe PipeWire node name: $1"
@@ -208,6 +212,7 @@ ensure_lemonade_npu() {
 }
 
 set_type_delay() {
+  [[ "${VOICE_OUTPUT_MODE}" == type ]] || return 0
   local temporary
   temporary="$(mktemp "${VOXTYPE_TARGET}.tmp.XXXXXX")"
   if ! awk -v delay="${VOICE_TYPE_DELAY_MS}" '
@@ -343,15 +348,19 @@ check_state() {
       CHECK_FAILURES=$((CHECK_FAILURES + 1))
     fi
   }
-  check_value audio.device default "$(voxtype config get audio.device 2>/dev/null || true)"
+  check_value audio.device "${VOICE_AUDIO_DEVICE}" "$(voxtype config get audio.device 2>/dev/null || true)"
   check_value whisper.mode remote "$(voxtype config get whisper.mode 2>/dev/null || true)"
   check_value whisper.language "${VOICE_LANGUAGE}" "$(voxtype config get whisper.language 2>/dev/null || true)"
   check_value whisper.translate false "$(voxtype config get whisper.translate 2>/dev/null || true)"
   check_value whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}" "$(voxtype config get whisper.remote_endpoint 2>/dev/null || true)"
   check_value whisper.remote_model "${VOICE_REMOTE_MODEL}" "$(voxtype config get whisper.remote_model 2>/dev/null || true)"
-  check_value output.mode type "$(voxtype config get output.mode 2>/dev/null || true)"
+  check_value output.mode "${VOICE_OUTPUT_MODE}" "$(voxtype config get output.mode 2>/dev/null || true)"
   check_value output.fallback_to_clipboard false "$(voxtype config get output.fallback_to_clipboard 2>/dev/null || true)"
-  check_value output.type_delay_ms "${VOICE_TYPE_DELAY_MS}" "$(output_config_value type_delay_ms)"
+  if [[ "${VOICE_OUTPUT_MODE}" == type ]]; then
+    check_value output.type_delay_ms "${VOICE_TYPE_DELAY_MS}" "$(output_config_value type_delay_ms)"
+  else
+    printf 'PASS output.type_delay_ms=not-required (output.mode=%s)\n' "${VOICE_OUTPUT_MODE}"
+  fi
   check_value output.pre_type_delay_ms 300 "$(voxtype config get output.pre_type_delay_ms 2>/dev/null || true)"
   check_value audio.feedback.enabled true "$(voxtype config get audio.feedback.enabled 2>/dev/null || true)"
   check_value osd.enabled true "$(voxtype config get osd.enabled 2>/dev/null || true)"
@@ -463,13 +472,13 @@ apply_profile() {
 
   # Keep the native output/audio path and apply only this host's useful
   # multilingual policy plus native feedback/OSD.
-  voxtype_config_set audio.device default
+  voxtype_config_set audio.device "${VOICE_AUDIO_DEVICE}"
   voxtype_config_set whisper.mode remote
   voxtype_config_set whisper.language "${VOICE_LANGUAGE}"
   voxtype_config_set whisper.translate false
   voxtype_config_set whisper.remote_endpoint "${VOICE_REMOTE_ENDPOINT}"
   voxtype_config_set whisper.remote_model "${VOICE_REMOTE_MODEL}"
-  voxtype_config_set output.mode type
+  voxtype_config_set output.mode "${VOICE_OUTPUT_MODE}"
   voxtype_config_set output.fallback_to_clipboard false
   set_type_delay
   voxtype_config_set output.pre_type_delay_ms 300

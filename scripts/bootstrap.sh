@@ -462,22 +462,24 @@ check_profile() {
 print_manifest() {
   local vpn_enabled=false monitor_enabled=false packages_enabled=false
   local input_enabled=false bitwarden_enabled=false voice_enabled=false
+  local terminal_enabled=false update_enabled=true doctor_enabled=true
   ((DO_VPN)) && vpn_enabled=true
   ((DO_MONITOR)) && monitor_enabled=true
   ((DO_INPUT)) && input_enabled=true
   ((DO_PACKAGES)) && packages_enabled=true
   ((DO_BITWARDEN)) && bitwarden_enabled=true
   ((DO_VOICE)) && voice_enabled=true
+  [[ -n "$TERMINAL_SOURCE" ]] && terminal_enabled=true
   printf '{"protocol_version":1,"profile":"%s","stages":[' "$PROFILE_ID"
   printf '{"name":"vpn","enabled":%s,"title":"Connect AdGuard VPN","category":"network","needs_user_input":true},' "$vpn_enabled"
   printf '{"name":"display","enabled":%s,"title":"Apply tested display settings","category":"configuration","needs_user_input":false},' "$monitor_enabled"
   printf '{"name":"input","enabled":%s,"title":"Apply keyboard and Fcitx5 input settings","category":"configuration","needs_user_input":false},' "$input_enabled"
   printf '{"name":"packages","enabled":%s,"title":"Install profile packages and native runtimes","category":"runtime","needs_user_input":false},' "$packages_enabled"
   printf '{"name":"voice","enabled":%s,"requires":["packages"],"title":"Install native Voxtype and activate NPU voice","category":"runtime","needs_user_input":true},' "$voice_enabled"
-  printf '{"name":"terminal","title":"Apply terminal settings","category":"configuration","needs_user_input":false},'
-  printf '{"name":"update","title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},'
+  printf '{"name":"terminal","enabled":%s,"title":"Apply terminal settings","category":"configuration","needs_user_input":false},' "$terminal_enabled"
+  printf '{"name":"update","enabled":%s,"title":"Run supported Omarchy update","category":"runtime","needs_user_input":true},' "$update_enabled"
   printf '{"name":"bitwarden","enabled":%s,"requires":["packages"],"title":"Install native Wayland Bitwarden launcher","category":"security","needs_user_input":true},' "$bitwarden_enabled"
-  printf '{"name":"doctor","title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}'
+  printf '{"name":"doctor","enabled":%s,"title":"Check the installed profile","category":"diagnostics","needs_user_input":false}]}' "$doctor_enabled"
   printf '\n'
 }
 
@@ -552,9 +554,11 @@ print_plan() {
     printf '  Update: not included\n'
   fi
   printf '  Native boundary: no edits to /usr/share/omarchy; native installers/services/bindings stay authoritative\n'
-  [[ -n "$BRANDING_SOURCE" ]] && printf '  Branding: install SHUBIN screensaver, About, Plymouth, SDDM and post-update hook\n'
+  [[ "$STAGE" == all && -n "$BRANDING_SOURCE" ]] && printf '  Branding: install SHUBIN screensaver, About, Plymouth, SDDM and post-update hook\n'
   printf '  Recovery: user-file backups go under %s\n' "$BACKUP_ROOT"
-  if [[ "$STAGE" == all || "$STAGE" == selected ]]; then
+  if [[ "$STAGE" == doctor ]]; then
+    printf '  Verify: run the selected profile doctor checks\n'
+  elif [[ "$STAGE" == all || "$STAGE" == selected ]]; then
     printf '  Verify: read-only doctor runs after a multi-stage install\n'
   else
     printf '  Verify: this standalone stage does not run doctor automatically\n'

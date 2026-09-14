@@ -58,3 +58,8 @@ can use the explicit migration command:
 ```
 
 The native Omarchy files under `/usr/share/omarchy` remain read-only inputs.
+
+The tested host policy keeps Voxtype's native PipeWire capture route and uses
+its native `paste` output with `shift+insert`. This avoids routing multilingual
+text through a second typing owner. The policy is configurable in
+`voxtype-omarchy.env.example` and is checked by the profile doctor.
